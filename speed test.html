@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تست سرعت مطالعه</title>
+    <!-- فونت‌ها -->
+    <link href="https://cdn.fontcdn.ir/Font/Persian/Homa/Homa.css" rel="stylesheet">
+    <link href="https://cdn.fontcdn.ir/Font/Persian/Titr/Titr.css" rel="stylesheet">
+    <!-- کتابخانه‌ها برای PDF و Word -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.2/mammoth.browser.min.js"></script>
+    <style>
+        body {
+            font-family: 'Homa', sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+            direction: rtl;
+        }
+        h1 {
+            font-family: 'Titr', sans-serif;
+            color: #2c3e50;
+            text-align: center;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        textarea {
+            width: 100%;
+            height: 300px;
+            padding: 15px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-family: 'Homa', sans-serif;
+            font-size: 16px;
+            resize: none;
+        }
+        input[type="file"] {
+            margin: 10px 0;
+        }
+        button {
+            padding: 10px 25px;
+            margin: 5px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Homa', sans-serif;
+            font-size: 16px;
+        }
+        button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+        button:hover:not(:disabled) {
+            background-color: #2980b9;
+        }
+        #result, #questions {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #2c3e50;
+        }
+        .question {
+            margin: 15px 0;
+            padding: 10px;
+            background: #ecf0f1;
+            border-radius: 5px;
+        }
+        label {
+            display: block;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>تست سرعت مطالعه</h1>
+        <label for="textInput">متن خود را وارد کنید یا فایل آپلود کنید:</label><br>
+        <textarea id="textInput" placeholder="متن را اینجا وارد کنید..."></textarea><br>
+        <input type="file" id="fileInput" accept=".txt,.pdf,.docx"><br>
+        <button id="startBtn">شروع مطالعه</button>
+        <button id="endBtn" disabled>پایان مطالعه</button>
+        <div id="result"></div>
+        <div id="questions"></div>
+    </div>
+
+    <script>
+        const textInput = document.getElementById('textInput');
+        const fileInput = document.getElementById('fileInput');
+        const startBtn = document.getElementById('startBtn');
+        const endBtn = document.getElementById('endBtn');
+        const resultDiv = document.getElementById('result');
+        const questionsDiv = document.getElementById('questions');
+
+        let textContent = '';
+        let wordCount = 0;
+        let startTime = 0;
+
+        // خواندن فایل‌ها
+        fileInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (file.type === 'text/plain') { // TXT
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    textContent = e.target.result;
+                    textInput.value = textContent;
+                    wordCount = textContent.split(/\s+/).length;
+                };
+                reader.readAsText(file);
+            } else if (file.type === 'application/pdf') { // PDF
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    const typedArray = new Uint8Array(e.target.result);
+                    const pdf = await pdfjsLib.getDocument(typedArray).promise;
+                    let text = '';
+                    for (let i = 1; i <= pdf.numPages; i++) {
+                        const page = await pdf.getPage(i);
+                        const content = await page.getTextContent();
+                        text += content.items.map(item => item.str).join(' ') + '\n';
+                    }
+                    textContent = text;
+                    textInput.value = textContent;
+                    wordCount = textContent.split(/\s+/).length;
+                };
+                reader.readAsArrayBuffer(file);
+            } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') { // DOCX
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    mammoth.extractRawText({ arrayBuffer: e.target.result })
+                        .then(result => {
+                            textContent = result.value;
+                            textInput.value = textContent;
+                            wordCount = textContent.split(/\s+/).length;
+                        })
+                        .catch(err => alert('خطا در خواندن فایل Word: ' + err));
+                };
+                reader.readAsArrayBuffer(file);
+            } else {
+                alert('لطفاً فایل TXT، PDF یا DOCX انتخاب کنید!');
+            }
+        });
+
+        // شروع مطالعه
+        startBtn.addEventListener('click', () => {
+            textContent = textInput.value.trim();
+            if (!textContent) {
+                alert('لطفاً متنی وارد کنید یا فایلی انتخاب کنید!');
+                return;
+            }
+            wordCount = textContent.split(/\s+/).length;
+            startTime = Date.now();
+            startBtn.disabled = true;
+            endBtn.disabled = false;
+            textInput.disabled = true;
+        });
+
+        // پایان مطالعه و محاسبه سرعت
+        endBtn.addEventListener('click', () => {
+            const endTime = Date.now();
+            const elapsedTime = (endTime - startTime) / 1000; // زمان به ثانیه
+            const elapsedMinutes = elapsedTime / 60;
+
+            let speedText;
+            if (elapsedMinutes < 1) {
+                const speed = wordCount / elapsedTime;
+                speedText = `سرعت مطالعه: ${speed.toFixed(2)} کلمه بر ثانیه`;
+            } else {
+                const speed = wordCount / elapsedMinutes;
+                speedText = `سرعت مطالعه: ${speed.toFixed(2)} کلمه بر دقیقه`;
+            }
+
+            resultDiv.textContent = speedText;
+            startBtn.disabled = false;
+            endBtn.disabled = true;
+            textInput.disabled = false;
+
+            // تولید سوالات با Grok
+            generateQuestions();
+        });
+
+        // ارتباط با Grok API
+        async function generateQuestions() {
+            const apiKey = 'xai-VryJqroS7EDxNheM81PQz3t19KWpwk9EVB5CDA2702QVJJTUB2gyRZzTMlB5Lrml2uzM1BUeyOJgtl4m';
+            const url = 'https://api.x.ai/v1/chat/completions';
+            const prompt = `از متن زیر 5 سوال چهارگزینه‌ای با پاسخ صحیح تولید کن:\n\n${textContent}`;
+
+            const data = {
+                messages: [
+                    { role: 'system', content: 'You are a helpful assistant created by xAI.' },
+                    { role: 'user', content: prompt }
+                ],
+                model: 'grok-2-latest',
+                stream: false,
+                temperature: 0,
+                max_tokens: 500
+            };
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const result = await response.json();
+                const questionsText = result.choices[0].message.content;
+                parseAndShowQuestions(questionsText);
+            } catch (error) {
+                alert(`خطا در ارتباط با Grok: ${error.message}`);
+            }
+        }
+
+        // تجزیه و نمایش سوالات
+        function parseAndShowQuestions(questionsText) {
+            const lines = questionsText.split('\n');
+            let questions = [];
+            let currentQuestion = {};
+
+            lines.forEach(line => {
+                line = line.trim();
+                if (line.match(/^\d+\./)) {
+                    if (currentQuestion.question) questions.push(currentQuestion);
+                    currentQuestion = { question: line, options: [], correct: '' };
+                } else if (line.match(/^[A-D]\)/)) {
+                    currentQuestion.options.push(line);
+                } else if (line.startsWith('پاسخ صحیح:') || line.startsWith('Correct answer:')) {
+                    currentQuestion.correct = line.split(':')[1].trim();
+                }
+            });
+            if (currentQuestion.question) questions.push(currentQuestion);
+
+            questionsDiv.innerHTML = '';
+            questions.forEach((q, index) => {
+                const div = document.createElement('div');
+                div.className = 'question';
+                div.innerHTML = `<p>${q.question}</p>`;
+                q.options.forEach(opt => {
+                    div.innerHTML += `
+                        <label>
+                            <input type="radio" name="q${index}" value="${opt[0]}"> ${opt}
+                        </label><br>
+                    `;
+                });
+                questionsDiv.appendChild(div);
+            });
+
+            const submitBtn = document.createElement('button');
+            submitBtn.textContent = 'ثبت پاسخ‌ها';
+            submitBtn.addEventListener('click', () => calculateComprehension(questions));
+            questionsDiv.appendChild(submitBtn);
+        }
+
+        // محاسبه درصد درک
+        function calculateComprehension(questions) {
+            let correctCount = 0;
+            questions.forEach((q, index) => {
+                const selected = document.querySelector(`input[name="q${index}"]:checked`);
+                if (selected && selected.value === q.correct) correctCount++;
+            });
+
+            const comprehensionPercentage = (correctCount / questions.length) * 100;
+            resultDiv.textContent += `\nدرصد درک مطلب: ${comprehensionPercentage.toFixed(2)}%`;
+            questionsDiv.innerHTML = '';
+        }
+    </script>
+</body>
+</html>
