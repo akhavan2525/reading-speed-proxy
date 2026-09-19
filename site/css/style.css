@@ -130,6 +130,11 @@ img, video { max-width: 100%; display: block; }
   display: flex;
   align-items: center;
   justify-content: center;
+  /* Reserved as fixed clearance below the fixed navbar's fade zone, kept
+     outside the centering math below so the kicker can never end up
+     rendered under the navbar regardless of viewport height. */
+  padding-top: 90px;
+  padding-bottom: 20px;
 }
 
 .hero-stack {
@@ -138,9 +143,8 @@ img, video { max-width: 100%; display: block; }
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 28px;
-  padding: 24px;
-  max-width: 900px;
+  gap: 20px;
+  padding: 0 24px;
   width: 100%;
   text-align: center;
 }
@@ -149,15 +153,18 @@ img, video { max-width: 100%; display: block; }
    force-filled edge-to-edge across the viewport, so the full frame is
    always visible (no cropped sides/top) whatever the viewport's own
    aspect ratio is. Since the frame renders smaller than the source
-   resolution, it also looks sharper than a full-bleed upscaled fill. */
+   resolution, it also looks sharper than a full-bleed upscaled fill.
+   Sized against both the viewport width AND a height cap (whichever is
+   tighter, kept modest so it still fits common shorter laptop windows
+   like 1366x768 alongside the kicker/captions and navbar clearance
+   above) so it reads big and edge-to-edge without ever clipping. */
 .hero-frame {
   position: relative;
-  width: 100%;
-  max-width: 860px;
+  width: min(94vw, calc(42vh * 16 / 9));
   aspect-ratio: 16 / 9;
-  border-radius: 24px;
+  border-radius: 14px;
   overflow: hidden;
-  box-shadow: 0 40px 100px -30px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  box-shadow: 0 20px 60px -20px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.06);
 }
 
 .hero-video-wrap {
@@ -194,7 +201,9 @@ img, video { max-width: 100%; display: block; }
 .hero-lines {
   position: relative;
   width: 100%;
-  min-height: clamp(120px, 16vw, 190px);
+  max-width: 640px;
+  margin: 0 auto;
+  min-height: clamp(100px, 14vw, 150px);
 }
 
 .hero-line {
