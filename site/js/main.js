@@ -24,33 +24,65 @@ ScrollTrigger.create({
   },
 });
 
-/* ---------- Hero scroll-scrubbed video ---------- */
-const heroVideo = document.getElementById('hero-video');
+/* ---------- Hero scroll-scrubbed frame sequence ---------- */
+/* Scrubbing a real <video> by setting currentTime on scroll depends on the
+   browser/device's video decoder keeping up with arbitrary, rapid, often
+   reversing seeks — even with a short keyframe interval this stays visibly
+   janky on a lot of phones. Instead the clip is pre-rendered into a sequence
+   of still JPEG frames; scrolling just picks the nearest frame and draws it
+   to a canvas, which is instant and identical on every device. */
+const FRAME_COUNT = 114;
+const heroCanvas = document.getElementById('hero-canvas');
+const heroCtx = heroCanvas.getContext('2d');
+const heroFrames = new Array(FRAME_COUNT);
+let heroCurrentFrame = -1;
 
-/* Scrubbing a <video> by setting currentTime on every scroll tick queues up a
-   seek per tick; if a seek is still resolving when the next one arrives, they
-   pile up and playback stutters/lags behind the scroll. Instead we just record
-   the latest target time on scroll and let a rAF loop apply it, skipping while
-   a seek is already in flight so at most one seek is ever pending. */
-let heroTargetTime = 0;
-let heroIsSeeking = false;
-
-heroVideo.addEventListener('seeking', () => { heroIsSeeking = true; });
-heroVideo.addEventListener('seeked', () => { heroIsSeeking = false; });
-
-function applyHeroVideoTime() {
-  const duration = heroVideo.duration;
-  if (duration && !heroIsSeeking && Math.abs(heroVideo.currentTime - heroTargetTime) > 0.008) {
-    heroVideo.currentTime = heroTargetTime;
-  }
-  requestAnimationFrame(applyHeroVideoTime);
+function heroFrameUrl(i) {
+  return `assets/frames/frame-${String(i + 1).padStart(4, '0')}.jpg`;
 }
-requestAnimationFrame(applyHeroVideoTime);
 
-/* Pin the hero immediately so the layout/scroll-jack is stable even if the
-   video is slow to load or fails; the actual frame-scrubbing only kicks in
-   once duration is known (guarded above). The same ScrollTrigger also drives
-   a caption timeline below, so the video and the text beats stay in sync. */
+function drawHeroFrame(index) {
+  index = Math.max(0, Math.min(FRAME_COUNT - 1, index));
+  let i = index;
+  while (i > 0 && !(heroFrames[i] && heroFrames[i].complete && heroFrames[i].naturalWidth)) i--;
+  const img = heroFrames[i];
+  if (!img || !img.complete || !img.naturalWidth) return;
+  if (i === heroCurrentFrame) return;
+  heroCurrentFrame = i;
+  heroCtx.drawImage(img, 0, 0, heroCanvas.width, heroCanvas.height);
+}
+
+function resizeHeroCanvas() {
+  const rect = heroCanvas.getBoundingClientRect();
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  heroCanvas.width = Math.round(rect.width * dpr);
+  heroCanvas.height = Math.round(rect.height * dpr);
+  heroCurrentFrame = -1;
+  drawHeroFrame(heroTargetFrame);
+}
+
+let heroTargetFrame = 0;
+for (let i = 0; i < FRAME_COUNT; i++) {
+  const img = new Image();
+  if (i === 0) img.onload = () => drawHeroFrame(0);
+  img.src = heroFrameUrl(i);
+  heroFrames[i] = img;
+}
+
+resizeHeroCanvas();
+window.addEventListener('resize', resizeHeroCanvas);
+
+/* Redraw on every rAF tick rather than only from ScrollTrigger's onUpdate, so
+   frames still loading in the background get picked up the moment they're
+   ready without waiting for the next scroll event. */
+(function heroRenderLoop() {
+  drawHeroFrame(heroTargetFrame);
+  requestAnimationFrame(heroRenderLoop);
+})();
+
+/* Pin the hero immediately so the layout/scroll-jack is stable from the
+   first scroll tick. The same ScrollTrigger also drives a caption timeline
+   below, so the frame sequence and the text beats stay in sync. */
 const heroTl = gsap.timeline({
   scrollTrigger: {
     trigger: '#hero',
@@ -59,9 +91,7 @@ const heroTl = gsap.timeline({
     pin: true,
     scrub: 0.6,
     onUpdate: (self) => {
-      const duration = heroVideo.duration || 0;
-      if (!duration || Number.isNaN(duration)) return;
-      heroTargetTime = self.progress * duration;
+      heroTargetFrame = Math.round(self.progress * (FRAME_COUNT - 1));
     },
   },
 });
