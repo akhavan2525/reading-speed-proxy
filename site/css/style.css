@@ -132,6 +132,34 @@ img, video { max-width: 100%; display: block; }
   justify-content: center;
 }
 
+.hero-stack {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  padding: 24px;
+  max-width: 900px;
+  width: 100%;
+  text-align: center;
+}
+
+/* The video is framed at its own native 16:9 aspect ratio instead of
+   force-filled edge-to-edge across the viewport, so the full frame is
+   always visible (no cropped sides/top) whatever the viewport's own
+   aspect ratio is. Since the frame renders smaller than the source
+   resolution, it also looks sharper than a full-bleed upscaled fill. */
+.hero-frame {
+  position: relative;
+  width: 100%;
+  max-width: 860px;
+  aspect-ratio: 16 / 9;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 40px 100px -30px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
 .hero-video-wrap {
   position: absolute;
   inset: 0;
@@ -149,35 +177,24 @@ img, video { max-width: 100%; display: block; }
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(5,6,12,0.08) 0%, rgba(5,6,12,0.1) 65%, var(--bg) 100%);
-}
-
-.hero-content {
-  position: relative;
-  z-index: 3;
-  text-align: center;
-  padding: 0 24px;
-  max-width: 760px;
-  width: 100%;
+  background: linear-gradient(180deg, rgba(5,6,12,0.05) 0%, rgba(5,6,12,0.05) 70%, rgba(5,6,12,0.25) 100%);
 }
 
 .hero-kicker {
   display: inline-block;
   padding: 6px 18px;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  background: rgba(5, 6, 12, 0.55);
+  border: 1px solid var(--surface-border);
+  background: var(--surface);
   color: var(--accent-b);
   font-size: .85rem;
-  margin-bottom: 26px;
   letter-spacing: .3px;
-  text-shadow: none;
 }
 
 .hero-lines {
   position: relative;
   width: 100%;
-  min-height: clamp(150px, 20vw, 220px);
+  min-height: clamp(120px, 16vw, 190px);
 }
 
 .hero-line {
