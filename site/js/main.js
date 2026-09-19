@@ -49,19 +49,34 @@ requestAnimationFrame(applyHeroVideoTime);
 
 /* Pin the hero immediately so the layout/scroll-jack is stable even if the
    video is slow to load or fails; the actual frame-scrubbing only kicks in
-   once duration is known (guarded above). */
-ScrollTrigger.create({
-  trigger: '#hero',
-  start: 'top top',
-  end: '+=220%',
-  pin: true,
-  scrub: 0.6,
-  onUpdate: (self) => {
-    const duration = heroVideo.duration || 0;
-    if (!duration || Number.isNaN(duration)) return;
-    heroTargetTime = self.progress * duration;
+   once duration is known (guarded above). The same ScrollTrigger also drives
+   a caption timeline below, so the video and the text beats stay in sync. */
+const heroTl = gsap.timeline({
+  scrollTrigger: {
+    trigger: '#hero',
+    start: 'top top',
+    end: '+=220%',
+    pin: true,
+    scrub: 0.6,
+    onUpdate: (self) => {
+      const duration = heroVideo.duration || 0;
+      if (!duration || Number.isNaN(duration)) return;
+      heroTargetTime = self.progress * duration;
+    },
   },
 });
+
+/* Four caption beats crossfade in sequence over the pinned scroll range;
+   each ".hero-line" occupies the same spot, so only one shows at a time. */
+heroTl
+  .to('.scroll-hint', { opacity: 0, duration: 0.2 }, 0.05)
+  .to('#hero-line-1', { opacity: 1, y: 0, pointerEvents: 'auto', duration: 0.3 }, 0)
+  .to('#hero-line-1', { opacity: 0, y: -30, pointerEvents: 'none', duration: 0.3 }, 0.9)
+  .to('#hero-line-2', { opacity: 1, y: 0, pointerEvents: 'auto', duration: 0.3 }, 1.0)
+  .to('#hero-line-2', { opacity: 0, y: -30, pointerEvents: 'none', duration: 0.3 }, 1.9)
+  .to('#hero-line-3', { opacity: 1, y: 0, pointerEvents: 'auto', duration: 0.3 }, 2.0)
+  .to('#hero-line-3', { opacity: 0, y: -30, pointerEvents: 'none', duration: 0.3 }, 2.9)
+  .to('#hero-line-4', { opacity: 1, y: 0, pointerEvents: 'auto', duration: 0.3 }, 3.0);
 
 /* ---------- Scroll reveal for generic sections ---------- */
 gsap.utils.toArray('.stat-card, .tilt-card, .income-card').forEach((el, i) => {
