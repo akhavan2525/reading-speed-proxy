@@ -27,9 +27,29 @@ ScrollTrigger.create({
 /* ---------- Hero scroll-scrubbed video ---------- */
 const heroVideo = document.getElementById('hero-video');
 
+/* Scrubbing a <video> by setting currentTime on every scroll tick queues up a
+   seek per tick; if a seek is still resolving when the next one arrives, they
+   pile up and playback stutters/lags behind the scroll. Instead we just record
+   the latest target time on scroll and let a rAF loop apply it, skipping while
+   a seek is already in flight so at most one seek is ever pending. */
+let heroTargetTime = 0;
+let heroIsSeeking = false;
+
+heroVideo.addEventListener('seeking', () => { heroIsSeeking = true; });
+heroVideo.addEventListener('seeked', () => { heroIsSeeking = false; });
+
+function applyHeroVideoTime() {
+  const duration = heroVideo.duration;
+  if (duration && !heroIsSeeking && Math.abs(heroVideo.currentTime - heroTargetTime) > 0.008) {
+    heroVideo.currentTime = heroTargetTime;
+  }
+  requestAnimationFrame(applyHeroVideoTime);
+}
+requestAnimationFrame(applyHeroVideoTime);
+
 /* Pin the hero immediately so the layout/scroll-jack is stable even if the
    video is slow to load or fails; the actual frame-scrubbing only kicks in
-   once duration is known (guarded inside onUpdate). */
+   once duration is known (guarded above). */
 ScrollTrigger.create({
   trigger: '#hero',
   start: 'top top',
@@ -39,7 +59,7 @@ ScrollTrigger.create({
   onUpdate: (self) => {
     const duration = heroVideo.duration || 0;
     if (!duration || Number.isNaN(duration)) return;
-    heroVideo.currentTime = self.progress * duration;
+    heroTargetTime = self.progress * duration;
   },
 });
 
