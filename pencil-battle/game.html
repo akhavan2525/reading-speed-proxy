@@ -420,6 +420,11 @@ const CHARS=[
   {id:'pahlevan',name:'پهلوون',style:'زورخانه‌ای',lock:1},
   {id:'grandma',name:'ننه‌جون',style:'دمپایی!',lock:1}];
 const PLAYABLE=CHARS.filter(c=>!c.lock);
+const BOSSLOOK=[
+  {id:'b1',special:'cartrush',sname:'حمله‌ی چرخ‌دستی!',look:{eyes:1,belly:1,apron:'#f4f2ec',cart:1},face:'chars/boss1-face.png'},
+  {id:'b2',special:'splash',sname:'قهوه‌ی داغ!',sc:1.08,look:{eyes:1,thin:1,apron:'#f4f2ec',apronLong:1,pot:1},face:'chars/boss2-face.png'},
+  {id:'b3',special:'sspin',sname:'خشم استاد!',look:{eyes:1,beard:1,robe:'#f4f2ec'},face:'chars/boss3-face.png'}];
+for(const b of BOSSLOOK){const im=new Image();im.src=b.face;b.faceImg=im}
 function place(s,theme,name,X,L){const m=MODS[theme][name];s.ox=X-m.a;m.f(s,L);s.ox=0;return X+(m.b-m.a)}
 function structure(s,theme,x0,x1){const L=mulberry32(77);s.ox=0;
   s.line(x0-500,FL,x1+500,FL,1.6,.9,3);s.line(x0-500,CEIL,x1+500,CEIL,1.4,.8,2);s.line(x0-500,CEIL-16,x1+500,CEIL-16,.8,.45,1);
@@ -727,6 +732,12 @@ const MOVES={
   spheel:{aura:1,seq:[['spinA',60,0,40,0,{fx:'ring'}],['sh2',60,0,45,1,{fx:'ring'}],['sh3',150,40,60,1],['spinA',60,0,35,1],['spinA',40,0,35],['dk7',110,0,30,0,{fx:'land'}],['stance',130,0,20]],hits:[{t0:110,t1:270,limb:'f1',dmg:17,kb:620,kind:'knock',r:15,cine:1}]},
   aslam:{air:1,aura:1,launch:[780,200],rotc:[0,370,0,-360],seq:[['as1',130,0,35],['as2',130,0,35],['as3',90,0,45],['as4',9e9,0,60,0,{vy:-1300}]],hits:[{t0:350,t1:9e9,limb:'f1',dmg:14,kb:260,kind:'knock',r:15,cine:1}],slam:1},
   landK:{seq:[['dk7',150,0,30],['stance',120,0,20]],hits:[]},
+  // Supermarket giant: charge with the shopping cart
+  cartrush:{aura:1,seq:[['dk1',140,0,30],['dash',300,680,40,0,{fx:'dash'}],['cross',170,160,40],['stance',220,0]],
+    hits:[{t0:140,t1:470,limb:'h1',dmg:20,kb:620,kind:'knock',r:34,cine:1}]},
+  // Cafe giant: fling hot coffee from the pot
+  splash:{aura:1,seq:[['cross0',160,0,30],['cross',280,0,40,0,{fx:'splash'}],['stance',220,0]],
+    hits:[{t0:160,t1:420,limb:'h1',dmg:16,kb:320,kind:'heavy',r:62,cine:1}]},
   // Boxer: dash in, one-two, rising uppercut
   bupc:{aura:1,seq:[['dash',140,520],['jab',70,120],['cross',70,120],['upc0',90,0],['upc',190,60],['stance',200,0]],
     hits:[{t0:140,t1:200,limb:'h1',dmg:5,kb:60,kind:'light'},{t0:210,t1:270,limb:'h2',dmg:6,kb:60,kind:'light'},{t0:360,t1:540,limb:'h2',dmg:18,kb:220,kind:'launch',r:16,cine:1}]},
@@ -938,6 +949,7 @@ class Fighter{
     if(si!==m.si){m.si=si;if(ev){if(ev.vy!=null){this.vy=ev.vy;if(ev.vy>0)this.y=Math.max(this.y,.5)}
       if(ev.fx==='land'){crack(this.x,.55);AU.land();shake(4)}
       if(ev.fx==='slam')slamImpact(this);
+      if(ev.fx==='splash'){const h=this.sk.h1;for(let k=0;k<28;k++)fx.push({k:'ink',x:h[0]+this.face*10,y:h[1],vx:this.face*(260+Math.random()*480),vy:(Math.random()-.15)*320,t:0,life:.45+Math.random()*.35,col:Math.random()<.55?'#6b3d1f':'#e9e3d6',len:5+Math.random()*8});AU.whoosh(true)}
       if(ev.fx==='throw')throwKnife(this,ev.i);
       if(ev.fx==='catch')AU.whoosh(false,true);
       if(ev.fx==='crash'){const tp=this.trailPt('w');setTimeout(()=>{crack(tp[0]+this.face*30,1.1);fx.push({k:'wave',x:tp[0]+this.face*30,y:0,t:0,life:.4,col:this.aura});shake(9);AU.ko()},90)}}}
@@ -1182,7 +1194,7 @@ const game={phase:'fight',mode:'demo',theme:'shop',rt:0,hitstop:0,shake:0,superT
 const cam={x:0,z:1};
 const STORY=[
   {theme:'shop',weapon:'none',name:'سوپرمارکت',len:3500,waves:[{x:750,n:2},{x:1500,n:3},{x:2300,n:4}],boss:{x:3050,hp:240,weapon:'none',name:'غولِ سوپرمارکت'},ehp:40,edmg:.6,ai:'g1',wch:0,maxEng:2,loot:['nun'],crates:[[480,1],[1150,0],[1250,1],[1900,1],[2700,0],[2780,1]]},
-  {theme:'cafe',weapon:'nun',name:'کافه',len:3700,waves:[{x:750,n:3},{x:1550,n:3},{x:2400,n:4}],boss:{x:3250,hp:300,weapon:'nun',name:'غولِ کافه'},ehp:50,edmg:.7,ai:'g2',wch:.35,maxEng:2,loot:['sword'],crates:[[450,1],[1150,1],[1950,0],[2050,1],[2850,1]]},
+  {theme:'cafe',weapon:'nun',name:'کافه',len:3700,waves:[{x:750,n:3},{x:1550,n:3},{x:2400,n:4}],boss:{x:3250,hp:300,weapon:'none',name:'غولِ کافه'},ehp:50,edmg:.7,ai:'g2',wch:.35,maxEng:2,loot:['sword'],crates:[[450,1],[1150,1],[1950,0],[2050,1],[2850,1]]},
   {theme:'dojo',weapon:'staff',name:'باشگاه رزمی',len:3900,waves:[{x:750,n:3},{x:1600,n:4},{x:2500,n:4}],boss:{x:3450,hp:360,weapon:'staff',name:'استادِ غول'},ehp:60,edmg:.8,ai:'g3',wch:.45,maxEng:3,loot:['nun','sword'],crates:[[460,1],[1200,0],[1300,1],[2050,1],[2950,1],[3050,0]]},
   {theme:'temple',weapon:'sword',name:'معبد سامورایی',len:4100,waves:[{x:760,n:3},{x:1650,n:4},{x:2600,n:4}],boss:{x:3600,hp:420,weapon:'sword',name:'سردارِ شمشیر'},ehp:68,edmg:.85,ai:'g3',wch:.5,maxEng:3,crates:[[470,1],[1250,1],[1350,0],[2150,1],[3050,1],[3150,0]]},
   {theme:'alley',weapon:'dagger',name:'کوچه‌ی شبانه',len:4200,waves:[{x:760,n:4},{x:1700,n:4},{x:2650,n:5}],boss:{x:3700,hp:460,weapon:'dagger',name:'غولِ کوچه'},ehp:72,edmg:.9,ai:'g3',wch:.55,maxEng:3,crates:[[480,1],[1300,1],[1400,0],[2200,1],[3100,1],[3200,0]]},
@@ -1212,7 +1224,7 @@ function startStory(i,keepMeter){const st=STORY[i];game.mode='story';story.stage
   cam.x=150;game.phase='intro';game.introT=0;say('مرحله‌ی '+fa(i+1)+' · '+st.name,1.6,1);
   if(st.weapon==='nun')queueMsg('نانچیکو گرفتی!',1.3,.8,'#cf241d');if(st.weapon==='staff')queueMsg('چوب رزمی گرفتی!',1.3,.8,'#cf241d');if(st.weapon==='sword')queueMsg('کاتانا گرفتی!',1.3,.8,'#cf241d');if(st.weapon==='dagger')queueMsg('دو خنجر گرفتی!',1.3,.8,'#cf241d');queueMsg('برو جلو →',1,.7);VO.say('st'+(i+1),{pri:1,delay:i===0&&!keepMeter?3.1:1})}
 function spawnEnemy(st,side,boss){const L=story.lock,x=boss?Math.min(L[1]-80,P1.x+430):side>0?L[1]+70:L[0]-70;
-  const e=boss?new Fighter({team:1,c:COLORS.boss,weapon:st.boss.weapon,hp:st.boss.hp,sc:1.62,boss:true,dmg:1.5*LV[game.diff].dmg,kbRes:.45,spd:.85,name:st.boss.name,x,face:-side,aura:'#ff6a1e'})
+  const e=boss?new Fighter({team:1,c:COLORS.boss,ch:BOSSLOOK[story.stage],weapon:st.boss.weapon,hp:st.boss.hp,sc:1.62,boss:true,dmg:1.5*LV[game.diff].dmg,kbRes:.45,spd:.85,name:st.boss.name,x,face:-side,aura:'#ff6a1e'})
     :new Fighter({team:1,c:[COLORS.red,COLORS.red2,COLORS.red3][Math.random()*3|0],weapon:Math.random()<st.wch?st.weapon:'none',hp:st.ehp,dmg:st.edmg*LV[game.diff].dmg,x,face:-side,spd:.9+Math.random()*.2});
   e.ai=new AI(e,boss?'boss':st.ai);e.inp=mkInput();fighters.push(e);ctrl.push(e.ai);if(boss){story.boss=e;startBossCine(e)}else VO.say('e-spawn',{pri:0,cd:16,chance:.5});return e}
 function storyUpdate(dt){const st=STORY[story.stage];story.arrowT=Math.max(0,story.arrowT-dt);
@@ -1319,7 +1331,7 @@ function drawProjs(){for(const p of projs){ctx.save();ctx.translate(p.x,p.y);ctx
   ctx.globalAlpha=.3;ctx.strokeStyle='#c8231d';ctx.lineWidth=1.6;ctx.beginPath();ctx.arc(0,0,15,0,TAU*.7);ctx.stroke();ctx.globalAlpha=1;
   ctx.translate(-9,0);spr('dag1',[0,0],[38,0],12,-p.dir);ctx.restore()}}
 function drawFighter(f){
-  const s=f.sk,c=f.c,sc=f.sc,fl=f.flash>0,fc=fl?c.flash:c.front,rc=fl?c.flash:c.rear,bs=f.boss,Wd=9.5*sc*(bs?1.3:1),two=f.weapon==='staff'||f.weapon==='sword',dff=f.dff;
+  const s=f.sk,c=f.c,sc=f.sc,fl=f.flash>0,fc=fl?c.flash:c.front,rc=fl?c.flash:c.rear,bs=f.boss,Wd=9.5*sc*(bs&&!(f.ch&&f.ch.look&&f.ch.look.thin)?1.3:1),two=f.weapon==='staff'||f.weapon==='sword',dff=f.dff;
   ctx.save();ctx.globalAlpha=f.alpha;ctx.lineCap='round';ctx.lineJoin='round';
   const shd=Math.max(.25,1-f.y/260);ctx.fillStyle='rgba(30,25,20,.16)';ctx.beginPath();ctx.ellipse(s.hip[0],0,38*shd*sc,5*shd*sc,0,0,TAU);ctx.fill();
   const hl=(pts,w)=>{ctx.save();ctx.translate(-1.3,1.3);strokePoly(pts,w*.28,'rgba(255,255,255,.16)');ctx.restore()};
@@ -1336,8 +1348,8 @@ function drawFighter(f){
     for(let i=0;i<7;i++){const q=js[Math.random()*js.length|0],a=Math.random()*TAU,l=(10+Math.random()*16)*sc,r0=12*sc;ctx.beginPath();ctx.moveTo(q[0]+Math.cos(a)*r0,q[1]+Math.sin(a)*r0);ctx.lineTo(q[0]+Math.cos(a+.3)*(r0+l*.5),q[1]+Math.sin(a+.3)*(r0+l*.5));ctx.lineTo(q[0]+Math.cos(a)*(r0+l),q[1]+Math.sin(a)*(r0+l));ctx.stroke()}ctx.globalAlpha=f.alpha}
   if(f.weapon==='sword')drawScabbard(f);
   const sw=f.disp.sw;leg(sw?L1:L2,rc);if(!two){arm(A2,rc);fist(s.h2,rc);if(f.weapon==='dagger')drawKnife(f,1)}
-  if(lk.suit){cloth(T,Wd*1.3,lk.suit);strokePoly(T,Wd*.2,INK)}else strokePoly(T,Wd*(bs?1.9:1.08),fc);hl(T,Wd);if(lk.belt)drawBelt(f,lk.belt);
-  if(bs){const ux=s.chest[0]-s.hip[0],uy=s.chest[1]-s.hip[1],ul=Math.hypot(ux,uy)||1,u=[ux/ul,uy/ul],pp=[u[1],-u[0]],q=(o,a,b)=>[o[0]+pp[0]*a*sc+u[0]*b*sc,o[1]+pp[1]*a*sc+u[1]*b*sc];
+  if(lk.suit){cloth(T,Wd*1.3,lk.suit);strokePoly(T,Wd*.2,INK)}else strokePoly(T,Wd*(bs?1.9:1.08),fc);hl(T,Wd);if(lk.belt)drawBelt(f,lk.belt);if(lk.belly){const q=torsoFrame(f),c=q(lerp2(s.hip,s.chest,.42),f.dff*7,0);ctx.fillStyle=fc;ctx.beginPath();ctx.ellipse(c[0],c[1],22*sc,26*sc,0,0,TAU);ctx.fill()}
+  if(bs&&!lk.eyes){const ux=s.chest[0]-s.hip[0],uy=s.chest[1]-s.hip[1],ul=Math.hypot(ux,uy)||1,u=[ux/ul,uy/ul],pp=[u[1],-u[0]],q=(o,a,b)=>[o[0]+pp[0]*a*sc+u[0]*b*sc,o[1]+pp[1]*a*sc+u[1]*b*sc];
     const poly=[q(s.hip,-9,0),q(s.hip,9,0),q(s.chest,20,3),q(s.chest,-20,3)];ctx.fillStyle=fc;ctx.beginPath();poly.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();ctx.fill();
     ctx.strokeStyle='rgba(30,4,3,.55)';ctx.lineWidth=1.7*sc;ctx.beginPath();const m1=q(s.chest,0,-4),m2=q(s.hip,0,10);ctx.moveTo(m1[0],m1[1]);ctx.lineTo(m2[0],m2[1]);
     for(const k of[.45,.7]){const a=lerp2(s.hip,s.chest,k);const l=q(a,-8,0),r=q(a,8,0);ctx.moveTo(l[0],l[1]);ctx.lineTo(m1[0]*.0+a[0],a[1]);ctx.lineTo(r[0],r[1])}ctx.stroke();
@@ -1345,21 +1357,22 @@ function drawFighter(f){
   ctx.fillStyle=fc;ctx.beginPath();ctx.arc(s.head[0],s.head[1],SEG.HR*sc*(bs?1.08:1),0,TAU);ctx.fill();
   ctx.strokeStyle='rgba(255,255,255,.18)';ctx.lineWidth=2.2*sc;ctx.beginPath();ctx.arc(s.head[0],s.head[1],(SEG.HR-4)*sc,Math.PI*.55,Math.PI*.95);ctx.stroke();
   if(f.ch)drawHeadGear(f,fc);
-  if(bs){const hx=s.head[0]-s.neck[0],hy=s.head[1]-s.neck[1],hl_=Math.hypot(hx,hy)||1,hu=[hx/hl_,hy/hl_],hf=[hu[1]*dff,-hu[0]*dff],H=(a,b)=>[s.head[0]+hu[0]*a*sc+hf[0]*b*sc,s.head[1]+hu[1]*a*sc+hf[1]*b*sc];
+  if(bs&&!lk.eyes){const hx=s.head[0]-s.neck[0],hy=s.head[1]-s.neck[1],hl_=Math.hypot(hx,hy)||1,hu=[hx/hl_,hy/hl_],hf=[hu[1]*dff,-hu[0]*dff],H=(a,b)=>[s.head[0]+hu[0]*a*sc+hf[0]*b*sc,s.head[1]+hu[1]*a*sc+hf[1]*b*sc];
     const horn=(p0,p1,tip)=>{ctx.fillStyle='#1b0807';ctx.beginPath();ctx.moveTo(p0[0],p0[1]);ctx.quadraticCurveTo((p0[0]+tip[0])/2+hu[0]*3*sc,(p0[1]+tip[1])/2+hu[1]*3*sc,tip[0],tip[1]);ctx.lineTo(p1[0],p1[1]);ctx.closePath();ctx.fill()};
     horn(H(9,-10),H(12,-3),H(30,-12));horn(H(10,3),H(12,10),H(29,16));
     strokePoly([H(-5,2),H(-5.5,13)],2.6*sc,'#1b0807');ctx.strokeStyle='#f3efe6';ctx.lineWidth=1.3*sc;ctx.beginPath();for(let i=0;i<5;i++){const a=H(-5+(i%2?-3:0),2.5+i*2.2);ctx.lineTo(a[0],a[1])}ctx.stroke();
     strokePoly([H(8.5,0),H(6,11)],3.2*sc,'#1b0807');const e=H(4.2,6.4);ctx.fillStyle='#ffe27a';ctx.beginPath();ctx.arc(e[0],e[1],2.8*sc,0,TAU);ctx.fill();ctx.fillStyle='#1b0807';ctx.beginPath();ctx.arc(e[0]+hf[0]*1,e[1]+hf[1]*1,1.2*sc,0,TAU);ctx.fill()}
   const LF=sw?L2:L1;leg(LF,fc);if(!lk.pants)hl(LF,Wd);
   if(lk.shorts)for(const L of[L2,L1])cloth([L[0],lerp2(L[0],L[1],.78)],Wd*1.9,shade(lk.shorts,L===(sw?L1:L2)));
-  if(lk.skirt)drawSkirt(f,lk.skirt);if(lk.cuffs)for(const L of[L1,L2])strokePoly([lerp2(L[1],L[2],.72),lerp2(L[1],L[2],.93)],Wd*1.35,lk.cuffs);
+  if(lk.skirt)drawSkirt(f,lk.skirt);if(lk.apron)drawApron(f,lk);if(lk.robe)drawRobe(f,lk.robe);if(lk.cuffs)for(const L of[L1,L2])strokePoly([lerp2(L[1],L[2],.72),lerp2(L[1],L[2],.93)],Wd*1.35,lk.cuffs);
   if(f.weapon==='staff'){drawStaff(f);arm(A2,rc);fist(s.h2,rc)}
   if(f.weapon==='sword'){drawSword(f);arm(A2,rc);fist(s.h2,rc)}
   arm(A1,fc);hl(A1,Wd*.9);if(lk.cuffs)for(const A of[A1,A2])strokePoly([lerp2(A[1],A[2],.68),lerp2(A[1],A[2],.9)],Wd*1.3,lk.cuffs);fist(s.h1,fc);
   if(lk.pads)fillPts(padPts(f),lk.pads,1.4*sc);
   if(lk.glow&&f.weapon==='sword'){ctx.save();ctx.shadowColor=lk.glow;ctx.shadowBlur=14;strokePoly([lerp2(s.wbt,s.wt,.3),lerp2(s.wbt,s.wt,1.04)],3.4*sc,lk.glow);strokePoly([lerp2(s.wbt,s.wt,.3),lerp2(s.wbt,s.wt,1.02)],1.4*sc,'#eaffff');ctx.restore()}
-  if(bs){ctx.fillStyle='#2b0b09';ctx.strokeStyle='#0d0302';ctx.lineWidth=1.5*sc;const sh=s.sh;ctx.beginPath();ctx.arc(sh[0],sh[1],10.5*sc,0,TAU);ctx.fill();ctx.stroke();
+  if(bs&&!lk.eyes){ctx.fillStyle='#2b0b09';ctx.strokeStyle='#0d0302';ctx.lineWidth=1.5*sc;const sh=s.sh;ctx.beginPath();ctx.arc(sh[0],sh[1],10.5*sc,0,TAU);ctx.fill();ctx.stroke();
     ctx.beginPath();for(let k=0;k<4;k++){const a=-.2+k*.9+(dff<0?1.2:0),r0=9*sc,r1=17*sc;ctx.moveTo(sh[0]+Math.cos(a)*r0,sh[1]+Math.sin(a)*r0);ctx.lineTo(sh[0]+Math.cos(a+.18)*r1,sh[1]+Math.sin(a+.18)*r1);ctx.lineTo(sh[0]+Math.cos(a+.36)*r0,sh[1]+Math.sin(a+.36)*r0)}ctx.fill()}
+  if(lk.pot)drawPot(f);if(lk.cart&&(f.state==='stand'||(f.state==='move'&&f.move.name==='cartrush')))drawCart(f);
   if(f.weapon==='dagger')drawKnife(f,0);
   if(f.weapon==='nun')drawNun(f);
   ctx.restore()}
@@ -1380,6 +1393,7 @@ function drawHeadGear(f,fc){const lk=f.ch.look||{},sc=f.sc,H=headFrame(f),R=SEG.
     ctx.restore();ctx.strokeStyle=INK;ctx.lineWidth=1.3*sc;ctx.beginPath();ctx.arc(s.head[0],s.head[1],(R+1.2)*sc,0,TAU);ctx.stroke();strokePoly([H(2,-3),H(2,R+1)],1.6*sc,shadeHex(lk.guard,.7))}
   if(lk.helm){ctx.save();ctx.beginPath();ctx.arc(s.head[0],s.head[1],(R+1.5)*sc,0,TAU);ctx.clip();fillPts([H(-1,-R-3),H(-1,R+3),H(R+3,R+3),H(R+3,-R-3)],lk.helm);ctx.restore();
     ctx.strokeStyle=INK;ctx.lineWidth=1.3*sc;ctx.beginPath();ctx.arc(s.head[0],s.head[1],(R+1.2)*sc,0,TAU);ctx.stroke();strokePoly([H(1,-R),H(1,R)],3*sc,shadeHex(lk.helm,.65));strokePoly([H(1,5),H(-8,5)],3*sc,shadeHex(lk.helm,.65))}
+  if(lk.eyes){ctx.save();ctx.shadowColor='#ffd23a';ctx.shadowBlur=6*sc;ctx.fillStyle='#ffe14a';for(const b of[3,9]){const e=H(2,b);ctx.beginPath();ctx.arc(e[0],e[1],1.9*sc,0,TAU);ctx.fill()}ctx.restore()}
   if(lk.bun){ctx.fillStyle=fc;ctx.beginPath();const b=H(R+3,-3);ctx.arc(b[0],b[1],5*sc,0,TAU);ctx.fill()}
   if(lk.hood){const c=H(1,-2);ctx.fillStyle='#4a4a4a';ctx.strokeStyle=INK;ctx.lineWidth=1.6*sc;ctx.beginPath();ctx.arc(c[0],c[1],(R+3.5)*sc,0,TAU);ctx.fill();ctx.stroke();
     const o=H(-1,4);ctx.fillStyle=fc;ctx.beginPath();ctx.arc(o[0],o[1],(R-3.5)*sc,0,TAU);ctx.fill();
@@ -1392,6 +1406,17 @@ function drawGlove(f,p,rear){const lk=f.ch.look,sc=f.sc,col=rear?shadeHex(lk.glo
     ctx.lineTo(q[0]+Math.cos(a+1.6)*2*sc,q[1]+Math.sin(a+1.6)*2*sc);ctx.lineTo(q[0]+Math.cos(a-1.6)*2*sc,q[1]+Math.sin(a-1.6)*2*sc);ctx.closePath();ctx.fill();ctx.stroke()}}
   else{ctx.strokeStyle='rgba(255,255,255,.35)';ctx.lineWidth=2*sc;ctx.beginPath();ctx.arc(p[0],p[1],r*.55,Math.PI*.9,Math.PI*1.5);ctx.stroke()}}
 function torsoFrame(f){const s=f.sk,sc=f.sc,ux=s.chest[0]-s.hip[0],uy=s.chest[1]-s.hip[1],l=Math.hypot(ux,uy)||1,u=[ux/l,uy/l],pp=[u[1],-u[0]];return(o,a,b)=>[o[0]+pp[0]*a*sc+u[0]*b*sc,o[1]+pp[1]*a*sc+u[1]*b*sc]}
+function drawApron(f,lk){const s=f.sk,q=torsoFrame(f),d=f.dff,long=lk.apronLong?-46:-24,w=lk.belly?16:10;
+  fillPts([q(s.chest,d*2,-4),q(s.chest,d*12,-4),q(s.hip,d*(w+6),long),q(s.hip,d*-4,long),q(s.hip,d*-2,4)],lk.apron,1.2*f.sc);
+  strokePoly([q(s.chest,d*4,-3),q(s.neck,d*3,2)],2*f.sc,lk.apron)}
+function drawRobe(f,col){const s=f.sk,q=torsoFrame(f);fillPts([q(s.chest,-11,2),q(s.chest,11,2),q(s.hip,18,-48),q(s.hip,-6,-52),q(s.hip,-16,-46)],col,1.3*f.sc)}
+function drawPot(f){const h=f.sk.h1,sc=f.sc,d=f.dff,P_=(a,b)=>[h[0]+d*a*sc,h[1]+b*sc];
+  fillPts([P_(4,6),P_(16,6),P_(18,-10),P_(2,-10)],'#a7a7a7',1.3*sc);fillPts([P_(16,2),P_(25,8),P_(24,10),P_(17,-2)],'#a7a7a7',1.1*sc);
+  fillPts([P_(6,6),P_(14,6),P_(12,10),P_(8,10)],'#8a8a8a',1*sc);ctx.strokeStyle=INK;ctx.lineWidth=1.6*sc;ctx.beginPath();const a=P_(2,2),b=P_(-3,-3),c=P_(2,-8);ctx.moveTo(a[0],a[1]);ctx.quadraticCurveTo(b[0],b[1],c[0],c[1]);ctx.stroke()}
+function drawCart(f){const sc=f.sc,d=f.dff,x0=f.sk.h1[0]+d*4*sc,X=a=>x0+d*a*sc;ctx.strokeStyle='#8c8c8c';ctx.lineWidth=1.6*sc;ctx.lineCap='round';
+  const top=f.sk.h1[1]-2*sc,bot=14*sc;ctx.beginPath();ctx.moveTo(x0,top);ctx.lineTo(X(8),top);ctx.lineTo(X(52),top+4*sc);ctx.lineTo(X(46),bot+12*sc);ctx.lineTo(X(12),bot+12*sc);ctx.lineTo(X(8),top);ctx.stroke();
+  ctx.lineWidth=1*sc;ctx.beginPath();for(let i=1;i<5;i++){const t=i/5;ctx.moveTo(X(8+t*44*.9+t*4),top+t*4*sc);ctx.lineTo(X(12+t*34),bot+12*sc)}for(let j=1;j<3;j++){const y=top+(bot+12*sc-top)*j/3;ctx.moveTo(X(9+j*1.2),y);ctx.lineTo(X(51-j*2),y)}ctx.stroke();
+  ctx.lineWidth=1.4*sc;ctx.beginPath();ctx.moveTo(X(14),bot+12*sc);ctx.lineTo(X(14),5*sc);ctx.moveTo(X(44),bot+12*sc);ctx.lineTo(X(44),5*sc);ctx.stroke();ctx.fillStyle='#444';for(const a of[14,44]){ctx.beginPath();ctx.arc(X(a),4*sc,3.4*sc,0,TAU);ctx.fill()}}
 function drawSkirt(f,col){const s=f.sk,q=torsoFrame(f),j=[-14,-9,-4,0,5,9,14];
   const pts=[q(s.hip,-11,6),q(s.hip,11,6)];for(let i=j.length-1;i>=0;i--)pts.push(q(s.hip,j[i],i%2?-14:-24));fillPts(pts,col,1.3*f.sc)}
 function padPts(f){const s=f.sk,q=torsoFrame(f),c=s.chest;return[q(c,-13,-2),q(c,-15,6),q(c,-9,10),q(c,0,9),q(c,9,10),q(c,15,6),q(c,13,-2),q(c,0,2)]}
@@ -1525,7 +1550,9 @@ function render(){
   ctx.fillStyle=vign;ctx.fillRect(0,0,W,H);
   if(game.cine){const b=H*.1*Math.min(1,game.cine.t*3);ctx.fillStyle='#0d0b0a';ctx.fillRect(0,0,W,b);ctx.fillRect(0,H-b,W,b);
     ctx.font=`900 ${clamp(H*.04,16,28)}px Vazirmatn, Tahoma`;ctx.fillStyle='#ff4a32';ctx.textAlign='center';ctx.textBaseline='middle';ctx.direction='rtl';ctx.fillText(game.cine.name,W/2,b/2);
-    ctx.font=`700 ${clamp(H*.022,11,15)}px Vazirmatn, Tahoma`;ctx.fillStyle='rgba(243,239,230,.55)';ctx.fillText(isTouch?'برای رد شدن مشت بزن':'برای رد شدن J بزن',W/2,H-b/2)}
+    ctx.font=`700 ${clamp(H*.022,11,15)}px Vazirmatn, Tahoma`;ctx.fillStyle='rgba(243,239,230,.55)';ctx.fillText(isTouch?'برای رد شدن مشت بزن':'برای رد شدن J بزن',W/2,H-b/2)
+    const c=game.cine,fi=c.boss.ch&&c.boss.ch.faceImg,k=Math.min(1,(c.t-.45)*3);  // boss close-up art slides in during the taunt
+    if(fi&&fi.complete&&fi.naturalWidth&&c.focus===c.boss&&k>0){const h=H*.36,w=h*fi.naturalWidth/fi.naturalHeight;ctx.save();ctx.globalAlpha=k;ctx.drawImage(fi,W-w-10+(1-k)*80,b+6,w,h);ctx.restore()}}
   else if(game.fin){const b=H*.11;ctx.fillStyle='#0d0b0a';ctx.fillRect(0,0,W,b);ctx.fillRect(0,H-b,W,b);
     ctx.font=`900 ${clamp(H*.035,14,24)}px Vazirmatn, Tahoma`;ctx.fillStyle='#ff4a32';ctx.textAlign='center';ctx.textBaseline='middle';ctx.direction='rtl';ctx.fillText('— فینیشر —',W/2,b/2)}
   else{drawHUD(boil);drawFinPrompt();drawFinHint()}
