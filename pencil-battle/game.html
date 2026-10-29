@@ -452,7 +452,7 @@ const CHARS=[
   {id:'master',name:'استاد',style:'چوب رزمی',weapon:'staff',stats:[4,2,4],spd:.85,dmg:1.15,hp:115,kb:.85,special:'sspin',sname:'چرخش استاد!',look:{hat:1,beard:1}},
   {id:'boxer',name:'مشت‌زن',style:'بوکس',weapon:'none',stats:[5,3,3],spd:1,dmg:1.15,hp:105,special:'bupc',sname:'آپرکات طلایی!',look:{gloves:'#cf241d',guard:'#cf241d',shorts:'#cf241d'},img:'chars/c7.png'},
   {id:'gladiator',name:'گلادیاتور',style:'مشت‌های میخ‌دار',weapon:'none',stats:[5,2,4],spd:.85,dmg:1.2,hp:120,kb:.8,sc:1.1,special:'gslam',sname:'زمین‌لرزه!',look:{gloves:'#6e4f3c',spikes:1,helm:'#6e4f3c',skirt:'#6e4f3c',pads:'#6e4f3c'},img:'chars/c8.png'},
-  {id:'ninja',name:'آذرخش',style:'شمشیر نور',weapon:'sword',stats:[3,5,2],spd:1.2,dmg:.95,hp:90,special:'kthrust',sname:'ضربه‌ی آذرخش!',look:{band:'visor',bandCol:'#2f7fd6',cuffs:'#2f7fd6',glow:'#6fd3ff'},img:'chars/c9.png'},
+  {id:'ninja',name:'آذرخش',style:'نینجای شمشیر نور',weapon:'sword',stats:[3,5,2],spd:1.2,dmg:.95,hp:90,special:'ydash',sname:'یورش آذرخش!',stance:'yStance',moves:{p:'ksw',fp:'ymanji',bp:'ygas',cp:'ymed',k:'fs',fk:'ypoison',bk:'ytele',ck:'sw'},look:{band:'visor',bandCol:'#2f7fd6',cuffs:'#2f7fd6',glow:'#6fd3ff'},img:'chars/c9.png'},
   {id:'pahlevan',name:'پهلوون',style:'زورخانه‌ای، دو میل',weapon:'none',stats:[5,1,5],spd:.8,dmg:1.25,hp:125,kb:.75,sc:1.15,special:'mspin',sname:'چرخش میل!',moves:{p:'mswing',fp:'mswing',bp:'mswing',cp:'upc',k:'fs',fk:'sk',bk:'bk',ck:'sw'},look:{mustache:1,shorts:'#c0392b',shortsTrim:'#e8b53a',belt:'#c0392b',meel:1}},
   {id:'grandma',name:'ننه‌جون',style:'دمپایی و عصا',weapon:'none',stats:[3,2,4],spd:.9,dmg:1,hp:110,sc:.9,special:'slipth',sname:'دمپایی پرنده!',moves:{p:'slap',fp:'slap',bp:'slap',cp:'upc',k:'fs',fk:'sk',bk:'bk',ck:'sw'},look:{chador:'#fbf8f2',glasses:1,cane:1,slipper:'#2f7fd6'}}];
 const PLAYABLE=CHARS.filter(c=>!c.lock);
@@ -678,6 +678,8 @@ Object.assign(P,{nsp2:W_(P.nsp,{wb:780}),nj2:W_(P.nj1,{wb:530}),nj3:W_(P.nj1,{wb
   ds3:W_(P.ds2,{}),ssp2:W_(P.ssp,{wa:450}),cr2s:W_(P.cr2,{wa:230}),cr3s:W_(P.cr3,{wa:240}),cr4s:W_(P.cr4,{wa:200}),sj2:W_(P.sj1,{wa:200}),nsw0:W_(P.stN,{wb:-60})});
 // capoeira: two swaying ginga stances and the handstand windmill
 Object.assign(P,{
+  yStance:B({hy:55,t:4,h:-2,f1:[30,0],f2:[-32,0],h1:[28,8],h2:[-8,18],wa:150}),
+  ymed:B({hy:46,t:0,h:0,f1:[20,26],f2:[-6,24],h1:[16,-26],h2:[-4,-26],wa:200}),
   stG:B({hy:47,hx:-4,t:12,h:-6,f1:[36,0],f2:[-40,0],h1:[22,24],h2:[-18,2]}),
   stG2:B({hy:49,hx:6,t:6,h:-4,f1:[36,0],f2:[-40,0],h1:[-12,6],h2:[24,24]}),
   hs0:B({hy:36,t:50,h:-20,f1:[30,0],f2:[-34,0],h1:[30,-30],h2:[24,-34]}),
@@ -790,6 +792,14 @@ const MOVES={
   // Alley boss: whirl the chain overhead
   chainw:{aura:1,seq:[['spinA',90,0,40,0,{fx:'ring'}],['spinA',90,30,40,1,{fx:'ring'}],['spinA',90,30,40,0,{fx:'ring'}],['spinA',90,30,40,1,{fx:'ring'}],['cross',150,60,40],['stance',200,0]],
     hits:[{t0:60,t1:150,limb:'h2',dmg:5,kb:80,kind:'light',r:58},{t0:200,t1:290,limb:'h2',dmg:5,kb:80,kind:'light',r:58},{t0:400,t1:540,limb:'h2',dmg:14,kb:520,kind:'knock',r:62,cine:1}]},
+  // Azarakhsh (Yoshimitsu-style): manji spin, poison breath, meditation, poison wind, teleport, dashing thrust
+  ymanji:{seq:[['ks1',70,0,40],['ks2',70,140,50,0,{fx:'ring'}],['spinA',60,80,40,1,{fx:'ring'}],['ks2',70,140,50,0,{fx:'ring'}],['spinA',60,80,40,1,{fx:'ring'}],['ks3',120,80,50],['stance',160,0]],
+    hits:[{t0:70,t1:140,limb:'w',dmg:5,kb:40,kind:'light',r:20},{t0:200,t1:270,limb:'w',dmg:5,kb:40,kind:'light',r:20},{t0:330,t1:450,limb:'w',dmg:9,kb:360,kind:'heavy',r:20}],trail:'w'},
+  ygas:{seq:[['jab0',140,0,30],['jab',220,0,40,0,{fx:'gas'}],['stance',200,0]],hits:[{t0:140,t1:330,limb:'h1',dmg:4,kb:20,kind:'heavy',r:46,stun:.9}]},
+  ymed:{seq:[['ymed',160,0,20,0,{fx:'med'}],['ymed',160,0,20,0,{fx:'med'}],['ymed',160,0,20,0,{fx:'med'}],['ymed',160,0,20,0,{fx:'med'}],['ymed',160,0,20,0,{fx:'med'}],['stance',180,0]],hits:[]},
+  ypoison:{rotc:[90,640,0,-360],seq:[['au0',90,140,34],['au1',550,300,40],['stance',160,0,25]],hits:[{t0:180,t1:380,limb:'f1',dmg:8,kb:90,kind:'light',r:22},{t0:380,t1:600,limb:'f2',dmg:12,kb:420,kind:'launch',r:22,cine:1}],trail:'f1'},
+  ytele:{seq:[['crouch',110,0,30,0,{fx:'vanish'}],['crouch',170,0,30,0,{fx:'tele'}],['ks2',110,80,50],['ks3',140,0,50],['stance',160,0]],hits:[{t0:280,t1:460,limb:'w',dmg:14,kb:380,kind:'heavy',r:22,cine:1}],trail:'w'},
+  ydash:{aura:1,seq:[['kt1',100,0,30],['kt2',240,760,52,0,{fx:'dash'}],['kt2',80,80,40],['kt3',160,60,52],['stance',160,0]],hits:[{t0:100,t1:360,limb:'w',dmg:24,kb:620,kind:'knock',r:24,cine:1}],trail:'w'},
   // Pahlevan: club swing and twin club whirl
   mswing:{seq:[['hook0',100,0,30],['hook',130,90,45],['stance',190,0]],hits:[{t0:100,t1:230,limb:'h1',dmg:13,kb:340,kind:'heavy',r:26}],chain:{punch:'cross'},from:200},
   mspin:{aura:1,seq:[['ds2',100,40,40,0,{fx:'ring'}],['ds3',100,40,40,1,{fx:'ring'}],['ds2',100,40,40,0,{fx:'ring'}],['ds3',100,40,40,1,{fx:'ring'}],['ds4',160,160,50],['stance',200,0]],
@@ -952,7 +962,7 @@ class Fighter{
     this.inp=mkInput();this.meter=0;this.vel={};this.reset(o.x||0,o.face||1)}
   reset(x,face){Object.assign(this,{x,y:0,vx:0,vy:0,face,state:'stand',hp:this.maxHp,ghost:this.maxHp,move:null,stun:0,downT:0,inv:0,flash:0,ph:0,trail:[],ko:false,blocking:false,crouch:false,airAtk:false,juggles:0,bounced:false,hitPose:'hit',bt:Math.random()*9,locked:false,koT:0,gone:false,alpha:1,nc:null,df:face,dff:face,kOut:[false,false],curTarget:null});
     this.disp={...this.base()};for(const k of KEYS)this.vel[k]=0;this.sk=skel(this.disp,x,0,face,this.sc,this.weapon,true);this.updNun(0)}
-  base(){if(this.ch&&this.ch.ginga&&this.weapon==='none')return P.stG;const k={staff:'stS',nun:'stN',sword:'stK',dagger:'stD'}[this.weapon];return k?P[k]:P.stance}
+  base(){if(this.ch&&this.ch.ginga&&this.weapon==='none')return P.stG;if(this.ch&&this.ch.stance)return P[this.ch.stance];const k={staff:'stS',nun:'stN',sword:'stK',dagger:'stD'}[this.weapon];return k?P[k]:P.stance}
   poseOf(n){if(n==='stance')return this.base();if(n==='crouch'){const k={staff:'crS',sword:'crK',dagger:'crD'}[this.weapon];return k?P[k]:P.crouch}return P[n]}
   get airborne(){return this.y>0||this.vy>0}
   enemies(){return fighters.filter(o=>o.team!==this.team&&!o.gone)}
@@ -1023,6 +1033,10 @@ class Fighter{
     if(si!==m.si){m.si=si;if(ev){if(ev.vy!=null){this.vy=ev.vy;if(ev.vy>0)this.y=Math.max(this.y,.5)}
       if(ev.fx==='land'){crack(this.x,.55);AU.land();shake(4)}
       if(ev.fx==='slam')slamImpact(this);
+      if(ev.fx==='gas'){const h=this.sk.head;for(let k=0;k<16;k++)fx.push({k:'ink',x:h[0]+this.face*10,y:h[1]-6,vx:this.face*(90+Math.random()*220),vy:(Math.random()-.5)*120,t:0,life:.7+Math.random()*.4,col:Math.random()<.6?'#8fbf6a':'#b6d48f',len:7+Math.random()*7});dust(h[0]+this.face*40,h[1]-40,.5)}
+      if(ev.fx==='med'){if(this.hp>0){const a=Math.min(3,this.maxHp-this.hp);this.hp+=a;this.ghost=Math.max(this.ghost,this.hp)}fx.push({k:'ring',x:this.x,y:this.y+20,t:0,life:.4,col:'#7fe0ff',s:this.sc*.9});if(this===P1)buzz(8)}
+      if(ev.fx==='vanish'){this.alpha=.12;dust(this.x,0,1);for(let k=0;k<10;k++)fx.push({k:'ink',x:this.x,y:30+Math.random()*90,vx:(Math.random()-.5)*260,vy:Math.random()*200,t:0,life:.4,col:'#6fd3ff',len:5})}
+      if(ev.fx==='tele'){const op=this.nearest();if(op){const[lo,hi]=bounds(this);this.x=clamp(op.x-op.face*72,lo,hi);this.face=op.x>this.x?1:-1;this.dff=this.face;this.df=this.face}this.alpha=1;dust(this.x,0,1);AU.whoosh(true)}
       if(ev.fx==='slip'){const h=this.sk.h1;this.kOut[0]=true;projs.push({o:this,i:0,x:h[0],y:h[1],dir:this.face,state:'out',trav:0,t:0,rot:0,hitO:false,hitB:false,slip:1});AU.whoosh(true)}
       if(ev.fx==='erase'){const h=this.sk.h1;for(let k=0;k<22;k++)fx.push({k:'ink',x:h[0]+(Math.random()-.5)*50,y:4+Math.random()*16,vx:(Math.random()-.5)*360,vy:150+Math.random()*320,t:0,life:.5+Math.random()*.4,col:Math.random()<.7?'#f2a6b4':'#c97a8a',len:4+Math.random()*6});dust(h[0],0,.8);shake(5)}
       if(ev.fx==='wave'){fx.push({k:'wave',x:this.x+this.face*90,y:0,t:0,life:.5,col:'#e8462e'});for(let k=0;k<6;k++)fx.push({k:'streak',x:this.x+this.face*(40+k*30),y:6+Math.random()*30,len:60+Math.random()*60,dir:this.face,t:0,life:.3,col:k%2?'#e8462e':'#ffd23a'});shake(10)}
@@ -1102,6 +1116,7 @@ function tryHit(att,def,h,pts){
   for(const p of pts){let best=1e9;for(const[a,b,r]of segs){const d=distSeg(p,a,b)-r;if(d<best)best=d}if(best<=R){applyHit(att,def,h,p);return true}}
   return false}
 function applyHit(att,def,h,p){
+  if(def.alpha<1&&!def.ko&&def.koT===0)def.alpha=1;  // hit mid-teleport: become visible again
   const dir=Math.sign(def.x-att.x)||att.face,wpn=h.limb==='w';
   // finisher: victim held, last hit ends it
   if(def.locked&&!h.fin){def.hp=Math.max(1,def.hp-h.dmg*.5);def.flash=.12;def.hitPose=def.hitPose==='hit'?'hit2':'hit';spark(p,h.dmg>8?1:0,false,h.dmg>8);inkBurst(p,def.c.ink,6,dir);
@@ -1123,7 +1138,7 @@ function applyHit(att,def,h,p){
   const air=def.airborne||def.state==='juggle'||def.state==='air'||((h.kind==='launch'||h.kind==='knock')&&!(def.boss&&h.kind!=='knock'&&Math.random()<.6));
   if(def.hp<=0){def.hp=0;def.ko=true;def.state='juggle';def.vy=def.boss?420:560;def.vx=dir*Math.max(420,h.kb*1.3)*(def.boss?.6:1);def.bounced=false;def.y=Math.max(def.y,.5);koEvent(att,def)}
   else if(air&&!(def.boss&&h.kind==='light')){def.state='juggle';def.juggles++;def.vy=(h.kind==='launch'?640:h.kind==='knock'?(h.sup?520:330):Math.max(def.vy,320))*(def.boss?.55:1);def.vx=dir*kb;def.bounced=false;def.y=Math.max(def.y,.5)}
-  else{def.state='hit';def.stun=(heavy?.42:.27)*(def.boss?.6:1);def.vx=dir*kb;def.hitPose=Math.random()<.5?'hit':'hit2'}
+  else{def.state='hit';def.stun=(h.stun||(heavy?.42:.27))*(def.boss?.6:1);def.vx=dir*kb;def.hitPose=Math.random()<.5?'hit':'hit2'}
   spark(p,heavy||def.ko?1:0);inkBurst(p,def.c.ink,heavy?10:5,dir);
   game.hitstop=Math.max(game.hitstop,def.ko?.2:heavy?.11:.06);shake(def.ko?16:heavy?9:4);
   if(heavy||def.ko){speedLines(p,def.ko?.55:.28);pop(p)}
