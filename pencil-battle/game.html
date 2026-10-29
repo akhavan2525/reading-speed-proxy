@@ -1389,6 +1389,10 @@ function togglePause(){if((game.mode!=='battle'&&game.mode!=='story')||game.phas
 $('pbtn').onclick=togglePause;
 // background music: starts on the first tap/key (browsers block autoplay), follows the sound toggle
 const MUS={a:null,play(){if(AU.mute)return;try{if(!this.a){this.a=new Audio('music.mp3');this.a.loop=true;this.a.volume=.45}this.a.play().catch(()=>{})}catch(e){}},stop(){if(this.a)this.a.pause()}};
+// recorded sound clips (files in sfx/); music dips while one plays
+const SND={c:{},play(n,vol=1){if(AU.mute)return;try{let a=this.c[n];if(!a){a=this.c[n]=new Audio('sfx/'+n+'.mp3')}a.currentTime=0;a.volume=vol;a.play().catch(()=>{});
+  if(MUS.a){MUS.a.volume=.15;clearTimeout(this.t);this.t=setTimeout(()=>{if(MUS.a)MUS.a.volume=.45},2600)}}catch(e){}}};
+let finSaid=null;
 addEventListener('pointerdown',()=>MUS.play(),{once:true});addEventListener('keydown',()=>MUS.play(),{once:true});
 function setMute(m){AU.mute=m;$('mbtn').style.opacity=m?.4:1;$('sndBtn').textContent=m?'صدا: خاموش':'صدا: روشن';if(m)MUS.stop();else MUS.play()}
 $('mbtn').onclick=()=>setMute(!AU.mute);$('sndBtn').onclick=()=>{AU.init();setMute(!AU.mute)};
@@ -1397,7 +1401,8 @@ for(const b of document.querySelectorAll('#touch button')){const k=b.dataset.k;
   b.addEventListener('pointerdown',e=>{e.preventDefault();AU.init();try{b.setPointerCapture(e.pointerId)}catch(_){}b.classList.add('on');press(k,true)});
   const up=()=>{b.classList.remove('on');press(k,false)};b.addEventListener('pointerup',up);b.addEventListener('pointercancel',up);b.addEventListener('lostpointercapture',up)}
 let lastReady=null,lastFin=null;
-function updTouchUI(){const r=!!P1&&P1.meter>=BAR-.01&&game.mode!=='demo';if(r!==lastReady){lastReady=r;$('bS').classList.toggle('ready',r)}
+function updTouchUI(){const fv=finTarget();if(fv&&fv!==finSaid){finSaid=fv;SND.play('finish-him')}
+  const r=!!P1&&P1.meter>=BAR-.01&&game.mode!=='demo';if(r!==lastReady){lastReady=r;$('bS').classList.toggle('ready',r)}
   const v=finTarget(),f=!!v&&canFinish(P1,v);if(f!==lastFin){lastFin=f;$('bF').classList.toggle('ready',f)}}
 document.addEventListener('contextmenu',e=>e.preventDefault());
 
