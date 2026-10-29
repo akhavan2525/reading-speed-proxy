@@ -111,7 +111,9 @@ kbd{font-family:inherit;border:1.5px solid var(--ink);border-radius:5px;padding:
     <button class="hb big" id="start" style="left:13.28%;top:58.79%;width:73.43%;height:11.54%">شروع</button>
     <button class="hb sm" id="helpBtn" style="left:51.97%;top:72.85%;width:25.50%;height:6.34%">کنترل‌ها</button>
     <button class="hb sm" id="sndBtn" style="left:22.32%;top:72.85%;width:25.61%;height:6.34%">صدا: روشن</button>
+    <button id="shopBtn">🛒 فروشگاه</button>
     <a id="apkBtn" href="paper-fighters.apk" download style="display:none">📱 دانلود اپ اندروید</a>
+    <div id="menuCoins">🪙 ۰</div>
   </div>
 </div>
 
@@ -121,6 +123,14 @@ kbd{font-family:inherit;border:1.5px solid var(--ink);border-radius:5px;padding:
   <div id="selInfo" class="sinfo"></div>
   <div class="row"><button class="btn" id="selBack">برگشت</button><button class="btn big" id="selGo" style="margin:0">انتخاب</button></div>
 </div></div>
+<div id="shop" class="overlay hidden"><div class="card selc">
+  <div class="shead"><h1 style="font-size:24px;margin:0">فروشگاه</h1><div class="coins" id="shopCoins">🪙 ۰</div></div>
+  <div class="seg small" id="shopTabs" style="margin:8px 0 4px"><button data-v="hat" class="on">کلاه</button><button data-v="face">صورت</button><button data-v="weapon">سلاح عجیب</button></div>
+  <div id="shopGrid" class="sgrid"></div>
+  <div class="sinfo" id="shopInfo"></div>
+  <div class="row"><button class="btn" id="shopBack">برگشت</button><button class="btn big" id="shopAct" style="margin:0">خرید</button></div>
+</div></div>
+<div id="coinToast"></div>
 <div id="help" class="overlay hidden"><div class="card" style="text-align:right;transform:none">
   <h1 style="font-size:26px;text-align:center">کنترل‌ها</h1>
   <div style="font-size:13px;line-height:1.9;margin:8px 0 12px"><div><b>کیبورد:</b> <kbd>A</kbd><kbd>D</kbd> حرکت · <kbd>W</kbd> پرش · <kbd>S</kbd> خم · <kbd>J</kbd> مشت/سلاح · <kbd>K</kbd> لگد · <kbd>L</kbd> دفاع · <kbd>Space</kbd> ویژه · <kbd>F</kbd> فینیشر · <kbd>Esc</kbd> توقف</div>
@@ -456,6 +466,22 @@ const CHARS=[
   {id:'pahlevan',name:'پهلوون',style:'زورخانه‌ای، دو میل',weapon:'none',stats:[5,1,5],spd:.8,dmg:1.25,hp:125,kb:.75,sc:1.15,special:'mspin',sname:'چرخش میل!',moves:{p:'mswing',fp:'mswing',bp:'mswing',cp:'upc',k:'fs',fk:'sk',bk:'bk',ck:'sw'},look:{mustache:1,shorts:'#c0392b',shortsTrim:'#e8b53a',belt:'#c0392b',meel:1}},
   {id:'grandma',name:'ننه‌جون',style:'دمپایی و عصا',weapon:'none',stats:[3,2,4],spd:.9,dmg:1,hp:110,sc:.9,special:'slipth',sname:'دمپایی پرنده!',moves:{p:'slap',fp:'slap',bp:'slap',cp:'upc',k:'fs',fk:'sk',bk:'bk',ck:'sw'},look:{chador:'#fbf8f2',glasses:1,cane:1,slipper:'#2f7fd6'}}];
 const PLAYABLE=CHARS.filter(c=>!c.lock);
+// ===== shop: coins buy hats, face items and silly weapons (saved on this device) =====
+const SHOP=[
+  {id:'party',slot:'hat',name:'کلاه تولد',price:60},{id:'cap',slot:'hat',name:'کلاه کپ',price:80},{id:'cowboy',slot:'hat',name:'کلاه کابوی',price:120},
+  {id:'chef',slot:'hat',name:'کلاه آشپزی',price:150},{id:'viking',slot:'hat',name:'کلاه وایکینگ',price:220},{id:'crown',slot:'hat',name:'تاج پادشاهی',price:300},
+  {id:'mustache',slot:'face',name:'سبیل',price:50},{id:'sun',slot:'face',name:'عینک آفتابی',price:70},{id:'mask',slot:'face',name:'نقاب قهرمان',price:90},
+  {id:'broom',slot:'weapon',base:'staff',name:'جارو',price:120,word:'فیش!'},{id:'baguette',slot:'weapon',base:'staff',name:'نون باگت',price:140,word:'خِرت!'},
+  {id:'fish',slot:'weapon',base:'sword',name:'ماهی',price:160,word:'شالاپ!'},{id:'umbrella',slot:'weapon',base:'sword',name:'چتر',price:180,word:'تاپ!'},
+  {id:'pan',slot:'weapon',base:'sword',name:'ماهیتابه',price:200,word:'دَنگ!'},{id:'chicken',slot:'weapon',base:'sword',name:'مرغ پلاستیکی',price:250,word:'قُدقُد!'}];
+const SAVE={coins:0,owned:[],equip:{hat:null,face:null,weapon:null}};
+try{const d=JSON.parse(localStorage.getItem('pf-save')||'null');if(d){SAVE.coins=d.coins|0;SAVE.owned=Array.isArray(d.owned)?d.owned:[];Object.assign(SAVE.equip,d.equip||{})}}catch(e){}
+function saveGame(){try{localStorage.setItem('pf-save',JSON.stringify(SAVE))}catch(e){}updCoins()}
+function updCoins(){for(const id of['menuCoins','shopCoins']){const e=document.getElementById(id);if(e)e.textContent='🪙 '+fa(SAVE.coins)}}
+function addCoins(n){if(!n||game.mode==='demo')return 0;SAVE.coins+=n;saveGame();const t=document.getElementById('coinToast');if(t){t.textContent='+'+fa(n)+' سکه 🪙';t.classList.remove('show');void t.offsetWidth;t.classList.add('show')}return n}
+// what the player wears/holds; silly weapons reuse a real weapon's moves (battle mode only)
+function applyEquip(f,weapons){f.cos={hat:SAVE.equip.hat,face:SAVE.equip.face};const w=weapons&&SAVE.equip.weapon&&SHOP.find(i=>i.id===SAVE.equip.weapon);
+  if(w){f.wskin=w;if(f.ch&&f.ch.weapon!==w.base){const sp=f.ch.weapon==='none'?f.ch.special:(w.base==='sword'?'kspin':'sspin');f.ch={...f.ch,moves:null,stance:null,block:null,ginga:0,special:sp}}f.weapon=w.base;f.reset(f.x,f.face)}}
 const BOSSLOOK=[
   {id:'b1',special:'cartrush',sname:'حمله‌ی چرخ‌دستی!',look:{eyes:1,belly:1,apron:'#f4f2ec',cart:1},face:'chars/boss1-face.png'},
   {id:'b2',special:'splash',sname:'قهوه‌ی داغ!',sc:1.08,look:{eyes:1,thin:1,apron:'#f4f2ec',apronLong:1,pot:1},face:'chars/boss2-face.png'},
@@ -1130,7 +1156,7 @@ function applyHit(att,def,h,p){
   const canBlock=(def.state==='stand'||def.state==='bstun')&&def.blocking&&def.face===-dir&&(!h.low||def.crouch);
   let dmg=h.dmg*att.dmgMul;
   if(canBlock){if(def===P1||att===P1)buzz(12);def.hp=Math.max(1,def.hp-dmg*.12);def.state='bstun';def.stun=.16;def.vx=dir*h.kb*.55*def.kbRes;def.meter=Math.min(100,def.meter+3);spark(p,0,true);AU.block();if(wpn)AU.wood();game.hitstop=.04;return}
-  if(att===P1){const t=game.rt;P1.cmb=t-(P1.cmbT||-9)<1.1?(P1.cmb||0)+1:1;P1.cmbT=t;if(P1.cmb===5)VO.say('combo',{pri:0,cd:10})}
+  if(att===P1){const t=game.rt;P1.cmb=t-(P1.cmbT||-9)<1.1?(P1.cmb||0)+1:1;P1.cmbT=t;if(P1.cmb===5){VO.say('combo',{pri:0,cd:10});addCoins(3)}}
   if(def===P1)buzz(h.kind==='light'?30:60);else if(att===P1)buzz(h.kind==='light'?14:32);
   def.hp-=dmg;att.meter=Math.min(100,att.meter+dmg*1.7);def.meter=Math.min(100,def.meter+dmg*.9);
   def.flash=.13;def.move=null;def.blocking=false;
@@ -1145,10 +1171,10 @@ function applyHit(att,def,h,p){
   if(h.cine){game.slow=Math.max(game.slow,.32);game.zp=.22;game.flashT=.08;spark(p,1,false,true);speedLines(p,.45);shake(15);if(!heavy)pop(p)}
   if(wpn&&att.weapon==='sword'&&(h.cine||h.kind==='heavy')&&h.dmg>=8)bisect(def,att,p);
   if(wpn&&att.weapon==='dagger'&&(h.cine||h.kind==='heavy'))fx.push({k:'cuts',x:p[0],y:p[1],t:0,life:.32,seed:Math.random()*1e6|0});
-  AU.hit(heavy||h.cine);if(wpn&&!(att.weapon==='sword'&&def.split))AU.wood()}
-function bisect(def,att,p){const a=.62*(Math.random()<.5?1:-1);def.split={t0:game.rt,life:1.05,dir:[Math.cos(a),Math.sin(a)]};AU.shing();game.flashT=Math.max(game.flashT,.05)}
+  AU.hit(heavy||h.cine);if(wpn&&!(att.weapon==='sword'&&def.split))AU.wood();if(wpn&&att.wskin)fx.push({k:'word',x:p[0],y:p[1]+26,t:0,life:.6,txt:att.wskin.word,rot:(Math.random()-.5)*.3,col:att.c.ink})}
+function bisect(def,att,p){if(att.wskin)return;const a=.62*(Math.random()<.5?1:-1);def.split={t0:game.rt,life:1.05,dir:[Math.cos(a),Math.sin(a)]};AU.shing();game.flashT=Math.max(game.flashT,.05)}
 function canFinish(a,v){return !!v&&game.phase==='fight'&&!game.fin&&v.hp>0&&v.hp<=v.maxHp*.25&&(game.mode!=='story'||v.boss)&&!v.airborne&&!['down','ko','getup','juggle'].includes(v.state)&&Math.abs(v.x-a.x)<240*a.sc&&a.state==='stand'&&!a.airborne}
-function startFinisher(a,v){if(a===P1)speak('fin');const name='fin_'+a.weapon;a.startMove(name);v.locked=true;v.move=null;v.state='hit';v.blocking=false;v.vx=0;
+function startFinisher(a,v){if(a===P1){speak('fin');addCoins(10)}const name='fin_'+a.weapon;a.startMove(name);v.locked=true;v.move=null;v.state='hit';v.blocking=false;v.vx=0;
   game.fin={att:a,vic:v,dur:MOVES[name].seq.reduce((s,x)=>s+x[1],0)};game.hitstop=.3;game.superT=.5;AU.sup();say('فینیشر!',1.1,1.25,'#cf241d');shake(6)}
 function finishFallback(a){const f=game.fin;if(f&&f.att===a&&f.vic.locked){const v=f.vic;applyHit(a,v,{dmg:99,kb:950,kind:'knock',fin:1,cine:1},[v.x,v.y+90*v.sc])}}
 
@@ -1305,7 +1331,7 @@ function queueMsg(text,dur=1.1,big=1,col){game.msgs.push({text,t:0,dur,big,col})
 function setTheme(theme,mode,len,bossX){game.theme=theme;buildBG(theme,mode,len||0,bossX||0)}
 function startBattle(){game.mode='battle';const th=game.stageSel;setTheme(th,'battle');const c1=PLAYABLE[game.p1ch||0],c2=PLAYABLE[game.p2ch??1];
   P1=new Fighter({team:0,c:COLORS.black,ch:c1,weapon:c1.weapon,x:-170,face:1});P2=new Fighter({team:1,c:COLORS.red,ch:c2,weapon:c2.weapon,x:170,face:-1,dmg:LV[game.diff].dmg});
-  P1.inp=human;fighters=[P1,P2];P2.ai=new AI(P2,game.diff);ctrl=[P2.ai];game.wins=[0,0];game.round=1;props=battleProps(th);pickups=[];startRound()}
+  applyEquip(P1,true);P1.inp=human;fighters=[P1,P2];P2.ai=new AI(P2,game.diff);ctrl=[P2.ai];game.wins=[0,0];game.round=1;props=battleProps(th);pickups=[];startRound()}
 function startDemo(){game.mode='demo';const th=['shop','cafe','dojo','temple','alley','desk'][game.demoI++%6];setTheme(th,'battle');
   const c1=PLAYABLE[Math.random()*PLAYABLE.length|0],c2=PLAYABLE[Math.random()*PLAYABLE.length|0];
   P1=new Fighter({team:0,c:COLORS.black,ch:c1,weapon:c1.weapon,x:-170,face:1});P2=new Fighter({team:1,c:COLORS.red,ch:c2,weapon:c2.weapon,x:170,face:-1});
@@ -1315,7 +1341,7 @@ function startRound(){P1.reset(-170,1);P2.reset(170,-1);fx=[];speed=null;projs=[
   game.phase='intro';game.introT=0;say(game.round===3?'راند آخر':'راند '+fa(game.round),1.1);VO.say(game.round===3?'a-final':'a-r'+game.round,{pri:2})}
 function startStory(i,keepMeter){const st=STORY[i];game.mode='story';story.stage=i;story.len=st.len;story.waveIdx=0;story.lock=null;story.spawnQ=[];story.boss=null;story.result=null;story.arrowT=0;
   setTheme(st.theme,'story',st.len,st.boss.x);const m=P1&&keepMeter?P1.meter:0;
-  P1=new Fighter({team:0,c:COLORS.black,ch:{...CHARS[0],special:'special'},weapon:st.weapon,x:150,face:1});P1.inp=human;P1.meter=m;P2=null;fighters=[P1];ctrl=[];props=storyProps(st);pickups=[];projs=[];fx=[];speed=null;game.fin=null;game.slow=0;
+  P1=new Fighter({team:0,c:COLORS.black,ch:{...CHARS[0],special:'special'},weapon:st.weapon,x:150,face:1});applyEquip(P1,false);P1.inp=human;P1.meter=m;P2=null;fighters=[P1];ctrl=[];props=storyProps(st);pickups=[];projs=[];fx=[];speed=null;game.fin=null;game.slow=0;
   cam.x=150;game.phase='intro';game.introT=0;say('مرحله‌ی '+fa(i+1)+' · '+st.name,1.6,1);
   if(st.weapon==='nun')queueMsg('نانچیکو گرفتی!',1.3,.8,'#cf241d');if(st.weapon==='staff')queueMsg('چوب رزمی گرفتی!',1.3,.8,'#cf241d');if(st.weapon==='sword')queueMsg('کاتانا گرفتی!',1.3,.8,'#cf241d');if(st.weapon==='dagger')queueMsg('دو خنجر گرفتی!',1.3,.8,'#cf241d');queueMsg('برو جلو →',1,.7);VO.say('st'+(i+1),{pri:1,delay:i===0&&!keepMeter?3.1:1})}
 function spawnEnemy(st,side,boss){const L=story.lock,x=boss?Math.min(L[1]-80,P1.x+430):side>0?L[1]+70:L[0]-70;
@@ -1340,19 +1366,21 @@ function koEvent(att,def,byFin){if(def===P1||att===P1)buzz([90,50,140]);
   if(game.mode==='story'){
     if(def===P1){if(game.phase!=='fight')return;game.phase='roundEnd';game.endT=0;game.slow=1.2;AU.ko();say('ناک‌اوت!',2,1.3,'#cf241d');story.result='lose';VO.say('lose',{pri:2,delay:.6});return}
     if(def.boss){speak('boss');game.phase='roundEnd';game.endT=0;game.slow=1.6;game.winner=P1;AU.ko();say(byFin?'نابود شد!':'غول افتاد!',2.2,1.3,'#cf241d');story.result='win';return}
-    story.kills++;VO.say('e-ko',{pri:0,cd:14,chance:.4});const alive=fighters.filter(f=>f.team===1&&f!==def&&f.state!=='ko'&&!f.ko);if(!alive.length&&!story.spawnQ.length){game.slow=.5;AU.ko()}return}
+    story.kills++;if(att===P1)addCoins(2);VO.say('e-ko',{pri:0,cd:14,chance:.4});const alive=fighters.filter(f=>f.team===1&&f!==def&&f.state!=='ko'&&!f.ko);if(!alive.length&&!story.spawnQ.length){game.slow=.5;AU.ko()}return}
   if(game.phase!=='fight')return;game.phase='roundEnd';game.winner=att;game.slow=byFin?1.8:1.4;game.endT=0;AU.ko();
   if(game.mode==='battle'){say(byFin?'نابود شد!':'ناک‌اوت!',2,1.3,'#cf241d');VO.say('a-ko',{pri:2});if(def===P1)VO.say('lose',{pri:2,delay:1.8})}}
 function timeUp(){game.phase='roundEnd';game.endT=0;game.slow=0;game.winner=P1.hp>P2.hp?P1:P2.hp>P1.hp?P2:null;say('وقت تمام!',1.8)}
 function endRound(){
   if(game.mode==='demo'){startDemo();return}
   if(game.mode==='story'){if(story.result==='lose'){showOver('باختی!','آدمک‌های قرمز این دفعه زورشون چربید. دوباره همین مرحله رو بازی کن.','دوباره همین مرحله',()=>startStory(story.stage),'#cf241d');return}
+    addCoins(25+10*story.stage);
     if(story.stage<STORY.length-1){startStory(story.stage+1,true);return}
+    addCoins(100);
     showOver('قهرمان شدی!','هر شش غول رو شکست دادی: سوپرمارکت، کافه، باشگاه، معبد، کوچه و میز تحریر. تعداد آدمک‌های زده‌شده: '+fa(story.kills),'از اول',()=>{story.kills=0;startStory(0)});return}
   
   if(game.winner===P1)game.wins[0]++;else if(game.winner===P2)game.wins[1]++;
-  if(game.wins[0]>=2||game.wins[1]>=2){const won=game.wins[0]>=2;
-    showOver(won?'بردی!':'باختی!',won?'آدمک قرمز رو با خاک یکسان کردی. حالا سخت‌ترش رو امتحان کن.':'قرمزه این دفعه زرنگ‌تر بود. یه دست دیگه؟','دوباره',startBattle,won?'':'#cf241d');return}
+  if(game.wins[0]>=2||game.wins[1]>=2){const won=game.wins[0]>=2,cn=addCoins(won?{easy:20,medium:35,hard:60}[game.diff]:5),ct=' جایزه: '+fa(cn)+' سکه 🪙';
+    showOver(won?'بردی!':'باختی!',(won?'آدمک قرمز رو با خاک یکسان کردی. حالا سخت‌ترش رو امتحان کن.':'قرمزه این دفعه زرنگ‌تر بود. یه دست دیگه؟')+ct,'دوباره',startBattle,won?'':'#cf241d');return}
   game.round++;startRound()}
 
 function update(rdt){
@@ -1441,7 +1469,7 @@ function drawFighter(f){
     for(const pts of[L1,L2,A1,A2,T])strokePoly(pts,Wd+11*sc,ac);ctx.fillStyle=ac;ctx.beginPath();ctx.arc(s.head[0],s.head[1],(SEG.HR+7)*sc,0,TAU);ctx.fill();ctx.restore();
     ctx.strokeStyle=ac;ctx.lineWidth=1.5;ctx.globalAlpha=.85*f.alpha;const js=[s.head,s.chest,s.hip,s.k1,s.k2,s.f1,s.f2,s.h1,s.h2,s.e1];
     for(let i=0;i<7;i++){const q=js[Math.random()*js.length|0],a=Math.random()*TAU,l=(10+Math.random()*16)*sc,r0=12*sc;ctx.beginPath();ctx.moveTo(q[0]+Math.cos(a)*r0,q[1]+Math.sin(a)*r0);ctx.lineTo(q[0]+Math.cos(a+.3)*(r0+l*.5),q[1]+Math.sin(a+.3)*(r0+l*.5));ctx.lineTo(q[0]+Math.cos(a)*(r0+l),q[1]+Math.sin(a)*(r0+l));ctx.stroke()}ctx.globalAlpha=f.alpha}
-  if(f.weapon==='sword')drawScabbard(f);
+  if(f.weapon==='sword'&&!f.wskin)drawScabbard(f);
   const sw=f.disp.sw;leg(sw?L1:L2,rc);if(!two){arm(A2,rc);fist(s.h2,rc);if(f.weapon==='dagger')drawKnife(f,1)}
   if(lk.suit){cloth(T,Wd*1.3,lk.suit);strokePoly(T,Wd*.2,INK)}else strokePoly(T,Wd*(bs?1.9:1.08),fc);hl(T,Wd);if(lk.belt)drawBelt(f,lk.belt);if(lk.tee)strokePoly([lerp2(s.hip,s.chest,.12),lerp2(s.hip,s.chest,.95)],Wd*.55,lk.tee);if(lk.trim)strokePoly([lerp2(s.hip,s.chest,.2),lerp2(s.hip,s.chest,.9)],Wd*.16,lk.trim);if(lk.eraser)drawEraserBody(f,lk);if(lk.belly){const q=torsoFrame(f),c=q(lerp2(s.hip,s.chest,.42),f.dff*7,0);ctx.fillStyle=fc;ctx.beginPath();ctx.ellipse(c[0],c[1],22*sc,26*sc,0,0,TAU);ctx.fill()}
   if(bs&&!lk.eyes){const ux=s.chest[0]-s.hip[0],uy=s.chest[1]-s.hip[1],ul=Math.hypot(ux,uy)||1,u=[ux/ul,uy/ul],pp=[u[1],-u[0]],q=(o,a,b)=>[o[0]+pp[0]*a*sc+u[0]*b*sc,o[1]+pp[1]*a*sc+u[1]*b*sc];
@@ -1451,7 +1479,7 @@ function drawFighter(f){
     const pc=lerp2(s.chest,s.hip,.12);ctx.beginPath();for(const sd of[-1,1]){const a=q(pc,sd*12,2);ctx.moveTo(a[0],a[1]);ctx.quadraticCurveTo(a[0]+u[0]*6*sc,a[1]+u[1]*6*sc,a[0]+pp[0]*sd*0,a[1]-u[1]*0)}ctx.stroke()}
   ctx.fillStyle=fc;ctx.beginPath();ctx.arc(s.head[0],s.head[1],SEG.HR*sc*(bs?1.08:1),0,TAU);ctx.fill();
   ctx.strokeStyle='rgba(255,255,255,.18)';ctx.lineWidth=2.2*sc;ctx.beginPath();ctx.arc(s.head[0],s.head[1],(SEG.HR-4)*sc,Math.PI*.55,Math.PI*.95);ctx.stroke();
-  if(f.ch)drawHeadGear(f,fc);
+  if(f.ch)drawHeadGear(f,fc);if(f.cos)drawCos(f);
   if(bs&&!lk.eyes){const hx=s.head[0]-s.neck[0],hy=s.head[1]-s.neck[1],hl_=Math.hypot(hx,hy)||1,hu=[hx/hl_,hy/hl_],hf=[hu[1]*dff,-hu[0]*dff],H=(a,b)=>[s.head[0]+hu[0]*a*sc+hf[0]*b*sc,s.head[1]+hu[1]*a*sc+hf[1]*b*sc];
     const horn=(p0,p1,tip)=>{ctx.fillStyle='#1b0807';ctx.beginPath();ctx.moveTo(p0[0],p0[1]);ctx.quadraticCurveTo((p0[0]+tip[0])/2+hu[0]*3*sc,(p0[1]+tip[1])/2+hu[1]*3*sc,tip[0],tip[1]);ctx.lineTo(p1[0],p1[1]);ctx.closePath();ctx.fill()};
     horn(H(9,-10),H(12,-3),H(30,-12));horn(H(10,3),H(12,10),H(29,16));
@@ -1460,8 +1488,8 @@ function drawFighter(f){
   const LF=sw?L2:L1;leg(LF,fc);if(!lk.pants)hl(LF,Wd);
   if(lk.shorts)for(const L of[L2,L1])cloth([L[0],lerp2(L[0],L[1],.78)],Wd*1.9,shade(lk.shorts,L===(sw?L1:L2)));
   if(lk.skirt)drawSkirt(f,lk.skirt);if(lk.chador)drawChadorBody(f,lk);if(lk.shortsTrim)for(const L of[L2,L1])strokePoly([lerp2(L[0],L[1],.62),lerp2(L[0],L[1],.78)],Wd*2,lk.shortsTrim);if(lk.tassets)drawTassets(f,lk);if(lk.sash)drawBelt(f,lk.sash);if(lk.apron)drawApron(f,lk);if(lk.robe)drawRobe(f,lk.robe);if(lk.cuffs)for(const L of[L1,L2])strokePoly([lerp2(L[1],L[2],.72),lerp2(L[1],L[2],.93)],Wd*1.35,lk.cuffs);
-  if(f.weapon==='staff'){drawStaff(f);arm(A2,rc);fist(s.h2,rc)}
-  if(f.weapon==='sword'){drawSword(f);arm(A2,rc);fist(s.h2,rc)}
+  if(f.weapon==='staff'){f.wskin?drawSkin(f):drawStaff(f);arm(A2,rc);fist(s.h2,rc)}
+  if(f.weapon==='sword'){f.wskin?drawSkin(f):drawSword(f);arm(A2,rc);fist(s.h2,rc)}
   arm(A1,fc);hl(A1,Wd*.9);if(lk.cuffs)for(const A of[A1,A2])strokePoly([lerp2(A[1],A[2],.68),lerp2(A[1],A[2],.9)],Wd*1.3,lk.cuffs);fist(s.h1,fc);
   if(lk.pads)fillPts(padPts(f),lk.pads,1.4*sc);if(lk.trim)fillPts(padPts(f),lk.suit,1.4*sc);if(lk.studs)drawStuds(f);
   if(lk.twin)drawTwin(f);if(lk.bat)drawBat(f);if(lk.meel){drawClub(f,s.h1,s.e1);drawClub(f,s.h2,s.e2)}if(lk.cane)drawCane(f);if(lk.slipper&&!f.kOut[0])drawSlipper(s.h1,Math.atan2(s.h1[1]-s.e1[1],s.h1[0]-s.e1[0]),f.sc);if(lk.chain)drawChain(f);
@@ -1553,6 +1581,25 @@ function padPts(f){const s=f.sk,q=torsoFrame(f),c=s.chest;return[q(c,-13,-2),q(c
 function drawBelt(f,col){const s=f.sk,sc=f.sc,ux=s.chest[0]-s.hip[0],uy=s.chest[1]-s.hip[1],l=Math.hypot(ux,uy)||1,u=[ux/l,uy/l],pp=[u[1],-u[0]],q=(o,a,b)=>[o[0]+pp[0]*a*sc+u[0]*b*sc,o[1]+pp[1]*a*sc+u[1]*b*sc];
   fillPts([q(s.hip,-7,2),q(s.hip,7,2),q(s.hip,7,7),q(s.hip,-7,7)],col,1.2*sc);const k=q(s.hip,-f.dff*5,4),w=Math.sin(game.rt*9)*2;
   strokePoly([k,q(s.hip,-f.dff*8+w,-8)],2.4*sc,col);strokePoly([k,q(s.hip,-f.dff*3+w,-10)],2.4*sc,col)}
+function drawSkin(f){const s=f.sk,sc=f.sc,a=s.wbt,b=lerp2(s.wbt,s.wt,1.04),dx=b[0]-a[0],dy=b[1]-a[1],L=Math.hypot(dx,dy)||1,u=[dx/L,dy/L],pp=[-u[1],u[0]],P_=(t,o)=>[a[0]+u[0]*t*L+pp[0]*o*sc,a[1]+u[1]*t*L+pp[1]*o*sc],id=f.wskin.id;
+  if(id==='pan'){strokePoly([P_(0,0),P_(.55,0)],5*sc,INK);strokePoly([P_(0,0),P_(.55,0)],3*sc,'#5a3a22');const c=P_(.77,0);ctx.fillStyle='#3d3d3d';ctx.strokeStyle=INK;ctx.lineWidth=1.6*sc;ctx.beginPath();ctx.ellipse(c[0],c[1],.22*L,15*sc,Math.atan2(u[1],u[0]),0,TAU);ctx.fill();ctx.stroke();ctx.strokeStyle='rgba(255,255,255,.3)';ctx.lineWidth=2*sc;ctx.beginPath();ctx.ellipse(c[0],c[1],.15*L,9*sc,Math.atan2(u[1],u[0]),3.6,4.6);ctx.stroke()}
+  else if(id==='umbrella'){strokePoly([P_(-.05,0),P_(1,0)],2.6*sc,INK);fillPts([P_(.28,-8),P_(.28,8),P_(1,0)],'#d8433a',1.3*sc);strokePoly([P_(.28,0),P_(.95,0)],1*sc,'rgba(0,0,0,.35)');ctx.strokeStyle=INK;ctx.lineWidth=2.6*sc;ctx.beginPath();const h=P_(-.05,4);ctx.arc(h[0],h[1],4*sc,0,Math.PI);ctx.stroke()}
+  else if(id==='fish'){const c=P_(.6,0);ctx.fillStyle='#8fb8d8';ctx.strokeStyle=INK;ctx.lineWidth=1.4*sc;ctx.beginPath();ctx.ellipse(c[0],c[1],.38*L,10*sc,Math.atan2(u[1],u[0]),0,TAU);ctx.fill();ctx.stroke();fillPts([P_(.18,0),P_(.02,-9),P_(.02,9)],'#8fb8d8',1.3*sc);const e=P_(.88,3);ctx.fillStyle=INK;ctx.beginPath();ctx.arc(e[0],e[1],1.8*sc,0,TAU);ctx.fill();strokePoly([P_(.5,-7),P_(.5,7)],.9*sc,'rgba(0,0,0,.35)')}
+  else if(id==='chicken'){strokePoly([P_(0,0),P_(.92,0)],10*sc,INK);strokePoly([P_(0,0),P_(.92,0)],7.5*sc,'#f4d23c');const hd=P_(.98,0);ctx.fillStyle='#f4d23c';ctx.strokeStyle=INK;ctx.lineWidth=1.3*sc;ctx.beginPath();ctx.arc(hd[0],hd[1],6*sc,0,TAU);ctx.fill();ctx.stroke();fillPts([P_(.98,5),P_(1.06,9),P_(1.02,3)],'#d8433a',1*sc);fillPts([P_(1.02,-3),P_(1.12,-1),P_(1.03,0)],'#e8932e',1*sc)}
+  else if(id==='baguette'){strokePoly([P_(0,0),P_(1,0)],9*sc,INK);strokePoly([P_(0,0),P_(1,0)],7*sc,'#d9a55a');for(const t of[.2,.38,.56,.74,.9])strokePoly([P_(t-.03,-3),P_(t+.03,3)],1.4*sc,'#8a5a2a')}
+  else if(id==='broom'){strokePoly([P_(0,0),P_(.74,0)],4*sc,INK);strokePoly([P_(0,0),P_(.74,0)],2.5*sc,'#8b5a2b');fillPts([P_(.74,-4),P_(.74,4),P_(1,11),P_(1,-11)],'#e2c46a',1.3*sc);for(const o of[-6,-2,2,6])strokePoly([P_(.78,o*.5),P_(1,o)],.8*sc,'rgba(0,0,0,.4)')}}
+function drawCos(f){const c=f.cos,sc=f.sc,H=headFrame(f),R=SEG.HR,s=f.sk;
+  if(c.face==='mustache'){const a=H(-3,R-1);ctx.fillStyle='#3b3b3b';ctx.strokeStyle=INK;ctx.lineWidth=.8*sc;ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.quadraticCurveTo(...H(1,R-8),...H(-6,R-11));ctx.quadraticCurveTo(...H(-6,R-4),...a);ctx.quadraticCurveTo(...H(-6,R+2),...H(-6,R+5));ctx.quadraticCurveTo(...H(1,R+2),...a);ctx.fill();ctx.stroke()}
+  if(c.face==='sun'){fillPts([H(5,1),H(5,R+2),H(1,R+1),H(0,1)],'#111');strokePoly([H(4.5,-R+1),H(4.5,2)],1.6*sc,'#111');strokePoly([H(4,R-3),H(2,R)],1.2*sc,'#e8b53a')}
+  if(c.face==='mask'){ctx.save();ctx.beginPath();ctx.arc(s.head[0],s.head[1],(R+.5)*sc,0,TAU);ctx.clip();fillPts([H(1,-R-2),H(1,R+2),H(8,R+2),H(8,-R-2)],'#d8433a');ctx.fillStyle=INK;for(const b of[R-7,R-1]){const e=H(4.5,b);ctx.beginPath();ctx.ellipse(e[0],e[1],2.2*sc,1.6*sc,0,0,TAU);ctx.fill()}ctx.restore();strokePoly([H(5,-R),H(1,-R-9)],2*sc,'#d8433a')}
+  const T=R-2;
+  if(c.hat==='party'){fillPts([H(T,-9),H(T,9),H(T+26,1)],'#e86fa0',1.3*sc);strokePoly([H(T+6,-6),H(T+9,6)],1.6*sc,'#fff');strokePoly([H(T+14,-4),H(T+16,4)],1.6*sc,'#fff');const t=H(T+27,1);ctx.fillStyle='#f4d23c';ctx.beginPath();ctx.arc(t[0],t[1],3.4*sc,0,TAU);ctx.fill()}
+  if(c.hat==='cap'){ctx.save();ctx.beginPath();ctx.arc(s.head[0],s.head[1],(R+1.5)*sc,0,TAU);ctx.clip();fillPts([H(3,-R-3),H(3,R+3),H(R+3,R+3),H(R+3,-R-3)],'#2f6db3');ctx.restore();fillPts([H(3,R-2),H(4,R+13),H(1,R+13),H(1,R-2)],'#2f6db3',1.2*sc)}
+  if(c.hat==='chef'){fillPts([H(T,-10),H(T,10),H(T+8,10),H(T+8,-10)],'#fbfbf8',1.2*sc);ctx.fillStyle='#fbfbf8';ctx.strokeStyle=INK;ctx.lineWidth=1.2*sc;for(const b of[-7,0,7]){const q=H(T+15,b);ctx.beginPath();ctx.arc(q[0],q[1],7*sc,0,TAU);ctx.fill();ctx.stroke()}fillPts([H(T+7,-9),H(T+7,9),H(T+13,9),H(T+13,-9)],'#fbfbf8')}
+  if(c.hat==='cowboy'){fillPts([H(T,-R-12),H(T+3,-R-10),H(T+3,R+10),H(T,R+12),H(T-2,0)],'#9a6a3a',1.3*sc);fillPts([H(T+2,-9),H(T+16,-7),H(T+13,0),H(T+16,7),H(T+2,9)],'#9a6a3a',1.3*sc);strokePoly([H(T+4,-9),H(T+4,9)],2*sc,'#5a3a22')}
+  if(c.hat==='viking'){ctx.save();ctx.beginPath();ctx.arc(s.head[0],s.head[1],(R+1.5)*sc,0,TAU);ctx.clip();fillPts([H(2,-R-3),H(2,R+3),H(R+3,R+3),H(R+3,-R-3)],'#9aa3ab');ctx.restore();strokePoly([H(2,-R),H(2,R)],2.4*sc,'#c9a23a');
+    for(const sd of[-1,1]){fillPts([H(T,sd*9),H(T+6,sd*(R+8)),H(T+18,sd*(R+6)),H(T+8,sd*(R+3)),H(T+3,sd*11)],'#f3efe6',1.2*sc)}}
+  if(c.hat==='crown'){fillPts([H(T,-10),H(T,10),H(T+14,11),H(T+7,5),H(T+14,0),H(T+7,-5),H(T+14,-11)],'#e8b53a',1.3*sc);ctx.fillStyle='#d8433a';const g=H(T+5,0);ctx.beginPath();ctx.arc(g[0],g[1],2.2*sc,0,TAU);ctx.fill()}}
 function drawFighterFx(f){const sp=f.split;if(!sp){drawFighter(f);return}
   const u=(game.rt-sp.t0)/sp.life;if(u>=1){f.split=null;drawFighter(f);return}
   const open=u<.14?u/.14:u<.58?1:1-(u-.58)/.42,sm=open*open*(3-2*open),d=sp.dir,n=[-d[1],d[0]],c=lerp2(f.sk.hip,f.sk.chest,.5),off=15*f.sc*sm,L=700;
@@ -1692,7 +1739,7 @@ let cineHid=false;
 // ================= UI wiring =================
 const $=id=>document.getElementById(id);
 const isTouch=matchMedia('(pointer:coarse)').matches||'ontouchstart' in window;
-function show(id){for(const o of['menu','pause','over','help','select'])$(o).classList.toggle('hidden',o!==id);const playing=!id&&(game.mode==='battle'||game.mode==='story');$('topbtns').style.display=playing?'flex':'none';$('touch').style.display=playing&&isTouch?'block':'none'}
+function show(id){for(const o of['menu','pause','over','help','select','shop'])$(o).classList.toggle('hidden',o!==id);const playing=!id&&(game.mode==='battle'||game.mode==='story');$('topbtns').style.display=playing?'flex':'none';$('touch').style.display=playing&&isTouch?'block':'none'}
 function showOver(t,s,btn,act,col){game.phase='over';$('overT').textContent=t;$('overT').style.color=col||'';$('overS').textContent=s;$('again').textContent=btn;game.overAct=act;show('over')}
 function seg(id,cb){$(id).addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;for(const x of $(id).children)x.classList.toggle('on',x===b);cb(b.dataset.v)})}
 seg('mode',v=>{game.modeSel=v;updStage()});
@@ -1710,8 +1757,8 @@ $('start').onclick=begin;
 // ===== character select (Tekken-style): pick yourself, then the opponent =====
 const sel={step:0,pick:[0,1],prev:[]};
 function cardPreview(cv,c){const g=cv.getContext('2d'),f=new Fighter({team:0,c:COLORS.black,ch:c,weapon:c.weapon,x:0,face:1});f.state='stand';cv._f=f}
-function drawPreviews(dt){for(const cv of sel.prev){const f=cv._f;if(!f)continue;f.bt+=dt;f.pose(dt);const g=cv.getContext('2d'),W_=cv.width,H_=cv.height,old=ctx;
-  g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,W_,H_);const z=H_/150;g.setTransform(z,0,0,-z,W_/2-8*z,H_-6);ctx=g;try{drawFighter(f)}catch(e){}ctx=old}}
+function drawPreviews(dt,list){for(const cv of list){const f=cv._f;if(!f)continue;f.bt+=dt;f.pose(dt);const g=cv.getContext('2d'),W_=cv.width,H_=cv.height,old=ctx;
+  g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,W_,H_);const z=cv._head?H_/88:H_/150;g.setTransform(z,0,0,-z,W_/2-(cv._head?2:8)*z,cv._head?H_*.42+124*z:H_-6);ctx=g;try{drawFighter(f)}catch(e){}ctx=old}}
 function openSelect(){sel.step=0;sel.pick=[game.p1ch||0,game.p2ch??1];renderSelect();show('select')}
 function renderSelect(){const g=$('selGrid');g.innerHTML='';sel.prev=[];
   $('selT').textContent=sel.step?'حریفت رو انتخاب کن':'کاراکترت رو انتخاب کن';$('selGo').textContent=sel.step?'شروع مبارزه!':'انتخاب';
@@ -1727,6 +1774,22 @@ function renderSelect(){const g=$('selGrid');g.innerHTML='';sel.prev=[];
   $('selInfo').innerHTML='<div class="nm">'+c.name+' <small>'+c.style+'</small></div>'+bar('قدرت',c.stats[0])+bar('سرعت',c.stats[1])+bar('دفاع',c.stats[2])+'<div class="sp">حرکت ویژه: '+c.sname.replace('!','')+'</div>'}
 $('selGo').onclick=()=>{if(!sel.step){sel.step=1;if(sel.pick[1]===sel.pick[0])sel.pick[1]=(sel.pick[0]+1+(Math.random()*(PLAYABLE.length-1)|0))%PLAYABLE.length;renderSelect();return}
   game.p1ch=sel.pick[0];game.p2ch=sel.pick[1];startFight()};
+const shop={tab:'hat',sel:null,prev:[]};
+function openShop(){shop.sel=null;renderShop();show('shop')}
+function renderShop(){const g=$('shopGrid');g.innerHTML='';shop.prev=[];updCoins();for(const b of $('shopTabs').children)b.classList.toggle('on',b.dataset.v===shop.tab);
+  const items=SHOP.filter(i=>i.slot===shop.tab);if(!shop.sel||!items.includes(shop.sel))shop.sel=items[0];
+  for(const it of items){const b=document.createElement('button');b.className='ccard'+(it===shop.sel?' on':'');const own=SAVE.owned.includes(it.id),eq=SAVE.equip[it.slot]===it.id;
+    const cv=document.createElement('canvas');cv.width=160;cv.height=150;const f=new Fighter({team:0,c:COLORS.black,ch:CHARS[0],weapon:it.slot==='weapon'?it.base:'none',x:0,face:1});
+    f.state='stand';f.cos={hat:it.slot==='hat'?it.id:null,face:it.slot==='face'?it.id:null};if(it.slot==='weapon')f.wskin=it;cv._f=f;cv._head=it.slot!=='weapon';shop.prev.push(cv);b.appendChild(cv);
+    b.insertAdjacentHTML('beforeend','<b>'+it.name+'</b><span class="pr'+(own?' own':'')+'">'+(eq?'✓ پوشیده':own?'✓ داری':'🪙 '+fa(it.price))+'</span>');
+    b.onclick=()=>{shop.sel=it;renderShop()};g.appendChild(b)}
+  const it=shop.sel,own=SAVE.owned.includes(it.id),eq=SAVE.equip[it.slot]===it.id,a=$('shopAct');
+  $('shopInfo').innerHTML='<div class="nm">'+it.name+'</div>'+(it.slot==='weapon'?'<div>با حرکات '+(it.base==='sword'?'شمشیر':'چوب رزمی')+' می‌جنگه، با صدای «'+it.word.replace('!','')+'». فقط در حالت تن‌به‌تن.</div>':'<div>روی هر کاراکتری که انتخاب کنی دیده می‌شه.</div>');
+  a.disabled=false;if(!own){a.textContent=SAVE.coins>=it.price?'خرید با '+fa(it.price)+' سکه':'سکه کافی نیست';a.disabled=SAVE.coins<it.price}else a.textContent=eq?'دربیار':'بپوش'}
+$('shopAct').onclick=()=>{const it=shop.sel;if(!it)return;if(!SAVE.owned.includes(it.id)){if(SAVE.coins<it.price)return;SAVE.coins-=it.price;SAVE.owned.push(it.id);SAVE.equip[it.slot]=it.id;AU.init();AU.heal();buzz(30)}
+  else SAVE.equip[it.slot]=SAVE.equip[it.slot]===it.id?null:it.id;saveGame();renderShop()};
+$('shopTabs').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;shop.tab=b.dataset.v;shop.sel=null;renderShop()});
+$('shopBack').onclick=()=>show('menu');$('shopBtn').onclick=()=>{AU.init();openShop()};updCoins();
 $('selBack').onclick=()=>{if(sel.step){sel.step=0;renderSelect()}else show('menu')};
 $('again').onclick=()=>{const a=game.overAct;if(a)a();show(null)};
 $('restart').onclick=()=>{game.paused=false;if(game.mode==='story')startStory(story.stage);else startBattle();show(null)};
@@ -1776,7 +1839,7 @@ document.addEventListener('contextmenu',e=>e.preventDefault());
 // ================= boot =================
 resize();makeGrain();startDemo();
 let last=performance.now();
-function loop(t){const dt=clamp((t-last)/1000,0,.05);last=t;update(dt);render();if(sel.prev.length&&!$('select').classList.contains('hidden'))drawPreviews(dt);requestAnimationFrame(loop)}
+function loop(t){const dt=clamp((t-last)/1000,0,.05);last=t;update(dt);render();if(sel.prev.length&&!$('select').classList.contains('hidden'))drawPreviews(dt,sel.prev);if(shop.prev.length&&!$('shop').classList.contains('hidden'))drawPreviews(dt,shop.prev);requestAnimationFrame(loop)}
 requestAnimationFrame(loop);
 window.__game={get game(){return game},get P1(){return P1},get P2(){return P2},get fighters(){return fighters},story,startBattle,startStory,startDemo,human,press,cam,MOVES,P,skel,canFinish,startFinisher};
 </script>
@@ -1801,7 +1864,14 @@ window.__game={get game(){return game},get P1(){return P1},get P2(){return P2},g
 .sinfo .st{display:flex;align-items:center;gap:8px;margin:2px 0}.sinfo .st span{width:42px;font-weight:700}
 .sinfo .st i{display:block;height:8px;background:var(--ink);border-radius:5px 3px 6px 2px}
 .sinfo .sp{margin-top:4px;font-weight:700;color:var(--red)}
-#apkBtn{position:absolute;left:24%;top:80.6%;width:52%;height:5.2%;align-items:center;justify-content:center;font-weight:900;font-size:.95em;color:var(--paper);background:var(--ink);border-radius:12px 9px 13px 8px/9px 13px 8px 12px;text-decoration:none;box-shadow:3px 3px 0 rgba(200,35,29,.85);white-space:nowrap}
+#shopBtn{position:absolute;left:24%;top:80.6%;width:52%;height:5.2%;display:flex;align-items:center;justify-content:center;font-family:inherit;font-weight:900;font-size:.95em;color:var(--paper);background:var(--red);border:2.5px solid var(--ink);border-radius:12px 9px 13px 8px/9px 13px 8px 12px;box-shadow:3px 3px 0 var(--ink);cursor:pointer}
+#menuCoins{position:absolute;right:4%;top:2.2%;font-weight:900;font-size:.95em;background:rgba(243,239,230,.9);border:2px solid var(--ink);border-radius:10px;padding:2px 9px}
+#coinToast{position:fixed;left:50%;top:calc(96px + env(safe-area-inset-top));transform:translateX(-50%);z-index:40;font-weight:900;font-size:17px;color:#7a5a0a;background:#fbe9a8;border:2.5px solid var(--ink);border-radius:12px;padding:4px 12px;opacity:0;pointer-events:none}
+#coinToast.show{animation:toast 1.5s ease-out}
+@keyframes toast{0%{opacity:0;transform:translate(-50%,8px)}12%{opacity:1;transform:translate(-50%,0)}75%{opacity:1}100%{opacity:0;transform:translate(-50%,-10px)}}
+.shead{display:flex;align-items:center;justify-content:space-between}.coins{font-weight:900;font-size:18px;background:#fbe9a8;border:2px solid var(--ink);border-radius:10px;padding:2px 10px}
+.ccard .pr{font-size:11px;font-weight:900;color:#7a5a0a}.ccard .pr.own{color:#2f7d3a}
+#apkBtn{position:absolute;left:24%;top:87%;width:52%;height:5.2%;align-items:center;justify-content:center;font-weight:900;font-size:.95em;color:var(--paper);background:var(--ink);border-radius:12px 9px 13px 8px/9px 13px 8px 12px;text-decoration:none;box-shadow:3px 3px 0 rgba(200,35,29,.85);white-space:nowrap}
 #ver{position:fixed;left:8px;bottom:calc(6px + env(safe-area-inset-bottom));font-size:11px;opacity:.45;z-index:11;direction:ltr}
 </style>
 <script>
