@@ -803,16 +803,16 @@ const MOVES={
   gslam:{aura:1,seq:[['upc0',140,0,30],['ax4',160,40,40],['dk7',200,0,45,0,{fx:'slam'}],['stance',220,0,20]],
     hits:[{t0:300,t1:420,limb:'h1',dmg:14,kb:300,kind:'knock',r:18,cine:1}]},
   // Dancer (capoeira): meia lua de frente, sweep, cartwheel kick, back flip
-  cmeia:{seq:[['cm1',80,0,34],['cm2',90,30,52],['cm3',90,10,55],['cm4',110,0,34],['stG',130,0,22]],hits:[{t0:90,t1:270,limb:'f1',dmg:10,kb:240,kind:'heavy',r:13}],trail:'f1',chain:{kick:'shk',punch:'cneg'},from:230},
-  cneg:{seq:[['cn1',90,0,34],['cn2',170,60,50],['cn1',90,0,34],['stG',140,0,20]],hits:[{t0:90,t1:260,limb:'f1',dmg:9,kb:120,kind:'knock',low:1,r:14}],trail:'f1',chain:{kick:'cau'},from:220},
-  cau:{rotc:[90,640,0,-360],seq:[['au0',90,0,34],['au1',550,250,40],['stG',160,0,25]],hits:[{t0:230,t1:360,limb:'f1',dmg:7,kb:150,kind:'light',r:15},{t0:380,t1:540,limb:'f2',dmg:9,kb:320,kind:'heavy',r:15}],trail:'f1'},
-  cmac:{air:1,launch:[600,-70],rotc:[0,600,0,360],seq:[['bf2',150,0,40],['bf3',150,0,32],['bf4',150,0,32],['bf5',9e9,0,30]],hits:[{t0:0,t1:190,limb:'f1',dmg:9,kb:180,kind:'launch',r:15}],landFx:1},
+  cmeia:{seq:[['cm1',80,140,34],['cm2',90,170,52],['cm3',90,60,55],['cm4',110,0,34],['stG',130,0,22]],hits:[{t0:70,t1:280,limb:'f1',dmg:11,kb:320,kind:'heavy',r:22}],trail:'f1',chain:{kick:'shk',punch:'cneg'},from:230},
+  cneg:{seq:[['cn1',90,120,34,0,{fx:'slide'}],['cn2',170,260,50,0,{fx:'slide'}],['cn1',90,0,34],['stG',140,0,20]],hits:[{t0:80,t1:280,limb:'f1',dmg:11,kb:160,kind:'knock',low:1,r:22}],trail:'f1',chain:{kick:'cau'},from:220},
+  cau:{rotc:[90,640,0,-360],seq:[['au0',90,120,34],['au1',550,330,40],['stG',160,0,25]],hits:[{t0:180,t1:380,limb:'f1',dmg:8,kb:90,kind:'light',r:24},{t0:380,t1:600,limb:'f2',dmg:13,kb:430,kind:'launch',r:24,cine:1}],trail:'f1'},
+  cmac:{air:1,launch:[600,-70],rotc:[0,600,0,360],seq:[['bf2',150,0,40],['bf3',150,0,32],['bf4',150,0,32],['bf5',9e9,0,30]],hits:[{t0:0,t1:240,limb:'f1',dmg:12,kb:220,kind:'launch',r:24,cine:1}],landFx:1},
   // Dragon: running flying side kick
   dflyk:{aura:1,seq:[['dk1',90,0,30],['dk2',110,760,45,0,{fx:'dash'}],['dk4',220,820,55,0,{vy:320,fx:'dash'}],['dk6',90,120,30],['dk7',140,0,30,0,{fx:'land'}],['stance',150,0,20]],
     hits:[{t0:200,t1:420,limb:'f1',dmg:26,kb:640,kind:'heavy',r:15,cine:1}]},
   // Dancer: drop into a handstand and windmill the legs
   wind:{aura:1,seq:[['hs0',110,60,30],['hs1',120,80,30],['hs2',130,90,40,0,{fx:'ring'}],['hs3',130,90,40,1,{fx:'ring'}],['hs2',130,90,40,0,{fx:'ring'}],['hs3',130,60,40,1,{fx:'ring'}],['hs4',140,0,30],['stance',160,0,20]],
-    hits:[{t0:250,t1:330,limb:'f1',dmg:6,kb:120,kind:'light',r:16},{t0:360,t1:440,limb:'f2',dmg:6,kb:120,kind:'light',r:16},{t0:470,t1:550,limb:'f1',dmg:7,kb:140,kind:'light',r:16},{t0:580,t1:680,limb:'f2',dmg:12,kb:560,kind:'knock',r:17,cine:1}]},
+    hits:[{t0:240,t1:340,limb:'f1',dmg:7,kb:60,kind:'light',r:24},{t0:350,t1:450,limb:'f2',dmg:7,kb:60,kind:'light',r:24},{t0:460,t1:560,limb:'f1',dmg:8,kb:60,kind:'light',r:24},{t0:570,t1:700,limb:'f2',dmg:14,kb:620,kind:'knock',r:26,cine:1}]},
   special:{aura:1,seq:[['dash',200,720],['jab',80,160],['cross',80,160],['hook',90,100],['rh2',70,40],['rh4',230,60,60],['rh5',90,0],['stance',200,0]],
     hits:[{t0:200,t1:280,limb:'h1',dmg:6,kb:60,kind:'light',r:14},{t0:280,t1:360,limb:'h2',dmg:6,kb:60,kind:'light',r:14},{t0:360,t1:450,limb:'h1',dmg:6,kb:70,kind:'light',r:14},{t0:520,t1:760,limb:'f2',dmg:18,kb:620,kind:'knock',r:14,sup:1,cine:1}]},
   // ===== NUNCHAKU =====
