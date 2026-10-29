@@ -4,6 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>جنگجوهای کاغذی · Paper Fighters</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#1d1c1a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
@@ -750,10 +755,33 @@ MOVES.fin_dagger=buildFin(['dsw','dspin','dsw']);
 const MOVE_RATE=.88;  // < 1 = slower, more flowing moves
 
 // ================= voice lines =================
-const VLINES={intro:'اومدم اینجا تا آردِت کنم!',fin:'تمومت کردم!',boss:'یه غول بود، آرد شد!',hurt:'آخ! پشتم!'};
-let vT=-9;
-function speak(k,caption){const line=VLINES[k];if(!line)return;if(caption)queueMsg(line,1.7,.62,'#cf241d');
-  if(k==='hurt'&&nowS()-vT<4)return;vT=nowS();SND.play('v-'+k)}
+// [caption, speaker, seconds]; audio is sfx/v-<key>.mp3 (ElevenLabs). speakers: h hero, b boss, e enemy, a announcer (no caption)
+const VLINES={
+  intro:['اومدم اینجا تا آردِت کنم!','h',2.3],fin:['تمومت کردم!','h',1.6],boss:['یه غول بود، آرد شد!','h',2.4],hurt:['آخ! پشتم!','h',2.6],
+  st1:['اول یه دور خرید، بعد یه دور دعوا.','h',3.2],st2:['فقط یه چایی می‌خواستم... ببین چی شد!','h',4.3],st3:['باشگاه؟ من فقط ثبت‌نام کردم، هیچ‌وقت نرفتم!','h',5.1],
+  st4:['آروم باش... کاغذی‌ام، ولی ترسو نیستم!','h',4.4],st5:['شب، کوچه، چند تا غول... عالیه!','h',4],
+  reply:['چه غولِ خوش‌صحبتی! حیف که باید آردت کنم.','h',4.5],combo:['یکی دیگه بیار!','h',1.3],low:['دارم پاره می‌شم!','h',1.8],heal:['آخیش، جون گرفتم!','h',2.4],
+  crate:['ببخشید آقای فروشنده!','h',2.4],'g-nun':['نانچیکو! حالا شدم بروس لی!','h',3],'g-sword':['شمشیر! همه برن عقب!','h',2.5],
+  'g-staff':['چوب! وقتِ جارو کشیدنه!','h',2.8],'g-dagger':['خنجر! دوتا بهتر از یکیه!','h',3.2],drop:['خداحافظ رفیق!','h',1.4],
+  super:['طوفااان!','h',1.2],clear:['همین بود؟ بعدی!','h',1.8],lose:['فقط... یه... خراش بود...','h',3],
+  b1:['کی به قفسه‌ی پفک‌های من دست زده؟!','b',2.6],b2:['سفارشت آماده‌ست... یه فنجون کتک، داغِ داغ!','b',4.4],
+  b3:['سی سال تمرین کردم برای همین لحظه... البته بیشترش خواب بودم!','b',6.8],b4:['شمشیرم تیزه، حوصله‌م کُند!','b',3.1],
+  b5:['این کوچه مال منه... پول پارکینگم باید بدی!','b',3.6],blow:['صبر کن صبر کن! بیا حرف بزنیم!','b',3],
+  'e-spawn':['این کاغذیه؟ پاره‌ش می‌کنیم!','e',3.2],'e-ko':['من فقط اومده بودم نون بخرم!','e',3.2],
+  'a-r1':['راند یک!','a',1.6],'a-r2':['راند دو!','a',1.6],'a-final':['راند آخر!','a',1.8],'a-fight':['مبارزه!','a',1.5],'a-ko':['ناک‌اوت!','a',1.6]};
+// one voice at a time: a line only cuts in over a lower-priority one (pri 0 chatter, 1 normal, 2 story beats, 3 cutscene)
+const VO={a:{},cur:null,pri:-1,end:0,cd:{},
+  say(k,o={}){const L=VLINES[k];if(!L||game.mode==='demo')return 0;const pri=o.pri??1,t=nowS();
+    if(o.delay){setTimeout(()=>{if(game.mode!=='demo'&&game.phase!=='over')this.say(k,{...o,delay:0})},o.delay*1000);return L[2]}
+    if(o.chance!=null&&Math.random()>o.chance)return 0;if(t<(this.cd[k]||0))return 0;
+    if(t<this.end&&pri<=this.pri&&pri<3)return 0;
+    this.cd[k]=t+(o.cd||0);this.stop();this.pri=pri;this.end=t+L[2];
+    if(L[1]!=='a')game.sub={text:L[0],who:L[1],t:0,dur:L[2]+.5};
+    if(!AU.mute)try{let a=this.a[k];if(!a)a=this.a[k]=new Audio('sfx/v-'+k+'.mp3');a.currentTime=0;a.volume=1;a.play().catch(()=>{});this.cur=a;
+      if(MUS.a){MUS.a.volume=.15;clearTimeout(this.t);this.t=setTimeout(()=>{if(MUS.a)MUS.a.volume=.45},L[2]*1000+300)}}catch(e){}
+    return L[2]},
+  stop(){if(this.cur){try{this.cur.pause()}catch(e){}this.cur=null}this.end=0;this.pri=-1}};
+const speak=(k,pri=2)=>VO.say(k,{pri});
 
 // ================= audio =================
 const AU={c:null,mute:false,nb:null,
@@ -949,7 +977,7 @@ function applyHit(att,def,h,p){
   if(def.locked&&!h.fin){def.hp=Math.max(1,def.hp-h.dmg*.5);def.flash=.12;def.hitPose=def.hitPose==='hit'?'hit2':'hit';spark(p,h.dmg>8?1:0,false,h.dmg>8);inkBurst(p,def.c.ink,6,dir);
     game.hitstop=.05;shake(5);game.zp=Math.max(game.zp,.06);AU.hit(h.dmg>8);if(wpn)AU.wood();return}
   if(h.fin&&att.weapon==='sword')bisect(def,att,p);
-  if(def===P1&&h.kind==='heavy'&&Math.random()<.18&&game.phase==='fight')speak('hurt',false);
+  if(def===P1&&h.kind==='heavy'&&Math.random()<.18&&game.phase==='fight')VO.say('hurt',{pri:0,cd:6});
   if(h.fin){def.locked=false;def.hp=0;def.ko=true;def.state='juggle';def.vy=620;def.vx=dir*950;def.y=.5;def.bounced=false;
     spark(p,1,false,true);inkBurst(p,def.c.ink,24,dir);speedLines(p,.8);game.flashT=.12;game.zp=.3;shake(22);game.hitstop=.3;pop(p);AU.ko();koEvent(att,def,true);return}
   const md=def.state==='move'&&def.move&&def.move.d.parry;
@@ -957,6 +985,7 @@ function applyHit(att,def,h,p){
   const canBlock=(def.state==='stand'||def.state==='bstun')&&def.blocking&&def.face===-dir&&(!h.low||def.crouch);
   let dmg=h.dmg*att.dmgMul;
   if(canBlock){def.hp=Math.max(1,def.hp-dmg*.12);def.state='bstun';def.stun=.16;def.vx=dir*h.kb*.55*def.kbRes;def.meter=Math.min(100,def.meter+3);spark(p,0,true);AU.block();if(wpn)AU.wood();game.hitstop=.04;return}
+  if(att===P1){const t=game.rt;P1.cmb=t-(P1.cmbT||-9)<1.1?(P1.cmb||0)+1:1;P1.cmbT=t;if(P1.cmb===5)VO.say('combo',{pri:0,cd:10})}
   def.hp-=dmg;att.meter=Math.min(100,att.meter+dmg*1.7);def.meter=Math.min(100,def.meter+dmg*.9);
   def.flash=.13;def.move=null;def.blocking=false;
   const heavy=h.kind!=='light'||h.sup,kb=h.kb*def.kbRes;
@@ -973,7 +1002,7 @@ function applyHit(att,def,h,p){
   AU.hit(heavy||h.cine);if(wpn&&!(att.weapon==='sword'&&def.split))AU.wood()}
 function bisect(def,att,p){const a=.62*(Math.random()<.5?1:-1);def.split={t0:game.rt,life:1.05,dir:[Math.cos(a),Math.sin(a)]};AU.shing();game.flashT=Math.max(game.flashT,.05)}
 function canFinish(a,v){return !!v&&game.phase==='fight'&&!game.fin&&v.hp>0&&v.hp<=v.maxHp*.25&&(game.mode!=='story'||v.boss)&&!v.airborne&&!['down','ko','getup','juggle'].includes(v.state)&&Math.abs(v.x-a.x)<240*a.sc&&a.state==='stand'&&!a.airborne}
-function startFinisher(a,v){if(a===P1)speak('fin',true);const name='fin_'+a.weapon;a.startMove(name);v.locked=true;v.move=null;v.state='hit';v.blocking=false;v.vx=0;
+function startFinisher(a,v){if(a===P1)speak('fin');const name='fin_'+a.weapon;a.startMove(name);v.locked=true;v.move=null;v.state='hit';v.blocking=false;v.vx=0;
   game.fin={att:a,vic:v,dur:MOVES[name].seq.reduce((s,x)=>s+x[1],0)};game.hitstop=.3;game.superT=.5;AU.sup();say('فینیشر!',1.1,1.25,'#cf241d');shake(6)}
 function finishFallback(a){const f=game.fin;if(f&&f.att===a&&f.vic.locked){const v=f.vic;applyHit(a,v,{dmg:99,kb:950,kind:'knock',fin:1,cine:1},[v.x,v.y+90*v.sc])}}
 
@@ -988,7 +1017,9 @@ function battleProps(theme){if(theme==='shop')return[mkProp('box',-725),mkProp('
   return[mkProp('barrel',-660),mkProp('bucket',-600),mkProp('stool',-300),mkProp('barrel',680),mkProp('bucket',520),mkProp('stool',300)]}
 function storyProps(st){const L=mulberry32(st.len),out=[],pool={shop:['box','box3','sign','bin','can'],cafe:['table','chair','chair','cup'],dojo:['barrel','bucket','stool'],temple:['barrel','bucket','stool','stool'],alley:['bin','box','box3','can','barrel','sign']}[st.theme];
   for(let x=300;x<st.len-200;x+=260+L()*260){const t=pool[L()*pool.length|0];out.push(mkProp(t,x));if(t==='table')out.push(mkProp('cup',x-4,64))}
-  st.crates.forEach((c,i)=>out.push(mkProp('crate',c[0],0,{hp:2,heal:c[1]})));return out}
+  // crates without a heart hold the stage's weapons, in random order
+  const loot=(st.loot||[]).slice().sort(()=>Math.random()-.5);let li=0;
+  st.crates.forEach((c,i)=>out.push(mkProp('crate',c[0],0,{hp:2,heal:c[1],wpn:!c[1]&&loot.length?loot[li++%loot.length]:null})));return out}
 const propCache=new Map();
 function propSketch(p,v){const k=p.type+p.w+'x'+p.h+'v'+v;let c=propCache.get(k);if(c)return c;
   const s=new Sketch(500+v*31+p.w*7+p.h),w=p.w,h=p.h,hw=w/2,T=p.type;
@@ -1009,7 +1040,16 @@ function propHit(pr,att,h,p){if(pr.type==='crate'){pr.hp-=h.kind==='light'?1:2;s
   const pw=h.kind==='light'?300:540;pr.vx=att.face*pw/pr.m;pr.vy=220+Math.random()*220;pr.vr=(Math.random()-.5)*16;pr.y+=1;spark(p,0,true);AU.thud()}
 function breakCrate(pr){const i=props.indexOf(pr);if(i<0)return;props.splice(i,1);shake(6);AU.wood();AU.thud();dust(pr.x,pr.y+20,1);
   for(let k=0;k<9;k++)fx.push({k:'plank',x:pr.x+(Math.random()-.5)*40,y:pr.y+10+Math.random()*40,vx:(Math.random()-.5)*500,vy:200+Math.random()*400,rot:Math.random()*6,vr:(Math.random()-.5)*20,len:12+Math.random()*22,t:0,life:1.1});
-  if(pr.heal){pickups.push({x:pr.x,y:pr.y+20,vy:420,t:0});fx.push({k:'word',x:pr.x,y:pr.y+90,t:0,life:.8,txt:'خون!',rot:-.05,col:'#cf241d'})}}
+  if(pr.heal){pickups.push({x:pr.x,y:pr.y+20,vy:420,t:0});fx.push({k:'word',x:pr.x,y:pr.y+90,t:0,life:.8,txt:'خون!',rot:-.05,col:'#cf241d'})}
+  if(pr.wpn){pickups.push({x:pr.x,y:pr.y+20,vy:460,vx:0,t:0,w:pr.wpn});fx.push({k:'word',x:pr.x,y:pr.y+90,t:0,life:.9,txt:WNAME[pr.wpn]+'!',rot:-.05,col:'#cf241d'})}
+  VO.say('crate',{pri:0,cd:18,chance:.6})}
+const WNAME={nun:'نانچیکو',sword:'شمشیر',staff:'چوب',dagger:'خنجر'};
+// walking over a weapon swaps it in; the old one drops and can be picked up again after stepping away
+function grabWeapon(k){const old=P1.weapon;
+  if(old!=='none'){pickups.push({x:P1.x,y:40,vy:360,vx:-P1.face*170,t:0,w:old,lock:true});VO.say('drop',{pri:1})}
+  P1.weapon=k.w;P1.kOut=[false,false];P1.nc=null;P1.nC=null;projs=projs.filter(p=>p.o!==P1);k.got=true;AU.wood();AU.heal();
+  fx.push({k:'word',x:P1.x,y:P1.y+190,t:0,life:.9,txt:WNAME[k.w]+' گرفتی!',rot:-.05,col:'#cf241d'});
+  VO.say('g-'+k.w,{pri:2,delay:old!=='none'?1.4:0})}
 function updProps(dt){
   for(const p of props){p.cd=Math.max(0,p.cd-dt);
     let sup=0;for(const q of props){if(q===p)continue;const ov=Math.min(p.x+p.w/2,q.x+q.w/2)-Math.max(p.x-p.w/2,q.x-q.w/2);if(ov>Math.min(p.w,q.w)*.3&&q.y+q.h<=p.y+3)sup=Math.max(sup,q.y+q.h)}
@@ -1029,7 +1069,10 @@ function updProjs(dt){for(const p of projs){const o=p.o;p.t+=dt;p.rot+=dt*30*p.d
     if(!p.done&&(p.state==='out'?!p.hitO:!p.hitB)){for(const t of o.enemies()){if(tryHit(o,t,{dmg:5,kb:70,kind:'light',r:11},[[p.x,p.y]])){if(p.state==='out'){p.hitO=true;p.state='back'}else p.hitB=true;AU.wood();break}}}}
   projs=projs.filter(p=>!p.done)}
 function updPickups(dt){for(const k of pickups){k.t+=dt;if(k.y>0||k.vy>0){k.vy-=G*dt;k.y+=k.vy*dt;if(k.y<=0){k.y=0;k.vy=k.vy<-150?-k.vy*.35:0}}
-    if(P1&&!k.got&&Math.abs(P1.x-k.x)<34&&P1.y<50&&k.t>.3&&P1.hp>0){k.got=true;const add=Math.min(35,P1.maxHp-P1.hp);P1.hp+=add;P1.ghost=Math.max(P1.ghost,P1.hp);AU.heal();
+    if(k.vx){k.x+=k.vx*dt;if(k.y<=0)k.vx*=Math.exp(-dt*6);if(Math.abs(k.vx)<5)k.vx=0}
+    if(k.w){if(!P1||k.got)continue;const d=Math.abs(P1.x-k.x);if(k.lock){if(d>70)k.lock=false;continue}
+      if(d<40&&P1.y<50&&k.t>.4&&P1.hp>0&&P1.state==='stand'&&!P1.move&&!game.fin&&P1.weapon!==k.w)grabWeapon(k);continue}
+    if(P1&&!k.got&&Math.abs(P1.x-k.x)<34&&P1.y<50&&k.t>.3&&P1.hp>0){k.got=true;const add=Math.min(35,P1.maxHp-P1.hp);P1.hp+=add;P1.ghost=Math.max(P1.ghost,P1.hp);AU.heal();VO.say('heal',{pri:1,cd:5});
       fx.push({k:'word',x:k.x,y:110,t:0,life:.9,txt:'+'+fa(Math.round(add||0))+' خون',rot:0,col:'#cf241d'});for(let i=0;i<10;i++)fx.push({k:'ink',x:k.x,y:30,vx:(Math.random()-.5)*300,vy:200+Math.random()*300,t:0,life:.5,col:'#cf241d',len:5})}}
   pickups=pickups.filter(k=>!k.got)}
 
@@ -1046,7 +1089,7 @@ const WORDS=['تق!','بوم!','پاق!','شترق!','دَنگ!','گرومپ!','
 function pop(p){fx.push({k:'word',x:p[0],y:p[1]+30,t:0,life:.7,txt:WORDS[Math.random()*WORDS.length|0],rot:(Math.random()-.5)*.4})}
 function speedLines(p,d){speed={x:p[0],y:p[1],t:0,life:d}}
 function shake(v){game.shake=Math.max(game.shake,v)}
-function superFlash(f){game.superT=.6;game.hitstop=.34;speedLines([f.x,f.y+90],.6);AU.sup();fx.push({k:'word',x:f.x,y:f.y+175,t:0,life:.9,txt:'طوفان!',rot:-.08,big:1,col:f.c.ink})}
+function superFlash(f){if(f===P1)VO.say('super',{pri:1});game.superT=.6;game.hitstop=.34;speedLines([f.x,f.y+90],.6);AU.sup();fx.push({k:'word',x:f.x,y:f.y+175,t:0,life:.9,txt:'طوفان!',rot:-.08,big:1,col:f.c.ink})}
 const CNAMES={dashk:'لگد دَش!',adr:'دوبل هوایی!',slide:'جارو + صعودی!',bflip:'لگد پشتک!',multi:'رگبار لگد!',aslam:'کوبش هوایی!'};
 function cineStart(f,mv){game.superT=.32;game.hitstop=.13;AU.sup();fx.push({k:'word',x:f.x,y:f.y+175*f.sc,t:0,life:.8,txt:CNAMES[mv]||'!',rot:-.06,big:1,col:f.c.ink})}
 function updFx(dt){for(const e of fx){e.t+=dt;
@@ -1097,9 +1140,9 @@ let fighters=[],P1=null,P2=null,ctrl=[];
 const game={phase:'fight',mode:'demo',theme:'shop',rt:0,hitstop:0,shake:0,superT:0,slow:0,round:1,wins:[0,0],timer:60,msgs:[],endT:0,winner:null,introT:0,paused:false,diff:'medium',zp:0,flashT:0,fin:null,stageSel:'shop',modeSel:'story',demoI:0};
 const cam={x:0,z:1};
 const STORY=[
-  {theme:'shop',weapon:'none',name:'سوپرمارکت',len:3500,waves:[{x:750,n:2},{x:1500,n:3},{x:2300,n:4}],boss:{x:3050,hp:240,weapon:'none',name:'غولِ سوپرمارکت'},ehp:40,edmg:.6,ai:'g1',wch:0,maxEng:2,crates:[[480,1],[1150,0],[1250,1],[1900,1],[2700,0],[2780,1]]},
-  {theme:'cafe',weapon:'nun',name:'کافه',len:3700,waves:[{x:750,n:3},{x:1550,n:3},{x:2400,n:4}],boss:{x:3250,hp:300,weapon:'nun',name:'غولِ کافه'},ehp:50,edmg:.7,ai:'g2',wch:.35,maxEng:2,crates:[[450,1],[1150,1],[1950,0],[2050,1],[2850,1]]},
-  {theme:'dojo',weapon:'staff',name:'باشگاه رزمی',len:3900,waves:[{x:750,n:3},{x:1600,n:4},{x:2500,n:4}],boss:{x:3450,hp:360,weapon:'staff',name:'استادِ غول'},ehp:60,edmg:.8,ai:'g3',wch:.45,maxEng:3,crates:[[460,1],[1200,0],[1300,1],[2050,1],[2950,1],[3050,0]]},
+  {theme:'shop',weapon:'none',name:'سوپرمارکت',len:3500,waves:[{x:750,n:2},{x:1500,n:3},{x:2300,n:4}],boss:{x:3050,hp:240,weapon:'none',name:'غولِ سوپرمارکت'},ehp:40,edmg:.6,ai:'g1',wch:0,maxEng:2,loot:['nun'],crates:[[480,1],[1150,0],[1250,1],[1900,1],[2700,0],[2780,1]]},
+  {theme:'cafe',weapon:'nun',name:'کافه',len:3700,waves:[{x:750,n:3},{x:1550,n:3},{x:2400,n:4}],boss:{x:3250,hp:300,weapon:'nun',name:'غولِ کافه'},ehp:50,edmg:.7,ai:'g2',wch:.35,maxEng:2,loot:['sword'],crates:[[450,1],[1150,1],[1950,0],[2050,1],[2850,1]]},
+  {theme:'dojo',weapon:'staff',name:'باشگاه رزمی',len:3900,waves:[{x:750,n:3},{x:1600,n:4},{x:2500,n:4}],boss:{x:3450,hp:360,weapon:'staff',name:'استادِ غول'},ehp:60,edmg:.8,ai:'g3',wch:.45,maxEng:3,loot:['nun','sword'],crates:[[460,1],[1200,0],[1300,1],[2050,1],[2950,1],[3050,0]]},
   {theme:'temple',weapon:'sword',name:'معبد سامورایی',len:4100,waves:[{x:760,n:3},{x:1650,n:4},{x:2600,n:4}],boss:{x:3600,hp:420,weapon:'sword',name:'سردارِ شمشیر'},ehp:68,edmg:.85,ai:'g3',wch:.5,maxEng:3,crates:[[470,1],[1250,1],[1350,0],[2150,1],[3050,1],[3150,0]]},
   {theme:'alley',weapon:'dagger',name:'کوچه‌ی شبانه',len:4200,waves:[{x:760,n:4},{x:1700,n:4},{x:2650,n:5}],boss:{x:3700,hp:460,weapon:'dagger',name:'غولِ کوچه'},ehp:72,edmg:.9,ai:'g3',wch:.55,maxEng:3,crates:[[480,1],[1300,1],[1400,0],[2200,1],[3100,1],[3200,0]]},
 ];
@@ -1120,30 +1163,37 @@ function startDemo(){game.mode='demo';const th=['shop','cafe','dojo','temple','a
   fighters=[P1,P2];P1.ai=new AI(P1,'medium');P2.ai=new AI(P2,'medium');ctrl=[P1.ai,P2.ai];props=battleProps(th);pickups=[];startRound()}
 function startRound(){P1.reset(-170,1);P2.reset(170,-1);fx=[];speed=null;projs=[];game.timer=60;game.endT=0;game.winner=null;game.slow=0;game.fin=null;cam.x=0;
   if(game.mode==='demo'){game.phase='fight';game.msgs=[];return}
-  game.phase='intro';game.introT=0;say(game.round===3?'راند آخر':'راند '+fa(game.round),1.1)}
+  game.phase='intro';game.introT=0;say(game.round===3?'راند آخر':'راند '+fa(game.round),1.1);VO.say(game.round===3?'a-final':'a-r'+game.round,{pri:2})}
 function startStory(i,keepMeter){const st=STORY[i];game.mode='story';story.stage=i;story.len=st.len;story.waveIdx=0;story.lock=null;story.spawnQ=[];story.boss=null;story.result=null;story.arrowT=0;
   setTheme(st.theme,'story',st.len,st.boss.x);const m=P1&&keepMeter?P1.meter:0;
   P1=new Fighter({team:0,c:COLORS.black,weapon:st.weapon,x:150,face:1});P1.inp=human;P1.meter=m;P2=null;fighters=[P1];ctrl=[];props=storyProps(st);pickups=[];projs=[];fx=[];speed=null;game.fin=null;game.slow=0;
   cam.x=150;game.phase='intro';game.introT=0;say('مرحله‌ی '+fa(i+1)+' · '+st.name,1.6,1);
-  if(st.weapon==='nun')queueMsg('نانچیکو گرفتی!',1.3,.8,'#cf241d');if(st.weapon==='staff')queueMsg('چوب رزمی گرفتی!',1.3,.8,'#cf241d');if(st.weapon==='sword')queueMsg('کاتانا گرفتی!',1.3,.8,'#cf241d');if(st.weapon==='dagger')queueMsg('دو خنجر گرفتی!',1.3,.8,'#cf241d');queueMsg('برو جلو →',1,.7)}
-function spawnEnemy(st,side,boss){const L=story.lock,x=side>0?L[1]+70:L[0]-70;
+  if(st.weapon==='nun')queueMsg('نانچیکو گرفتی!',1.3,.8,'#cf241d');if(st.weapon==='staff')queueMsg('چوب رزمی گرفتی!',1.3,.8,'#cf241d');if(st.weapon==='sword')queueMsg('کاتانا گرفتی!',1.3,.8,'#cf241d');if(st.weapon==='dagger')queueMsg('دو خنجر گرفتی!',1.3,.8,'#cf241d');queueMsg('برو جلو →',1,.7);VO.say('st'+(i+1),{pri:1,delay:i===0&&!keepMeter?3.1:1})}
+function spawnEnemy(st,side,boss){const L=story.lock,x=boss?Math.min(L[1]-80,P1.x+430):side>0?L[1]+70:L[0]-70;
   const e=boss?new Fighter({team:1,c:COLORS.boss,weapon:st.boss.weapon,hp:st.boss.hp,sc:1.62,boss:true,dmg:1.5*LV[game.diff].dmg,kbRes:.45,spd:.85,name:st.boss.name,x,face:-side,aura:'#ff6a1e'})
     :new Fighter({team:1,c:[COLORS.red,COLORS.red2,COLORS.red3][Math.random()*3|0],weapon:Math.random()<st.wch?st.weapon:'none',hp:st.ehp,dmg:st.edmg*LV[game.diff].dmg,x,face:-side,spd:.9+Math.random()*.2});
-  e.ai=new AI(e,boss?'boss':st.ai);e.inp=mkInput();fighters.push(e);ctrl.push(e.ai);if(boss)story.boss=e;return e}
+  e.ai=new AI(e,boss?'boss':st.ai);e.inp=mkInput();fighters.push(e);ctrl.push(e.ai);if(boss){story.boss=e;startBossCine(e)}else VO.say('e-spawn',{pri:0,cd:16,chance:.5});return e}
 function storyUpdate(dt){const st=STORY[story.stage];story.arrowT=Math.max(0,story.arrowT-dt);
   for(const q of story.spawnQ)q.t-=dt;const due=story.spawnQ.filter(q=>q.t<=0);story.spawnQ=story.spawnQ.filter(q=>q.t>0);for(const q of due)spawnEnemy(st,q.side,q.boss);
   if(!story.lock){const w=st.waves[story.waveIdx];
     if(w&&P1.x>w.x-260){story.lock=[w.x-480,w.x+480];for(let i=0;i<w.n;i++)story.spawnQ.push({t:.3+i*.75,side:i%2?-1:1});story.wave=true}
-    else if(!w&&!story.boss&&P1.x>st.boss.x-320){story.lock=[st.boss.x-520,st.boss.x+520];story.spawnQ.push({t:.6,side:1,boss:1});story.wave=false;say(st.boss.name+'!',1.6,1.2,'#cf241d');AU.ko()}}
+    else if(!w&&!story.boss&&P1.x>st.boss.x-320){story.lock=[st.boss.x-520,st.boss.x+520];story.spawnQ.push({t:.6,side:1,boss:1});story.wave=false}}
   else if(story.wave){const alive=fighters.filter(f=>f.team===1&&!f.gone&&f.state!=='ko');
-    if(!story.spawnQ.length&&!alive.length){story.lock=null;story.wave=false;story.waveIdx++;story.arrowT=3;say('برو جلو →',1,.8)}}}
+    if(!story.spawnQ.length&&!alive.length){story.lock=null;story.wave=false;story.waveIdx++;story.arrowT=3;say('برو جلو →',1,.8);VO.say('clear',{pri:1,cd:4})}}}
+// boss entrance: freeze, dark stage, spotlight + close-up on the boss's taunt, then the hero answers and the fight resumes
+function startBossCine(b){const st=STORY[story.stage];P1.move=null;P1.state='stand';P1.vx=0;P1.blocking=false;b.state='win';
+  for(const f of fighters){f.vx=0}game.cine={t:0,boss:b,focus:b,line:'b'+(story.stage+1),d1:VLINES['b'+(story.stage+1)][2],name:st.boss.name,said:0};game.msgs=[];AU.ko();shake(10)}
+function cineUpdate(dt){const c=game.cine;c.t+=dt;const t1=.6,t2=t1+c.d1+.35,t3=t2+VLINES.reply[2]+.3;
+  if(c.said===0&&c.t>t1){c.said=1;VO.say(c.line,{pri:3})}
+  if(c.said===1&&c.t>t2){c.said=2;c.focus=P1;VO.say('reply',{pri:3})}
+  if(c.t>t3||c.skip){if(c.skip)VO.stop();game.cine=null;c.boss.state='stand';P1.state='stand';say(c.name+'!',1.4,1.2,'#cf241d');AU.sup()}}
 function koEvent(att,def,byFin){
   if(game.mode==='story'){
-    if(def===P1){if(game.phase!=='fight')return;game.phase='roundEnd';game.endT=0;game.slow=1.2;AU.ko();say('ناک‌اوت!',2,1.3,'#cf241d');story.result='lose';return}
-    if(def.boss){speak('boss',true);game.phase='roundEnd';game.endT=0;game.slow=1.6;game.winner=P1;AU.ko();say(byFin?'نابود شد!':'غول افتاد!',2.2,1.3,'#cf241d');story.result='win';return}
-    story.kills++;const alive=fighters.filter(f=>f.team===1&&f!==def&&f.state!=='ko'&&!f.ko);if(!alive.length&&!story.spawnQ.length){game.slow=.5;AU.ko()}return}
+    if(def===P1){if(game.phase!=='fight')return;game.phase='roundEnd';game.endT=0;game.slow=1.2;AU.ko();say('ناک‌اوت!',2,1.3,'#cf241d');story.result='lose';VO.say('lose',{pri:2,delay:.6});return}
+    if(def.boss){speak('boss');game.phase='roundEnd';game.endT=0;game.slow=1.6;game.winner=P1;AU.ko();say(byFin?'نابود شد!':'غول افتاد!',2.2,1.3,'#cf241d');story.result='win';return}
+    story.kills++;VO.say('e-ko',{pri:0,cd:14,chance:.4});const alive=fighters.filter(f=>f.team===1&&f!==def&&f.state!=='ko'&&!f.ko);if(!alive.length&&!story.spawnQ.length){game.slow=.5;AU.ko()}return}
   if(game.phase!=='fight')return;game.phase='roundEnd';game.winner=att;game.slow=byFin?1.8:1.4;game.endT=0;AU.ko();
-  if(game.mode==='battle')say(byFin?'نابود شد!':'ناک‌اوت!',2,1.3,'#cf241d')}
+  if(game.mode==='battle'){say(byFin?'نابود شد!':'ناک‌اوت!',2,1.3,'#cf241d');VO.say('a-ko',{pri:2});if(def===P1)VO.say('lose',{pri:2,delay:1.8})}}
 function timeUp(){game.phase='roundEnd';game.endT=0;game.slow=0;game.winner=P1.hp>P2.hp?P1:P2.hp>P1.hp?P2:null;say('وقت تمام!',1.8)}
 function endRound(){
   if(game.mode==='demo'){startDemo();return}
@@ -1158,9 +1208,13 @@ function endRound(){
 
 function update(rdt){
   game.rt+=rdt;if(game.paused||game.phase==='over')return;
+  if(game.sub){game.sub.t+=rdt;if(game.sub.t>game.sub.dur)game.sub=null}
+  if(game.cine){if(nowS()-human.buf.punch<.1||nowS()-human.buf.kick<.1)game.cine.skip=game.cine.t>.8;cineUpdate(rdt);updFx(rdt);if(game.cine)for(const f of fighters)f.pose(rdt);updCam(rdt);return}
+  if(P1&&game.phase==='fight'&&game.mode!=='demo'){if(!P1.lowSaid&&P1.hp>0&&P1.hp<P1.maxHp*.25){P1.lowSaid=true;VO.say('low',{pri:1})}else if(P1.hp>P1.maxHp*.45)P1.lowSaid=false;
+    const B=story.boss;if(game.mode==='story'&&B&&!B.lowSaid&&B.hp>0&&B.hp<B.maxHp*.3){B.lowSaid=true;VO.say('blow',{pri:1})}}
   for(const c of ctrl)if(c&&!c.me.gone)c.update(rdt);ctrl=ctrl.filter(c=>!c.me.gone);
   const m=game.msgs[0];if(m){m.t+=rdt;if(m.t>m.dur)game.msgs.shift()}
-  if(game.phase==='intro'){game.introT+=rdt;const lim=game.mode==='story'?1.5:1.15;if(game.introT>lim){game.phase='fight';if(game.mode==='battle'){say('مبارزه!',.8,1.25,'#cf241d');AU.sup()}}}
+  if(game.phase==='intro'){game.introT+=rdt;const lim=game.mode==='story'?1.5:1.7;if(game.introT>lim){game.phase='fight';if(game.mode==='battle'){say('مبارزه!',.8,1.25,'#cf241d');AU.sup();VO.say('a-fight',{pri:2})}}}
   if(game.superT>0)game.superT-=rdt;
   game.shake*=Math.exp(-rdt*12);game.zp*=Math.exp(-rdt*4);game.flashT=Math.max(0,game.flashT-rdt);
   updFx(rdt);
@@ -1186,8 +1240,9 @@ function updCam(dt){const pt=portrait(),gy=groundY();let mid,needW;
   else{const dist=Math.abs(P1.x-P2.x);mid=(P1.x+P2.x)/2;needW=pt?Math.max(dist+260,440):Math.max(dist+560,820)}
   let z=Math.min(W/needW,gy/(pt?(game.mode==='story'?330:300):440));
   if(game.fin){mid=(game.fin.att.x+game.fin.vic.x)/2;z*=1.6}
+  if(game.cine){const f=game.cine.focus;mid=f.x;z=Math.min(z*(f.boss?1.6:2.1),(gy-H*.16)/(215*f.sc))}
   const[b0,b1]=camBounds();z=Math.max(z,W/(b1-b0));z*=1+game.zp;
-  cam.z+=(z-cam.z)*(1-Math.exp(-dt*(game.fin?2.5:4)));
+  cam.z+=(z-cam.z)*(1-Math.exp(-dt*(game.fin?2.5:game.cine?3:4)));
   const half=W/2/cam.z;let cx=half*2>=(b1-b0)?(b0+b1)/2:clamp(mid,b0+half,b1-half);
   cam.x+=(cx-cam.x)*(1-Math.exp(-dt*(game.mode==='story'?5:6)))}
 
@@ -1276,7 +1331,16 @@ function drawTrail(f){const tr=f.trail;if(tr.length<3)return;const aura=f.state=
   ctx.globalAlpha=1}
 function drawProps(v){for(const p of props){if(Math.abs(p.x-cam.x)>W/cam.z+200)continue;ctx.save();const ch=(Math.abs(Math.cos(p.rot))*p.h+Math.abs(Math.sin(p.rot))*p.w)/2;
   ctx.translate(p.x,p.y+ch);ctx.rotate(-p.rot);ctx.translate(0,-p.h/2);drawSketch(ctx,propSketch(p,v));ctx.restore()}}
-function drawPickups(){for(const k of pickups){const b=k.y<=0?Math.sin(k.t*4)*3+3:0,x=k.x,y=k.y+b;ctx.save();
+function drawLoot(k){const b=k.y<=0?Math.sin(k.t*4)*3+4:0,x=k.x,y=k.y+b+6;ctx.save();
+  ctx.globalAlpha=k.lock?.12:.22+Math.sin(k.t*6)*.08;ctx.fillStyle='#ffb43a';ctx.beginPath();ctx.ellipse(x,y+6,46,18,0,0,TAU);ctx.fill();ctx.globalAlpha=1;
+  ctx.translate(x,y+6);ctx.rotate(.12+Math.sin(k.t*2)*.05);ctx.lineCap='round';ctx.lineJoin='round';const ln=(w,c,pts)=>{ctx.lineWidth=w;ctx.strokeStyle=c;ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.stroke()};
+  if(k.w==='sword'){ln(7,INK,[[-34,0],[36,0]]);ln(4.5,'#e4e1da',[[-12,0],[36,0]]);ln(6,'#5a1a14',[[-34,0],[-15,0]]);ln(3,INK,[[-13,-8],[-13,8]])}
+  else if(k.w==='nun'){ln(8,INK,[[-38,-6],[-10,0]]);ln(5.5,'#a8642e',[[-37,-6],[-11,0]]);ln(8,INK,[[10,0],[38,-6]]);ln(5.5,'#a8642e',[[11,0],[37,-6]]);
+    ctx.setLineDash([2.5,2.5]);ln(2,INK,[[-10,0],[0,6],[10,0]]);ctx.setLineDash([])}
+  else if(k.w==='staff'){ln(8,INK,[[-48,0],[48,0]]);ln(5,'#a8642e',[[-47,0],[47,0]])}
+  else{ln(6,INK,[[-20,0],[18,0]]);ln(3.5,'#e4e1da',[[-6,0],[18,0]]);ln(4,'#5a1a14',[[-20,0],[-8,0]])}
+  ctx.restore()}
+function drawPickups(){for(const k of pickups){if(k.w){drawLoot(k);continue}const b=k.y<=0?Math.sin(k.t*4)*3+3:0,x=k.x,y=k.y+b;ctx.save();
   ctx.globalAlpha=.25+Math.sin(k.t*6)*.1;ctx.fillStyle='#ff3a2a';ctx.beginPath();ctx.arc(x,y+16,24,0,TAU);ctx.fill();ctx.globalAlpha=1;
   ctx.fillStyle='#cf241d';ctx.beginPath();ctx.arc(x,y+13,11,0,TAU);ctx.fill();ctx.fillRect(x-4,y+20,8,10);ctx.fillStyle='#8a5a3a';ctx.fillRect(x-5,y+29,10,5);
   ctx.strokeStyle=INK;ctx.lineWidth=1.6;ctx.beginPath();ctx.arc(x,y+13,11,0,TAU);ctx.stroke();ctx.strokeRect(x-4,y+21,8,9);
@@ -1349,6 +1413,12 @@ function drawFinPrompt(){const v=finTarget();if(!v)return;const ok=canFinish(P1,
 function drawMsg(){const m=game.msgs[0];if(!m)return;const u=m.t/m.dur,sc=Math.min(1,m.t*8)*(1+Math.max(0,.15-m.t)*2),size=Math.min(W*.13,H*.15,110)*m.big*sc;
   ctx.save();ctx.translate(W/2,H*(portrait()?.3:.38));ctx.rotate(-.04);ctx.globalAlpha=u>.8?1-(u-.8)/.2:1;ctx.font=`900 ${size}px Vazirmatn, Tahoma`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.direction='rtl';ctx.lineJoin='round';
   ctx.lineWidth=size*.14;ctx.strokeStyle=INK;ctx.strokeText(m.text,0,0);ctx.fillStyle=m.col||PAPER;ctx.fillText(m.text,0,0);ctx.lineWidth=1.5;ctx.strokeStyle=PAPER;ctx.strokeText(m.text,size*.03,-size*.03);ctx.restore();ctx.globalAlpha=1}
+// speech caption: paper bubble, red for the boss, dark red for henchmen
+function drawSub(){const s=game.sub;if(!s)return;const a=Math.min(1,s.t*6,(s.dur-s.t)*4),size=clamp(Math.min(W,H)*.045,15,26);
+  const y=game.cine?H*.86:portrait()?groundY()+size*1.6:H*.2;ctx.save();ctx.globalAlpha=Math.max(0,a);ctx.font=`800 ${size}px Vazirmatn, Tahoma`;ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';
+  const tw=Math.min(ctx.measureText(s.text).width,W-40),bw=tw+size*1.4,bh=size*1.9,x=W/2;
+  ctx.fillStyle='rgba(243,239,230,.94)';ctx.strokeStyle=INK;ctx.lineWidth=2.2;ctx.beginPath();ctx.roundRect(x-bw/2,y-bh/2,bw,bh,[14,10,16,9]);ctx.fill();ctx.stroke();
+  ctx.fillStyle=s.who==='b'?'#cf241d':s.who==='e'?'#8a1d18':INK;ctx.fillText(s.text,x,y+1,W-40);ctx.restore()}
 function render(){
   const boil=Math.abs(Math.floor(game.rt*7))%2;
   ctx.setTransform(DPR,0,0,DPR,0,0);ctx.fillStyle=PAPER;ctx.fillRect(0,0,W,H);
@@ -1356,6 +1426,8 @@ function render(){
   worldTf(sx,sy);drawSketch(ctx,BG[boil].items);drawFloorDyn(boil);drawBGText(boil);
   if(game.superT>0||game.fin){ctx.setTransform(DPR,0,0,DPR,0,0);ctx.fillStyle=game.fin?'rgba(40,8,6,.62)':`rgba(20,18,16,${Math.min(.45,game.superT*1.2)})`;ctx.fillRect(0,0,W,H);worldTf(sx,sy)}
   drawProps(boil);drawPickups();
+  if(game.cine){const c=game.cine,k=Math.min(1,c.t*2.5),f=c.focus,[fx_,fy_]=toScreen(f.x,f.y+105*f.sc),R0=150*f.sc*cam.z;ctx.setTransform(DPR,0,0,DPR,0,0);
+    const g=ctx.createRadialGradient(fx_,fy_,R0*.45,fx_,fy_,R0*1.25);g.addColorStop(0,'rgba(12,8,6,0)');g.addColorStop(.55,`rgba(12,8,6,${.6*k})`);g.addColorStop(1,`rgba(12,8,6,${.9*k})`);ctx.fillStyle=g;ctx.fillRect(0,0,W,H);worldTf(sx,sy)}
   const order=[...fighters].sort((a,b)=>(a.state==='ko'?-1:0)-(b.state==='ko'?-1:0)||(a.state==='move'?1:0)-(b.state==='move'?1:0));
   for(const f of order)drawTrail(f);for(const f of order)drawFighterFx(f);drawProjs();
   drawFx();
@@ -1365,10 +1437,14 @@ function render(){
   if(grain){ctx.globalAlpha=.55;ctx.fillStyle=grain;ctx.fillRect(0,0,W,H);ctx.globalAlpha=1}
   if(!vign){vign=ctx.createRadialGradient(W/2,H/2,Math.min(W,H)*.35,W/2,H/2,Math.hypot(W,H)*.62);vign.addColorStop(0,'rgba(0,0,0,0)');vign.addColorStop(1,'rgba(70,55,35,.22)')}
   ctx.fillStyle=vign;ctx.fillRect(0,0,W,H);
-  if(game.fin){const b=H*.11;ctx.fillStyle='#0d0b0a';ctx.fillRect(0,0,W,b);ctx.fillRect(0,H-b,W,b);
+  if(game.cine){const b=H*.1*Math.min(1,game.cine.t*3);ctx.fillStyle='#0d0b0a';ctx.fillRect(0,0,W,b);ctx.fillRect(0,H-b,W,b);
+    ctx.font=`900 ${clamp(H*.04,16,28)}px Vazirmatn, Tahoma`;ctx.fillStyle='#ff4a32';ctx.textAlign='center';ctx.textBaseline='middle';ctx.direction='rtl';ctx.fillText(game.cine.name,W/2,b/2);
+    ctx.font=`700 ${clamp(H*.022,11,15)}px Vazirmatn, Tahoma`;ctx.fillStyle='rgba(243,239,230,.55)';ctx.fillText(isTouch?'برای رد شدن مشت بزن':'برای رد شدن J بزن',W/2,H-b/2)}
+  else if(game.fin){const b=H*.11;ctx.fillStyle='#0d0b0a';ctx.fillRect(0,0,W,b);ctx.fillRect(0,H-b,W,b);
     ctx.font=`900 ${clamp(H*.035,14,24)}px Vazirmatn, Tahoma`;ctx.fillStyle='#ff4a32';ctx.textAlign='center';ctx.textBaseline='middle';ctx.direction='rtl';ctx.fillText('— فینیشر —',W/2,b/2)}
   else{drawHUD(boil);drawFinPrompt();drawFinHint()}
-  drawMsg();updTouchUI()}
+  drawMsg();drawSub();const hideT=!!game.cine;if(hideT!==cineHid){cineHid=hideT;$('touch').style.visibility=hideT?'hidden':''}updTouchUI()}
+let cineHid=false;
 
 // ================= UI wiring =================
 const $=id=>document.getElementById(id);
@@ -1385,11 +1461,11 @@ function stepStage(d){if(game.modeSel==='story'){game.modeSel='battle';for(const
 $('stNext').onclick=()=>stepStage(1);$('stPrev').onclick=()=>stepStage(-1);$('stName').onclick=()=>stepStage(1);
 updStage();
 seg('diff',v=>game.diff=v);
-const begin=()=>{AU.init();game.paused=false;if(game.modeSel==='story'){story.kills=0;startStory(0)}else startBattle();show(null);setTimeout(()=>speak('intro',true),500)};
+const begin=()=>{AU.init();game.paused=false;if(game.modeSel==='story'){story.kills=0;startStory(0)}else startBattle();show(null);VO.say('intro',{pri:2,delay:game.mode==='battle'?3.4:.5})};
 $('start').onclick=begin;
 $('again').onclick=()=>{const a=game.overAct;if(a)a();show(null)};
 $('restart').onclick=()=>{game.paused=false;if(game.mode==='story')startStory(story.stage);else startBattle();show(null)};
-const toMenu=()=>{game.paused=false;show('menu');startDemo()};
+const toMenu=()=>{game.paused=false;VO.stop();game.sub=null;game.cine=null;show('menu');startDemo()};
 $('tomenu').onclick=toMenu;$('tomenu2').onclick=toMenu;
 $('resume').onclick=()=>{game.paused=false;show(null)};
 function togglePause(){if((game.mode!=='battle'&&game.mode!=='story')||game.phase==='over')return;game.paused=!game.paused;show(game.paused?'pause':null)}
@@ -1421,6 +1497,26 @@ let last=performance.now();
 function loop(t){const dt=clamp((t-last)/1000,0,.05);last=t;update(dt);render();requestAnimationFrame(loop)}
 requestAnimationFrame(loop);
 window.__game={get game(){return game},get P1(){return P1},get P2(){return P2},get fighters(){return fighters},story,startBattle,startStory,startDemo,human,press,cam,MOVES,P,skel,canFinish,startFinisher};
+</script>
+<div id="upd" class="hidden"><span>نسخه‌ی جدید بازی اومده!</span><button id="updBtn">بروزرسانی</button></div>
+<style>
+#upd{position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top));transform:translateX(-50%) rotate(-1deg);z-index:30;display:flex;align-items:center;gap:10px;
+  background:var(--paper);border:2.5px solid var(--ink);border-radius:14px 10px 15px 9px;box-shadow:4px 4px 0 rgba(29,28,26,.9);padding:8px 10px 8px 14px;font-weight:700;font-size:15px;white-space:nowrap}
+#upd.hidden{display:none}
+#upd button{font-family:inherit;font-weight:900;font-size:15px;border:2px solid var(--ink);background:var(--red);color:var(--paper);border-radius:10px 8px 11px 7px;padding:5px 12px;cursor:pointer}
+#ver{position:fixed;left:8px;bottom:calc(6px + env(safe-area-inset-bottom));font-size:11px;opacity:.45;z-index:11;direction:ltr}
+</style>
+<script>
+// installable app + update prompt (only where sw.js is served, i.e. the Liara server)
+(function(){const V='__VERSION__';if(!V.startsWith('__')){const e=document.createElement('div');e.id='ver';e.textContent='v'+V;document.getElementById('menu').appendChild(e)}
+  if(!('serviceWorker' in navigator))return;let reloading=false;
+  const ask=w=>{const b=document.getElementById('upd');b.classList.remove('hidden');document.getElementById('updBtn').onclick=()=>{b.querySelector('span').textContent='در حال بروزرسانی...';w.postMessage('update')}};
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{if(!reloading){reloading=true;location.reload()}});
+  navigator.serviceWorker.register('sw.js').then(reg=>{
+    if(reg.waiting&&navigator.serviceWorker.controller)ask(reg.waiting);
+    reg.addEventListener('updatefound',()=>{const w=reg.installing;w&&w.addEventListener('statechange',()=>{if(w.state==='installed'&&navigator.serviceWorker.controller)ask(w)})});
+    const check=()=>reg.update().catch(()=>{});setInterval(check,15*60*1000);
+    document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')check()})}).catch(()=>{})})();
 </script>
 </body>
 </html>

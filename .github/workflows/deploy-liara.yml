@@ -1,0 +1,36 @@
+# Deploys Paper Fighters (pencil-battle/) to Liara on every push that touches it.
+# Setup once: repo variable LIARA_APP = your Liara app id, secret LIARA_API_TOKEN = Liara API token.
+# Without LIARA_APP the job is skipped.
+name: Deploy Paper Fighters to Liara
+
+on:
+  push:
+    branches: [main, claude/wizardly-mayer-edw703]
+    paths: ['pencil-battle/**', '.github/workflows/deploy-liara.yml']
+  workflow_dispatch:
+
+concurrency:
+  group: liara-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    if: ${{ vars.LIARA_APP != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Stamp version (makes phones see the update)
+        run: |
+          V="$(date -u +%y%m%d.%H%M)-${GITHUB_SHA::7}"
+          sed -i "s/__VERSION__/$V/g" pencil-battle/sw.js pencil-battle/game.html
+          echo "Version $V"
+      - name: Deploy
+        env:
+          LIARA_API_TOKEN: ${{ secrets.LIARA_API_TOKEN }}
+        run: |
+          npx --yes @liara/cli@9 deploy --path pencil-battle --app "${{ vars.LIARA_APP }}" \
+            --api-token "$LIARA_API_TOKEN" --platform node --port 3000 --no-app-logs \
+            -m "${GITHUB_SHA::7}"
