@@ -750,25 +750,31 @@ MOVES.fin_dagger=buildFin(['dsw','dspin','dsw']);
 const MOVE_RATE=.88;  // < 1 = slower, more flowing moves
 
 // ================= voice lines =================
-const VLINES={intro:'اومدم اینجا تا آردِت کنم!',fin:'تمومت کردم!',boss:'غول بود، آرد شد!',hurt:'آخ! پشتم!'};
-function speak(k,caption){const line=VLINES[k];if(line&&caption)queueMsg(line,1.7,.62,'#cf241d')}
+const VLINES={intro:'اومدم اینجا تا آردِت کنم!',fin:'تمومت کردم!',boss:'یه غول بود، آرد شد!',hurt:'آخ! پشتم!'};
+let vT=-9;
+function speak(k,caption){const line=VLINES[k];if(!line)return;if(caption)queueMsg(line,1.7,.62,'#cf241d');
+  if(k==='hurt'&&nowS()-vT<4)return;vT=nowS();SND.play('v-'+k)}
 
 // ================= audio =================
 const AU={c:null,mute:false,nb:null,
-  init(){if(this.c)return;try{this.c=new(window.AudioContext||window.webkitAudioContext)();const n=this.c.sampleRate*.5;this.nb=this.c.createBuffer(1,n,this.c.sampleRate);const d=this.nb.getChannelData(0);for(let i=0;i<n;i++)d[i]=Math.random()*2-1}catch(e){}},
+  // recorded ElevenLabs clips in sfx/; the synth sounds below are only a fallback until a clip loads
+  clips:['hit-light','hit-heavy','whoosh-light','whoosh-heavy','whoosh-weapon','wood','shing','block','land','thud','ko','super','heal'],buf:{},
+  init(){if(this.c)return;try{this.c=new(window.AudioContext||window.webkitAudioContext)();const n=this.c.sampleRate*.5;this.nb=this.c.createBuffer(1,n,this.c.sampleRate);const d=this.nb.getChannelData(0);for(let i=0;i<n;i++)d[i]=Math.random()*2-1;
+    for(const k of this.clips)fetch('sfx/'+k+'.mp3').then(r=>r.ok?r.arrayBuffer():Promise.reject()).then(b=>new Promise((ok,no)=>this.c.decodeAudioData(b,ok,no))).then(b=>{this.buf[k]=b}).catch(()=>{})}catch(e){}},
+  clip(k,vol=1,vary=.08){if(!this.c||this.mute)return true;const b=this.buf[k];if(!b)return false;const s=this.c.createBufferSource(),g=this.c.createGain();s.buffer=b;s.playbackRate.value=1+(Math.random()-.5)*vary*2;g.gain.value=vol;s.connect(g).connect(this.c.destination);s.start();return true},
   env(g,t,a,v,d){g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+a);g.gain.exponentialRampToValueAtTime(.0001,t+d)},
   noise(f0,f1,dur,vol,q=1.2){if(!this.c||this.mute)return;const t=this.c.currentTime,s=this.c.createBufferSource(),bp=this.c.createBiquadFilter(),g=this.c.createGain();s.buffer=this.nb;bp.type='bandpass';bp.Q.value=q;bp.frequency.setValueAtTime(f0,t);bp.frequency.exponentialRampToValueAtTime(f1,t+dur);this.env(g,t,.01,vol,dur);s.connect(bp).connect(g).connect(this.c.destination);s.start(t);s.stop(t+dur+.05)},
   tone(f0,f1,dur,vol,type='sine'){if(!this.c||this.mute)return;const t=this.c.currentTime,o=this.c.createOscillator(),g=this.c.createGain();o.type=type;o.frequency.setValueAtTime(f0,t);o.frequency.exponentialRampToValueAtTime(f1,t+dur);this.env(g,t,.005,vol,dur);o.connect(g).connect(this.c.destination);o.start(t);o.stop(t+dur+.05)},
-  whoosh(h,w){if(w){this.noise(900,3200,.14,.18,1.6);return}this.noise(h?300:500,h?1600:2400,h?.2:.12,h?.22:.12,.9)},
-  hit(h){this.tone(h?150:220,h?45:80,h?.2:.1,h?.7:.45);this.noise(h?900:1500,300,h?.12:.07,h?.5:.3,.7)},
-  wood(){this.tone(420,160,.07,.35,'triangle');this.noise(2500,900,.05,.25,2)},
-  block(){this.tone(1200,700,.05,.12,'square');this.noise(3000,2000,.05,.15)},
-  land(){this.noise(400,120,.12,.25,.6)},
-  ko(){this.tone(90,30,.9,.8);this.noise(600,80,.6,.4,.5)},
-  sup(){this.tone(300,1200,.35,.2,'sawtooth');this.noise(800,4000,.35,.25)},
-  heal(){this.tone(500,1000,.18,.2,'triangle');this.tone(750,1500,.2,.12,'sine')},
-  thud(){this.tone(180,90,.08,.2,'triangle')},
-  shing(){this.noise(2500,9000,.3,.32,3);this.tone(1800,3400,.25,.08,'triangle')}
+  whoosh(h,w){if(this.clip(w?'whoosh-weapon':h?'whoosh-heavy':'whoosh-light',h?.55:.4,.12))return;if(w){this.noise(900,3200,.14,.18,1.6);return}this.noise(h?300:500,h?1600:2400,h?.2:.12,h?.22:.12,.9)},
+  hit(h){if(this.clip(h?'hit-heavy':'hit-light',h?.95:.7,.1))return;this.tone(h?150:220,h?45:80,h?.2:.1,h?.7:.45);this.noise(h?900:1500,300,h?.12:.07,h?.5:.3,.7)},
+  wood(){if(this.clip('wood',.6,.12))return;this.tone(420,160,.07,.35,'triangle');this.noise(2500,900,.05,.25,2)},
+  block(){if(this.clip('block',.75))return;this.tone(1200,700,.05,.12,'square');this.noise(3000,2000,.05,.15)},
+  land(){if(this.clip('land',.7))return;this.noise(400,120,.12,.25,.6)},
+  ko(){if(this.clip('ko',.95,.04))return;this.tone(90,30,.9,.8);this.noise(600,80,.6,.4,.5)},
+  sup(){if(this.clip('super',.7,.04))return;this.tone(300,1200,.35,.2,'sawtooth');this.noise(800,4000,.35,.25)},
+  heal(){if(this.clip('heal',.7,0))return;this.tone(500,1000,.18,.2,'triangle');this.tone(750,1500,.2,.12,'sine')},
+  thud(){if(this.clip('thud',.6,.12))return;this.tone(180,90,.08,.2,'triangle')},
+  shing(){if(this.clip('shing',.75,.06))return;this.noise(2500,9000,.3,.32,3);this.tone(1800,3400,.25,.08,'triangle')}
 };
 
 // ================= input =================
@@ -826,7 +832,7 @@ class Fighter{
           if(this.meter>=cost-.01){this.meter=Math.max(0,this.meter-cost);this.startMove(mv);if(mv==='special')superFlash(this);else cineStart(this,mv)}}
         else if(take(I,'punch'))this.startMove(this.punchMove(fwd,back));
         else if(take(I,'kick'))this.startMove(this.crouch?'sw':(fwd?'sk':back?'bk':'fs'));
-        else if(!this.blocking&&!this.crouch&&take(I,'up')){this.state='air';this.vy=610;this.vx=(fwd?240:back?-210:0)*this.face;this.airAtk=false;AU.noise(600,1200,.1,.08)}
+        else if(!this.blocking&&!this.crouch&&take(I,'up')){this.state='air';this.vy=610;this.vx=(fwd?240:back?-210:0)*this.face;this.airAtk=false;AU.whoosh(false)}
         else if(!this.crouch&&!this.blocking)this.vx=(fwd?185:back?-140:0)*this.face*this.spd}
     }else if(S==='air'){
       if(fight&&!this.airAtk){if(this.meter>=BAR-.01&&take(I,'special')){this.airAtk=true;this.meter-=BAR;const mv=I.down?'aslam':'adr';this.startMove(mv);cineStart(this,mv)}
