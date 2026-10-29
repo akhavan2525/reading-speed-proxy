@@ -100,6 +100,12 @@ kbd{font-family:inherit;border:1.5px solid var(--ink);border-radius:5px;padding:
   </div>
 </div>
 
+<div id="select" class="overlay hidden"><div class="card selc">
+  <h1 id="selT" style="font-size:24px">کاراکترت رو انتخاب کن</h1>
+  <div id="selGrid" class="sgrid"></div>
+  <div id="selInfo" class="sinfo"></div>
+  <div class="row"><button class="btn" id="selBack">برگشت</button><button class="btn big" id="selGo" style="margin:0">انتخاب</button></div>
+</div></div>
 <div id="help" class="overlay hidden"><div class="card" style="text-align:right;transform:none">
   <h1 style="font-size:26px;text-align:center">کنترل‌ها</h1>
   <div style="font-size:13px;line-height:1.9;margin:8px 0 12px"><div><b>کیبورد:</b> <kbd>A</kbd><kbd>D</kbd> حرکت · <kbd>W</kbd> پرش · <kbd>S</kbd> خم · <kbd>J</kbd> مشت/سلاح · <kbd>K</kbd> لگد · <kbd>L</kbd> دفاع · <kbd>Space</kbd> ویژه · <kbd>F</kbd> فینیشر · <kbd>Esc</kbd> توقف</div>
@@ -400,6 +406,18 @@ const THEME_LIST={shop:['shelf','plant','window','counter','fridge','door'],cafe
 const THEME_TITLE={shop:'سوپرمارکت مداد',cafe:'کافه مداد',dojo:'باشگاه رزمی',temple:'معبد مداد',alley:'کوچه‌ی مداد'};
 const LAMP={shop:lampCone,cafe:lampDome,dojo:lantern,temple:lantern,alley:lampCone};
 const WPN={shop:'none',cafe:'nun',dojo:'staff',temple:'sword',alley:'dagger'};
+// playable roster. stats = [power, speed, defense] out of 5; spd/dmg/hp/kb scale the fighter; look = costume drawn on the stick figure
+const CHARS=[
+  {id:'sia',name:'سیاه',style:'مشت و لگد',weapon:'none',stats:[3,3,3],spd:1,dmg:1,hp:100,special:'special',sname:'طوفان!',look:{band:'tails'},img:'chars/c1.png'},
+  {id:'dragon',name:'اژدها',style:'کونگ‌فو و نانچیکو',weapon:'nun',stats:[3,5,2],spd:1.18,dmg:.92,hp:90,special:'dflyk',sname:'لگد اژدها!',look:{suit:'#f2c21b'},img:'chars/c2.png'},
+  {id:'dancer',name:'رقصنده',style:'کاپوئرا',weapon:'none',stats:[3,4,2],spd:1.1,dmg:1,hp:95,special:'wind',sname:'آسیاب بادی!',ginga:1,look:{band:'bandana',pants:'#f6f4ee',belt:'#f6f4ee'},img:'chars/c3.png'},
+  {id:'samurai',name:'سامورایی',style:'کاتانا',weapon:'sword',stats:[4,3,3],spd:.95,dmg:1.12,hp:100,special:'kspin',sname:'شمشیر طوفانی!',look:{bun:1,belt:'#8d8d8d'}},
+  {id:'shadow',name:'سایه',style:'دو خنجر',weapon:'dagger',stats:[2,5,2],spd:1.22,dmg:.85,hp:85,special:'dspin',sname:'رقص خنجر!',look:{hood:1}},
+  {id:'master',name:'استاد',style:'چوب رزمی',weapon:'staff',stats:[4,2,4],spd:.85,dmg:1.15,hp:115,kb:.85,special:'sspin',sname:'چرخش استاد!',look:{hat:1,beard:1}},
+  {id:'boxer',name:'مشت‌زن',style:'بوکس',lock:1},
+  {id:'pahlevan',name:'پهلوون',style:'زورخانه‌ای',lock:1},
+  {id:'grandma',name:'ننه‌جون',style:'دمپایی!',lock:1}];
+const PLAYABLE=CHARS.filter(c=>!c.lock);
 function place(s,theme,name,X,L){const m=MODS[theme][name];s.ox=X-m.a;m.f(s,L);s.ox=0;return X+(m.b-m.a)}
 function structure(s,theme,x0,x1){const L=mulberry32(77);s.ox=0;
   s.line(x0-500,FL,x1+500,FL,1.6,.9,3);s.line(x0-500,CEIL,x1+500,CEIL,1.4,.8,2);s.line(x0-500,CEIL-16,x1+500,CEIL-16,.8,.45,1);
@@ -612,6 +630,16 @@ const P={
 };
 Object.assign(P,{nsp2:W_(P.nsp,{wb:780}),nj2:W_(P.nj1,{wb:530}),nj3:W_(P.nj1,{wb:890}),sr5b:W_(P.sr5,{wa:540}),s83:W_(P.s81,{wa:560}),s84:W_(P.s82,{wa:740}),
   ds3:W_(P.ds2,{}),ssp2:W_(P.ssp,{wa:450}),cr2s:W_(P.cr2,{wa:230}),cr3s:W_(P.cr3,{wa:240}),cr4s:W_(P.cr4,{wa:200}),sj2:W_(P.sj1,{wa:200}),nsw0:W_(P.stN,{wb:-60})});
+// capoeira: two swaying ginga stances and the handstand windmill
+Object.assign(P,{
+  stG:B({hy:40,hx:-4,t:16,h:-8,f1:[38,0],f2:[-40,0],h1:[22,22],h2:[-16,4]}),
+  stG2:B({hy:42,hx:6,t:8,h:-4,f1:[38,0],f2:[-40,0],h1:[-10,8],h2:[24,22]}),
+  hs0:B({hy:36,t:50,h:-20,f1:[30,0],f2:[-34,0],h1:[30,-30],h2:[24,-34]}),
+  hs1:B({hy:46,rot:180,f1:[10,0],f2:[-10,0],h1:[6,46],h2:[-6,46]}),
+  hs2:B({hy:46,rot:180,f1:[44,8],f2:[-44,8],h1:[6,46],h2:[-6,46]}),
+  hs3:B({hy:46,rot:180,f1:[-40,14],f2:[40,14],h1:[6,46],h2:[-6,46]}),
+  hs4:B({hy:40,rot:90,t:20,f1:[30,0],f2:[-30,0],h1:[20,20],h2:[10,10]}),
+});
 // weapon guards follow the reference sheet: arms forward on the hilt, blade up-forward; dagger held out front
 Object.assign(P,{
   stK:B({hy:54,t:6,h:-4,f1:[30,0],f2:[-32,0],h1:[30,-12],wa:138}),
@@ -697,6 +725,12 @@ const MOVES={
   spheel:{aura:1,seq:[['spinA',60,0,40,0,{fx:'ring'}],['sh2',60,0,45,1,{fx:'ring'}],['sh3',150,40,60,1],['spinA',60,0,35,1],['spinA',40,0,35],['dk7',110,0,30,0,{fx:'land'}],['stance',130,0,20]],hits:[{t0:110,t1:270,limb:'f1',dmg:17,kb:620,kind:'knock',r:15,cine:1}]},
   aslam:{air:1,aura:1,launch:[780,200],rotc:[0,370,0,-360],seq:[['as1',130,0,35],['as2',130,0,35],['as3',90,0,45],['as4',9e9,0,60,0,{vy:-1300}]],hits:[{t0:350,t1:9e9,limb:'f1',dmg:14,kb:260,kind:'knock',r:15,cine:1}],slam:1},
   landK:{seq:[['dk7',150,0,30],['stance',120,0,20]],hits:[]},
+  // Dragon: running flying side kick
+  dflyk:{aura:1,seq:[['dk1',90,0,30],['dk2',110,760,45,0,{fx:'dash'}],['dk4',220,820,55,0,{vy:320,fx:'dash'}],['dk6',90,120,30],['dk7',140,0,30,0,{fx:'land'}],['stance',150,0,20]],
+    hits:[{t0:200,t1:420,limb:'f1',dmg:26,kb:640,kind:'heavy',r:15,cine:1}]},
+  // Dancer: drop into a handstand and windmill the legs
+  wind:{aura:1,seq:[['hs0',110,60,30],['hs1',120,80,30],['hs2',130,90,40,0,{fx:'ring'}],['hs3',130,90,40,1,{fx:'ring'}],['hs2',130,90,40,0,{fx:'ring'}],['hs3',130,60,40,1,{fx:'ring'}],['hs4',140,0,30],['stance',160,0,20]],
+    hits:[{t0:250,t1:330,limb:'f1',dmg:6,kb:120,kind:'light',r:16},{t0:360,t1:440,limb:'f2',dmg:6,kb:120,kind:'light',r:16},{t0:470,t1:550,limb:'f1',dmg:7,kb:140,kind:'light',r:16},{t0:580,t1:680,limb:'f2',dmg:12,kb:560,kind:'knock',r:17,cine:1}]},
   special:{aura:1,seq:[['dash',200,720],['jab',80,160],['cross',80,160],['hook',90,100],['rh2',70,40],['rh4',230,60,60],['rh5',90,0],['stance',200,0]],
     hits:[{t0:200,t1:280,limb:'h1',dmg:6,kb:60,kind:'light',r:14},{t0:280,t1:360,limb:'h2',dmg:6,kb:60,kind:'light',r:14},{t0:360,t1:450,limb:'h1',dmg:6,kb:70,kind:'light',r:14},{t0:520,t1:760,limb:'f2',dmg:18,kb:620,kind:'knock',r:14,sup:1,cine:1}]},
   // ===== NUNCHAKU =====
@@ -821,10 +855,11 @@ const COLORS={black:{front:'#141414',rear:'#3a3a3a',flash:'#8a8a8a',ink:'#141414
 let UID=1;
 class Fighter{
   constructor(o){Object.assign(this,{team:o.team,c:o.c,weapon:o.weapon||'none',sc:o.sc||1,maxHp:o.hp||100,boss:!!o.boss,name:o.name||'',uid:UID++,dmgMul:o.dmg||1,kbRes:o.kbRes||1,spd:o.spd||1,aura:o.aura||(o.team?'#ff8a1e':'#ff2a1e'),ai:null});
+    if(o.ch){const c=o.ch;this.ch=c;this.spd*=c.spd||1;this.dmgMul*=c.dmg||1;this.maxHp=Math.round(this.maxHp*(c.hp||100)/100);this.kbRes*=c.kb||1}
     this.inp=mkInput();this.meter=0;this.vel={};this.reset(o.x||0,o.face||1)}
   reset(x,face){Object.assign(this,{x,y:0,vx:0,vy:0,face,state:'stand',hp:this.maxHp,ghost:this.maxHp,move:null,stun:0,downT:0,inv:0,flash:0,ph:0,trail:[],ko:false,blocking:false,crouch:false,airAtk:false,juggles:0,bounced:false,hitPose:'hit',bt:Math.random()*9,locked:false,koT:0,gone:false,alpha:1,nc:null,df:face,dff:face,kOut:[false,false],curTarget:null});
     this.disp={...this.base()};for(const k of KEYS)this.vel[k]=0;this.sk=skel(this.disp,x,0,face,this.sc,this.weapon,true);this.updNun(0)}
-  base(){const k={staff:'stS',nun:'stN',sword:'stK',dagger:'stD'}[this.weapon];return k?P[k]:P.stance}
+  base(){if(this.ch&&this.ch.ginga&&this.weapon==='none')return P.stG;const k={staff:'stS',nun:'stN',sword:'stK',dagger:'stD'}[this.weapon];return k?P[k]:P.stance}
   poseOf(n){if(n==='stance')return this.base();if(n==='crouch'){const k={staff:'crS',sword:'crK',dagger:'crD'}[this.weapon];return k?P[k]:P.crouch}return P[n]}
   get airborne(){return this.y>0||this.vy>0}
   enemies(){return fighters.filter(o=>o.team!==this.team&&!o.gone)}
@@ -853,8 +888,8 @@ class Fighter{
       if(fight){this.crouch=!!I.down;this.blocking=!!I.block;
         if(take(I,'fin')&&op&&canFinish(this,op))startFinisher(this,op);
         else if(take(I,'special')){let mv,cost=BAR;
-          if(this.meter>=100&&!fwd&&!back&&!I.down&&!I.up){mv='special';cost=100}else mv=I.up?'adr':I.down?'slide':fwd?'dashk':back?'bflip':'multi';
-          if(this.meter>=cost-.01){this.meter=Math.max(0,this.meter-cost);this.startMove(mv);if(mv==='special')superFlash(this);else cineStart(this,mv)}}
+          if(this.meter>=100&&!fwd&&!back&&!I.down&&!I.up){mv=(this.ch&&this.ch.special)||'special';cost=100}else mv=I.up?'adr':I.down?'slide':fwd?'dashk':back?'bflip':'multi';
+          if(this.meter>=cost-.01){this.meter=Math.max(0,this.meter-cost);this.startMove(mv);if(cost===100)superFlash(this);else cineStart(this,mv)}}
         else if(take(I,'punch'))this.startMove(this.punchMove(fwd,back));
         else if(take(I,'kick'))this.startMove(this.crouch?'sw':(fwd?'sk':back?'bk':'fs'));
         else if(!this.blocking&&!this.crouch&&take(I,'up')){this.state='air';this.vy=610;this.vx=(fwd?240:back?-210:0)*this.face;this.airAtk=false;AU.whoosh(false)}
@@ -916,6 +951,7 @@ class Fighter{
         if(this.blocking){const B_={staff:['blS','cblS'],sword:['blK','cblK'],dagger:['blD','cblD']}[this.weapon];return[B_?P[B_[this.crouch?1:0]]:(this.crouch?P.cblock:P.block),16]}
         if(this.crouch)return[this.poseOf('crouch'),14];
         if(Math.abs(this.vx)>1)return[this.nunHand(walkPose(this.ph,Math.sin(this.bt*6),base)),13]}
+      if(base===P.stG){const u=(Math.sin(this.bt*3.1)+1)/2,p={};for(const k in P.stG)p[k]=typeof P.stG[k]==='number'?P.stG[k]+(P.stG2[k]-P.stG[k])*u:P.stG[k];return[p,9]}
       const b=Math.sin(this.bt*2.6),p={...base};p.hy+=b*1.3;p.t+=b*1.2;p.a1u+=b*3;p.a2u-=b*2.5;p.a1f+=b*2;this.nunHand(p);
       const L1=legIK(22-p.hx,-p.hy),L2=legIK(-26-p.hx,-p.hy);if(this.weapon!=='staff'){p.l1t=L1[0];p.l1s=L1[1];p.l2t=L2[0];p.l2s=L2[1]}return[p,11]}
     if(S==='air')return[P.air,12];
@@ -1085,7 +1121,7 @@ const WORDS=['تق!','بوم!','پاق!','شترق!','دَنگ!','گرومپ!','
 function pop(p){fx.push({k:'word',x:p[0],y:p[1]+30,t:0,life:.7,txt:WORDS[Math.random()*WORDS.length|0],rot:(Math.random()-.5)*.4})}
 function speedLines(p,d){speed={x:p[0],y:p[1],t:0,life:d}}
 function shake(v){game.shake=Math.max(game.shake,v)}
-function superFlash(f){if(f===P1)VO.say('super',{pri:1});game.superT=.6;game.hitstop=.34;speedLines([f.x,f.y+90],.6);AU.sup();fx.push({k:'word',x:f.x,y:f.y+175,t:0,life:.9,txt:'طوفان!',rot:-.08,big:1,col:f.c.ink})}
+function superFlash(f){if(f===P1&&(!f.ch||f.ch.id==='sia'))VO.say('super',{pri:1});game.superT=.6;game.hitstop=.34;speedLines([f.x,f.y+90],.6);AU.sup();fx.push({k:'word',x:f.x,y:f.y+175,t:0,life:.9,txt:(f.ch&&f.ch.sname)||'طوفان!',rot:-.08,big:1,col:f.c.ink})}
 const CNAMES={dashk:'لگد دَش!',adr:'دوبل هوایی!',slide:'جارو + صعودی!',bflip:'لگد پشتک!',multi:'رگبار لگد!',aslam:'کوبش هوایی!'};
 function cineStart(f,mv){game.superT=.32;game.hitstop=.13;AU.sup();fx.push({k:'word',x:f.x,y:f.y+175*f.sc,t:0,life:.8,txt:CNAMES[mv]||'!',rot:-.06,big:1,col:f.c.ink})}
 function updFx(dt){for(const e of fx){e.t+=dt;
@@ -1116,7 +1152,7 @@ class AI{
     if(!this.engage){const want=240;if(ad<want-50)I[aw]=1;else if(ad>want+70)I[tw]=1;return}
     const r=Math.random();
     if(game.mode==='battle'&&canFinish(me,op)&&r<.7){this.press('fin');return}
-    if(me.meter>=100&&ad<230*R&&r<.35&&!W){this.press('special');return}
+    if(me.meter>=100&&ad<230*R&&r<.35&&(!W||me.ch)){this.press('special');return}
     if(me.meter>=BAR&&ad<240*R&&r<.22){const c=Math.random();if(c<.25)I[tw]=1;else if(c<.45)I.down=1;else if(c<.6)I[aw]=1;else if(c<.75){this.press('up');this.press('special',.15);this.t=.7;return}this.press('special',.03);this.t=.9;return}
     if(op.state==='down'||op.state==='getup'){if(ad<120*R&&Math.random()<.5)I[aw]=1;else if(ad>200*R)I[tw]=1;return}
     if(ad>175*R){if(r<.14&&!me.boss){I[tw]=1;this.press('up');if(Math.random()<.5)I[tw]=1;this.press('kick',.12+Math.random()*.1);this.t=.6}else I[tw]=1}
@@ -1130,7 +1166,7 @@ class AI{
 }
 
 // ================= game state =================
-const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+const cv=document.getElementById('c');let ctx=cv.getContext('2d');
 let W=0,H=0,DPR=1;
 let fighters=[],P1=null,P2=null,ctrl=[];
 const game={phase:'fight',mode:'demo',theme:'shop',rt:0,hitstop:0,shake:0,superT:0,slow:0,round:1,wins:[0,0],timer:60,msgs:[],endT:0,winner:null,introT:0,paused:false,diff:'medium',zp:0,flashT:0,fin:null,stageSel:'shop',modeSel:'story',demoI:0};
@@ -1151,18 +1187,19 @@ function say(text,dur=1.1,big=1,col){game.msgs=[{text,t:0,dur,big,col}]}
 function queueMsg(text,dur=1.1,big=1,col){game.msgs.push({text,t:0,dur,big,col})}
 
 function setTheme(theme,mode,len,bossX){game.theme=theme;buildBG(theme,mode,len||0,bossX||0)}
-function startBattle(){game.mode='battle';const th=game.stageSel,wpn=WPN[th];setTheme(th,'battle');
-  P1=new Fighter({team:0,c:COLORS.black,weapon:wpn,x:-170,face:1});P2=new Fighter({team:1,c:COLORS.red,weapon:wpn,x:170,face:-1,dmg:LV[game.diff].dmg});
+function startBattle(){game.mode='battle';const th=game.stageSel;setTheme(th,'battle');const c1=PLAYABLE[game.p1ch||0],c2=PLAYABLE[game.p2ch??1];
+  P1=new Fighter({team:0,c:COLORS.black,ch:c1,weapon:c1.weapon,x:-170,face:1});P2=new Fighter({team:1,c:COLORS.red,ch:c2,weapon:c2.weapon,x:170,face:-1,dmg:LV[game.diff].dmg});
   P1.inp=human;fighters=[P1,P2];P2.ai=new AI(P2,game.diff);ctrl=[P2.ai];game.wins=[0,0];game.round=1;props=battleProps(th);pickups=[];startRound()}
-function startDemo(){game.mode='demo';const th=['shop','cafe','dojo','temple','alley'][game.demoI++%5],wpn=WPN[th];setTheme(th,'battle');
-  P1=new Fighter({team:0,c:COLORS.black,weapon:wpn,x:-170,face:1});P2=new Fighter({team:1,c:COLORS.red,weapon:wpn,x:170,face:-1});
+function startDemo(){game.mode='demo';const th=['shop','cafe','dojo','temple','alley'][game.demoI++%5];setTheme(th,'battle');
+  const c1=PLAYABLE[Math.random()*PLAYABLE.length|0],c2=PLAYABLE[Math.random()*PLAYABLE.length|0];
+  P1=new Fighter({team:0,c:COLORS.black,ch:c1,weapon:c1.weapon,x:-170,face:1});P2=new Fighter({team:1,c:COLORS.red,ch:c2,weapon:c2.weapon,x:170,face:-1});
   fighters=[P1,P2];P1.ai=new AI(P1,'medium');P2.ai=new AI(P2,'medium');ctrl=[P1.ai,P2.ai];props=battleProps(th);pickups=[];startRound()}
 function startRound(){P1.reset(-170,1);P2.reset(170,-1);fx=[];speed=null;projs=[];game.timer=60;game.endT=0;game.winner=null;game.slow=0;game.fin=null;cam.x=0;
   if(game.mode==='demo'){game.phase='fight';game.msgs=[];return}
   game.phase='intro';game.introT=0;say(game.round===3?'راند آخر':'راند '+fa(game.round),1.1);VO.say(game.round===3?'a-final':'a-r'+game.round,{pri:2})}
 function startStory(i,keepMeter){const st=STORY[i];game.mode='story';story.stage=i;story.len=st.len;story.waveIdx=0;story.lock=null;story.spawnQ=[];story.boss=null;story.result=null;story.arrowT=0;
   setTheme(st.theme,'story',st.len,st.boss.x);const m=P1&&keepMeter?P1.meter:0;
-  P1=new Fighter({team:0,c:COLORS.black,weapon:st.weapon,x:150,face:1});P1.inp=human;P1.meter=m;P2=null;fighters=[P1];ctrl=[];props=storyProps(st);pickups=[];projs=[];fx=[];speed=null;game.fin=null;game.slow=0;
+  P1=new Fighter({team:0,c:COLORS.black,ch:{...CHARS[0],special:'special'},weapon:st.weapon,x:150,face:1});P1.inp=human;P1.meter=m;P2=null;fighters=[P1];ctrl=[];props=storyProps(st);pickups=[];projs=[];fx=[];speed=null;game.fin=null;game.slow=0;
   cam.x=150;game.phase='intro';game.introT=0;say('مرحله‌ی '+fa(i+1)+' · '+st.name,1.6,1);
   if(st.weapon==='nun')queueMsg('نانچیکو گرفتی!',1.3,.8,'#cf241d');if(st.weapon==='staff')queueMsg('چوب رزمی گرفتی!',1.3,.8,'#cf241d');if(st.weapon==='sword')queueMsg('کاتانا گرفتی!',1.3,.8,'#cf241d');if(st.weapon==='dagger')queueMsg('دو خنجر گرفتی!',1.3,.8,'#cf241d');queueMsg('برو جلو →',1,.7);VO.say('st'+(i+1),{pri:1,delay:i===0&&!keepMeter?3.1:1})}
 function spawnEnemy(st,side,boss){const L=story.lock,x=boss?Math.min(L[1]-80,P1.x+430):side>0?L[1]+70:L[0]-70;
@@ -1280,13 +1317,17 @@ function drawFighter(f){
   const fist=(p,col)=>{ctx.fillStyle=col;ctx.beginPath();ctx.arc(p[0],p[1],5.6*sc*(bs?1.5:1),0,TAU);ctx.fill()};
   const limb=(pts,w,col)=>{if(!bs){strokePoly(pts,w,col);return}strokePoly(pts.slice(0,2),w*1.55,col);strokePoly(pts.slice(1),w*1.2,col)};
   const L2=[s.hip,s.k2,s.f2,s.t2],A2=[s.sh,s.e2,s.h2],L1=[s.hip,s.k1,s.f1,s.t1],A1=[s.sh,s.e1,s.h1],T=[s.hip,s.chest,s.neck];
+  const lk=(f.ch&&f.ch.look)||{},shade=(col,rear)=>rear?shadeHex(col,.8):col,cloth=(pts,w,col)=>{strokePoly(pts,w+3*sc,INK);strokePoly(pts,w,col)};
+  const leg=(pts,col)=>{const rear=col===rc;if(lk.suit){cloth(pts.slice(0,3),Wd*1.05,shade(lk.suit,rear));strokePoly(pts.slice(0,3),Wd*.2,INK);strokePoly(pts.slice(2),Wd,col);return}
+    if(lk.pants){cloth(pts.slice(0,3),Wd*1.75,shade(lk.pants,rear));strokePoly(pts.slice(2),Wd,col);return}limb(pts,Wd,col)};
+  const arm=(pts,col)=>{const rear=col===rc;if(lk.suit){cloth(pts,Wd*.95,shade(lk.suit,rear));strokePoly(pts,Wd*.18,INK);return}limb(pts,Wd*.9,col)};
   if(f.state==='move'&&f.move.d.aura){const ac=f.aura,pulse=.75+Math.sin(game.rt*40)*.25;ctx.save();ctx.shadowColor=ac;ctx.shadowBlur=22*pulse;ctx.globalAlpha=.32*pulse*f.alpha;
     for(const pts of[L1,L2,A1,A2,T])strokePoly(pts,Wd+11*sc,ac);ctx.fillStyle=ac;ctx.beginPath();ctx.arc(s.head[0],s.head[1],(SEG.HR+7)*sc,0,TAU);ctx.fill();ctx.restore();
     ctx.strokeStyle=ac;ctx.lineWidth=1.5;ctx.globalAlpha=.85*f.alpha;const js=[s.head,s.chest,s.hip,s.k1,s.k2,s.f1,s.f2,s.h1,s.h2,s.e1];
     for(let i=0;i<7;i++){const q=js[Math.random()*js.length|0],a=Math.random()*TAU,l=(10+Math.random()*16)*sc,r0=12*sc;ctx.beginPath();ctx.moveTo(q[0]+Math.cos(a)*r0,q[1]+Math.sin(a)*r0);ctx.lineTo(q[0]+Math.cos(a+.3)*(r0+l*.5),q[1]+Math.sin(a+.3)*(r0+l*.5));ctx.lineTo(q[0]+Math.cos(a)*(r0+l),q[1]+Math.sin(a)*(r0+l));ctx.stroke()}ctx.globalAlpha=f.alpha}
   if(f.weapon==='sword')drawScabbard(f);
-  const sw=f.disp.sw;limb(sw?L1:L2,Wd,rc);if(!two){limb(A2,Wd*.9,rc);fist(s.h2,rc);if(f.weapon==='dagger')drawKnife(f,1)}
-  strokePoly(T,Wd*(bs?1.9:1.08),fc);hl(T,Wd);
+  const sw=f.disp.sw;leg(sw?L1:L2,rc);if(!two){arm(A2,rc);fist(s.h2,rc);if(f.weapon==='dagger')drawKnife(f,1)}
+  if(lk.suit){cloth(T,Wd*1.3,lk.suit);strokePoly(T,Wd*.2,INK)}else strokePoly(T,Wd*(bs?1.9:1.08),fc);hl(T,Wd);if(lk.belt)drawBelt(f,lk.belt);
   if(bs){const ux=s.chest[0]-s.hip[0],uy=s.chest[1]-s.hip[1],ul=Math.hypot(ux,uy)||1,u=[ux/ul,uy/ul],pp=[u[1],-u[0]],q=(o,a,b)=>[o[0]+pp[0]*a*sc+u[0]*b*sc,o[1]+pp[1]*a*sc+u[1]*b*sc];
     const poly=[q(s.hip,-9,0),q(s.hip,9,0),q(s.chest,20,3),q(s.chest,-20,3)];ctx.fillStyle=fc;ctx.beginPath();poly.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();ctx.fill();
     ctx.strokeStyle='rgba(30,4,3,.55)';ctx.lineWidth=1.7*sc;ctx.beginPath();const m1=q(s.chest,0,-4),m2=q(s.hip,0,10);ctx.moveTo(m1[0],m1[1]);ctx.lineTo(m2[0],m2[1]);
@@ -1294,20 +1335,42 @@ function drawFighter(f){
     const pc=lerp2(s.chest,s.hip,.12);ctx.beginPath();for(const sd of[-1,1]){const a=q(pc,sd*12,2);ctx.moveTo(a[0],a[1]);ctx.quadraticCurveTo(a[0]+u[0]*6*sc,a[1]+u[1]*6*sc,a[0]+pp[0]*sd*0,a[1]-u[1]*0)}ctx.stroke()}
   ctx.fillStyle=fc;ctx.beginPath();ctx.arc(s.head[0],s.head[1],SEG.HR*sc*(bs?1.08:1),0,TAU);ctx.fill();
   ctx.strokeStyle='rgba(255,255,255,.18)';ctx.lineWidth=2.2*sc;ctx.beginPath();ctx.arc(s.head[0],s.head[1],(SEG.HR-4)*sc,Math.PI*.55,Math.PI*.95);ctx.stroke();
+  if(f.ch)drawHeadGear(f,fc);
   if(bs){const hx=s.head[0]-s.neck[0],hy=s.head[1]-s.neck[1],hl_=Math.hypot(hx,hy)||1,hu=[hx/hl_,hy/hl_],hf=[hu[1]*dff,-hu[0]*dff],H=(a,b)=>[s.head[0]+hu[0]*a*sc+hf[0]*b*sc,s.head[1]+hu[1]*a*sc+hf[1]*b*sc];
     const horn=(p0,p1,tip)=>{ctx.fillStyle='#1b0807';ctx.beginPath();ctx.moveTo(p0[0],p0[1]);ctx.quadraticCurveTo((p0[0]+tip[0])/2+hu[0]*3*sc,(p0[1]+tip[1])/2+hu[1]*3*sc,tip[0],tip[1]);ctx.lineTo(p1[0],p1[1]);ctx.closePath();ctx.fill()};
     horn(H(9,-10),H(12,-3),H(30,-12));horn(H(10,3),H(12,10),H(29,16));
     strokePoly([H(-5,2),H(-5.5,13)],2.6*sc,'#1b0807');ctx.strokeStyle='#f3efe6';ctx.lineWidth=1.3*sc;ctx.beginPath();for(let i=0;i<5;i++){const a=H(-5+(i%2?-3:0),2.5+i*2.2);ctx.lineTo(a[0],a[1])}ctx.stroke();
     strokePoly([H(8.5,0),H(6,11)],3.2*sc,'#1b0807');const e=H(4.2,6.4);ctx.fillStyle='#ffe27a';ctx.beginPath();ctx.arc(e[0],e[1],2.8*sc,0,TAU);ctx.fill();ctx.fillStyle='#1b0807';ctx.beginPath();ctx.arc(e[0]+hf[0]*1,e[1]+hf[1]*1,1.2*sc,0,TAU);ctx.fill()}
-  const LF=sw?L2:L1;limb(LF,Wd,fc);hl(LF,Wd);
-  if(f.weapon==='staff'){drawStaff(f);limb(A2,Wd*.9,rc);fist(s.h2,rc)}
-  if(f.weapon==='sword'){drawSword(f);limb(A2,Wd*.9,rc);fist(s.h2,rc)}
-  limb(A1,Wd*.9,fc);hl(A1,Wd*.9);fist(s.h1,fc);
+  const LF=sw?L2:L1;leg(LF,fc);if(!lk.pants)hl(LF,Wd);
+  if(f.weapon==='staff'){drawStaff(f);arm(A2,rc);fist(s.h2,rc)}
+  if(f.weapon==='sword'){drawSword(f);arm(A2,rc);fist(s.h2,rc)}
+  arm(A1,fc);hl(A1,Wd*.9);fist(s.h1,fc);
   if(bs){ctx.fillStyle='#2b0b09';ctx.strokeStyle='#0d0302';ctx.lineWidth=1.5*sc;const sh=s.sh;ctx.beginPath();ctx.arc(sh[0],sh[1],10.5*sc,0,TAU);ctx.fill();ctx.stroke();
     ctx.beginPath();for(let k=0;k<4;k++){const a=-.2+k*.9+(dff<0?1.2:0),r0=9*sc,r1=17*sc;ctx.moveTo(sh[0]+Math.cos(a)*r0,sh[1]+Math.sin(a)*r0);ctx.lineTo(sh[0]+Math.cos(a+.18)*r1,sh[1]+Math.sin(a+.18)*r1);ctx.lineTo(sh[0]+Math.cos(a+.36)*r0,sh[1]+Math.sin(a+.36)*r0)}ctx.fill()}
   if(f.weapon==='dagger')drawKnife(f,0);
   if(f.weapon==='nun')drawNun(f);
   ctx.restore()}
+const shadeHex=(h,k)=>{const n=parseInt(h.slice(1),16);return'rgb('+[(n>>16)&255,(n>>8)&255,n&255].map(v=>Math.round(v*k)).join(',')+')'};
+// head-local frame: a = up the neck line, b = forward (towards the facing side)
+function headFrame(f){const s=f.sk,sc=f.sc,hx=s.head[0]-s.neck[0],hy=s.head[1]-s.neck[1],l=Math.hypot(hx,hy)||1,hu=[hx/l,hy/l],hf=[hu[1]*f.dff,-hu[0]*f.dff];
+  return(a,b)=>[s.head[0]+hu[0]*a*sc+hf[0]*b*sc,s.head[1]+hu[1]*a*sc+hf[1]*b*sc]}
+function fillPts(pts,col,outline){ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();ctx.fillStyle=col;ctx.fill();if(outline){ctx.strokeStyle=INK;ctx.lineWidth=outline;ctx.stroke()}}
+function drawHeadGear(f,fc){const lk=f.ch.look||{},sc=f.sc,H=headFrame(f),R=SEG.HR,s=f.sk,t=game.rt,mv=Math.min(1,Math.abs(f.vx)/300);
+  const tail=(a0,b0,len,ph,w,col)=>{const p0=H(a0,b0),wv=Math.sin(t*13+ph)*(3+mv*2),p1=H(a0-3+wv*.5-(1-mv)*4,b0-len*.5),p2=H(a0-6+wv-(1-mv)*9,b0-len);
+    ctx.strokeStyle=col;ctx.lineWidth=w*sc;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(p0[0],p0[1]);ctx.quadraticCurveTo(p1[0],p1[1],p2[0],p2[1]);ctx.stroke()};
+  if(lk.band==='tails'){const a=H(4,-R-1),b=H(4,R+1);ctx.save();ctx.beginPath();ctx.arc(s.head[0],s.head[1],R*sc,0,TAU);ctx.clip();strokePoly([a,b],5*sc,'#cf241d');ctx.restore();
+    tail(4,-R+1,24,0,3.6,'#cf241d');tail(3,-R+1,20,1.7,3.2,'#b81d17')}
+  if(lk.band==='bandana'){ctx.save();ctx.beginPath();ctx.arc(s.head[0],s.head[1],R*sc,0,TAU);ctx.clip();fillPts([H(2,-R-2),H(2,R+2),H(R+3,R+2),H(R+3,-R-2)],'#cf241d');ctx.restore();
+    tail(2,-R+2,12,0,4.2,'#cf241d');tail(1,-R+2,9,2,3.6,'#b81d17')}
+  if(lk.bun){ctx.fillStyle=fc;ctx.beginPath();const b=H(R+3,-3);ctx.arc(b[0],b[1],5*sc,0,TAU);ctx.fill()}
+  if(lk.hood){const c=H(1,-2);ctx.fillStyle='#4a4a4a';ctx.strokeStyle=INK;ctx.lineWidth=1.6*sc;ctx.beginPath();ctx.arc(c[0],c[1],(R+3.5)*sc,0,TAU);ctx.fill();ctx.stroke();
+    const o=H(-1,4);ctx.fillStyle=fc;ctx.beginPath();ctx.arc(o[0],o[1],(R-3.5)*sc,0,TAU);ctx.fill();
+    ctx.save();ctx.beginPath();ctx.arc(o[0],o[1],(R-3.5)*sc,0,TAU);ctx.clip();fillPts([H(-1,-8),H(-1,16),H(-14,16),H(-14,-8)],'#8c8c8c');ctx.restore()}
+  if(lk.beard)fillPts([H(-4,3),H(-6,13),H(-12,12),H(-16,15),H(-20,10),H(-25,12),H(-22,6),H(-14,4),H(-9,0)],'#f7f5ef',1.2*sc);
+  if(lk.hat){fillPts([H(R+15,0),H(R-2,-R-12),H(R-5,-R-9),H(R-5,R+9),H(R-2,R+12)],'#cfcfcf',1.6*sc);strokePoly([H(R+15,0),H(R-4,-4)],1*sc,'rgba(29,28,26,.4)')}}
+function drawBelt(f,col){const s=f.sk,sc=f.sc,ux=s.chest[0]-s.hip[0],uy=s.chest[1]-s.hip[1],l=Math.hypot(ux,uy)||1,u=[ux/l,uy/l],pp=[u[1],-u[0]],q=(o,a,b)=>[o[0]+pp[0]*a*sc+u[0]*b*sc,o[1]+pp[1]*a*sc+u[1]*b*sc];
+  fillPts([q(s.hip,-7,2),q(s.hip,7,2),q(s.hip,7,7),q(s.hip,-7,7)],col,1.2*sc);const k=q(s.hip,-f.dff*5,4),w=Math.sin(game.rt*9)*2;
+  strokePoly([k,q(s.hip,-f.dff*8+w,-8)],2.4*sc,col);strokePoly([k,q(s.hip,-f.dff*3+w,-10)],2.4*sc,col)}
 function drawFighterFx(f){const sp=f.split;if(!sp){drawFighter(f);return}
   const u=(game.rt-sp.t0)/sp.life;if(u>=1){f.split=null;drawFighter(f);return}
   const open=u<.14?u/.14:u<.58?1:1-(u-.58)/.42,sm=open*open*(3-2*open),d=sp.dir,n=[-d[1],d[0]],c=lerp2(f.sk.hip,f.sk.chest,.5),off=15*f.sc*sm,L=700;
@@ -1445,11 +1508,11 @@ let cineHid=false;
 // ================= UI wiring =================
 const $=id=>document.getElementById(id);
 const isTouch=matchMedia('(pointer:coarse)').matches||'ontouchstart' in window;
-function show(id){for(const o of['menu','pause','over','help'])$(o).classList.toggle('hidden',o!==id);const playing=!id&&(game.mode==='battle'||game.mode==='story');$('topbtns').style.display=playing?'flex':'none';$('touch').style.display=playing&&isTouch?'block':'none'}
+function show(id){for(const o of['menu','pause','over','help','select'])$(o).classList.toggle('hidden',o!==id);const playing=!id&&(game.mode==='battle'||game.mode==='story');$('topbtns').style.display=playing?'flex':'none';$('touch').style.display=playing&&isTouch?'block':'none'}
 function showOver(t,s,btn,act,col){game.phase='over';$('overT').textContent=t;$('overT').style.color=col||'';$('overS').textContent=s;$('again').textContent=btn;game.overAct=act;show('over')}
 function seg(id,cb){$(id).addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;for(const x of $(id).children)x.classList.toggle('on',x===b);cb(b.dataset.v)})}
 seg('mode',v=>{game.modeSel=v;updStage()});
-const STG=[['shop','سوپرمارکت','مشت و لگد'],['cafe','کافه','نانچیکو'],['dojo','باشگاه','چوب'],['temple','معبد','شمشیر'],['alley','کوچه','دو خنجر']];
+const STG=[['shop','سوپرمارکت','میدان مبارزه'],['cafe','کافه','میدان مبارزه'],['dojo','باشگاه','میدان مبارزه'],['temple','معبد','میدان مبارزه'],['alley','کوچه','میدان مبارزه']];
 let stI=0;
 function updStage(){const s=STG[stI];game.stageSel=s[0];
   $('stName').innerHTML=game.modeSel==='story'?'<b>۵ مرحله تا <span>غول</span></b><small>از سوپرمارکت تا کوچه</small>':s[1]+'<small>'+s[2]+'</small>'}
@@ -1457,8 +1520,30 @@ function stepStage(d){if(game.modeSel==='story'){game.modeSel='battle';for(const
 $('stNext').onclick=()=>stepStage(1);$('stPrev').onclick=()=>stepStage(-1);$('stName').onclick=()=>stepStage(1);
 updStage();
 seg('diff',v=>game.diff=v);
-const begin=()=>{AU.init();game.paused=false;if(game.modeSel==='story'){story.kills=0;startStory(0)}else startBattle();show(null);VO.say('intro',{pri:2,delay:game.mode==='battle'?3.4:.5})};
+const begin=()=>{AU.init();game.paused=false;if(game.modeSel!=='story'){openSelect();return}story.kills=0;startStory(0);show(null);VO.say('intro',{pri:2,delay:.5})};
+const startFight=()=>{game.paused=false;startBattle();show(null);VO.say('intro',{pri:2,delay:3.4})};
 $('start').onclick=begin;
+// ===== character select (Tekken-style): pick yourself, then the opponent =====
+const sel={step:0,pick:[0,1],prev:[]};
+function cardPreview(cv,c){const g=cv.getContext('2d'),f=new Fighter({team:0,c:COLORS.black,ch:c,weapon:c.weapon,x:0,face:1});f.state='stand';cv._f=f}
+function drawPreviews(dt){for(const cv of sel.prev){const f=cv._f;if(!f)continue;f.bt+=dt;f.pose(dt);const g=cv.getContext('2d'),W_=cv.width,H_=cv.height,old=ctx;
+  g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,W_,H_);const z=H_/150;g.setTransform(z,0,0,-z,W_/2-8*z,H_-6);ctx=g;try{drawFighter(f)}catch(e){}ctx=old}}
+function openSelect(){sel.step=0;sel.pick=[game.p1ch||0,game.p2ch??1];renderSelect();show('select')}
+function renderSelect(){const g=$('selGrid');g.innerHTML='';sel.prev=[];
+  $('selT').textContent=sel.step?'حریفت رو انتخاب کن':'کاراکترت رو انتخاب کن';$('selGo').textContent=sel.step?'شروع مبارزه!':'انتخاب';
+  CHARS.forEach((c,i)=>{const b=document.createElement('button');b.className='ccard'+(c.lock?' lock':'');const pi=PLAYABLE.indexOf(c);
+    if(!c.lock&&pi===sel.pick[sel.step])b.classList.add('on');
+    if(c.lock)b.innerHTML='<div class="sil">?</div><b>'+c.name+'</b><small>به‌زودی</small>';
+    else{if(c.img){const im=new Image();im.src=c.img;im.alt='';b.appendChild(im)}else{const cv=document.createElement('canvas');cv.width=160;cv.height=150;cardPreview(cv,c);sel.prev.push(cv);b.appendChild(cv)}
+      b.insertAdjacentHTML('beforeend','<b>'+c.name+'</b>');
+      if(sel.step&&pi===sel.pick[0])b.insertAdjacentHTML('beforeend','<i class="tag">تو</i>');
+      b.onclick=()=>{sel.pick[sel.step]=pi;renderSelect()}}
+    g.appendChild(b)});
+  const c=PLAYABLE[sel.pick[sel.step]],bar=(l,v)=>'<div class="st"><span>'+l+'</span><i style="width:'+v*20+'%"></i></div>';
+  $('selInfo').innerHTML='<div class="nm">'+c.name+' <small>'+c.style+'</small></div>'+bar('قدرت',c.stats[0])+bar('سرعت',c.stats[1])+bar('دفاع',c.stats[2])+'<div class="sp">حرکت ویژه: '+c.sname.replace('!','')+'</div>'}
+$('selGo').onclick=()=>{if(!sel.step){sel.step=1;if(sel.pick[1]===sel.pick[0])sel.pick[1]=(sel.pick[0]+1+(Math.random()*(PLAYABLE.length-1)|0))%PLAYABLE.length;renderSelect();return}
+  game.p1ch=sel.pick[0];game.p2ch=sel.pick[1];startFight()};
+$('selBack').onclick=()=>{if(sel.step){sel.step=0;renderSelect()}else show('menu')};
 $('again').onclick=()=>{const a=game.overAct;if(a)a();show(null)};
 $('restart').onclick=()=>{game.paused=false;if(game.mode==='story')startStory(story.stage);else startBattle();show(null)};
 const toMenu=()=>{game.paused=false;VO.stop();game.sub=null;game.cine=null;show('menu');startDemo()};
@@ -1495,7 +1580,7 @@ document.addEventListener('contextmenu',e=>e.preventDefault());
 // ================= boot =================
 resize();makeGrain();startDemo();
 let last=performance.now();
-function loop(t){const dt=clamp((t-last)/1000,0,.05);last=t;update(dt);render();requestAnimationFrame(loop)}
+function loop(t){const dt=clamp((t-last)/1000,0,.05);last=t;update(dt);render();if(sel.prev.length&&!$('select').classList.contains('hidden'))drawPreviews(dt);requestAnimationFrame(loop)}
 requestAnimationFrame(loop);
 window.__game={get game(){return game},get P1(){return P1},get P2(){return P2},get fighters(){return fighters},story,startBattle,startStory,startDemo,human,press,cam,MOVES,P,skel,canFinish,startFinisher};
 </script>
@@ -1505,6 +1590,21 @@ window.__game={get game(){return game},get P1(){return P1},get P2(){return P2},g
   background:var(--paper);border:2.5px solid var(--ink);border-radius:14px 10px 15px 9px;box-shadow:4px 4px 0 rgba(29,28,26,.9);padding:8px 10px 8px 14px;font-weight:700;font-size:15px;white-space:nowrap}
 #upd.hidden{display:none}
 #upd button{font-family:inherit;font-weight:900;font-size:15px;border:2px solid var(--ink);background:var(--red);color:var(--paper);border-radius:10px 8px 11px 7px;padding:5px 12px;cursor:pointer}
+.selc{transform:none;max-width:520px;padding:14px 14px 12px}
+.sgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:8px 0}
+.ccard{position:relative;font-family:inherit;color:var(--ink);background:rgba(255,255,255,.35);border:2.5px solid var(--ink);border-radius:12px 9px 13px 8px/9px 13px 8px 12px;padding:4px 2px 3px;cursor:pointer;display:flex;flex-direction:column;align-items:center}
+.ccard img,.ccard canvas,.ccard .sil{width:100%;height:clamp(64px,13vh,96px);object-fit:contain;display:block}
+.ccard canvas{position:static;inset:auto;background:transparent}
+.ccard .sil{display:flex;align-items:center;justify-content:center;font-size:38px;font-weight:900;opacity:.5}
+.ccard b{font-size:14px;line-height:1.3}.ccard small{font-size:10px;opacity:.7}
+.ccard.on{background:#f6e7b8;box-shadow:0 0 0 3px var(--red)}
+.ccard.lock{opacity:.45;cursor:default}
+.ccard .tag{position:absolute;top:3px;right:4px;font-style:normal;font-size:10px;font-weight:900;background:var(--ink);color:var(--paper);border-radius:6px;padding:0 5px}
+.sinfo{text-align:right;font-size:13px;margin:2px 4px 10px}
+.sinfo .nm{font-weight:900;font-size:17px;margin-bottom:3px}.sinfo .nm small{font-weight:700;opacity:.65;font-size:12px}
+.sinfo .st{display:flex;align-items:center;gap:8px;margin:2px 0}.sinfo .st span{width:42px;font-weight:700}
+.sinfo .st i{display:block;height:8px;background:var(--ink);border-radius:5px 3px 6px 2px}
+.sinfo .sp{margin-top:4px;font-weight:700;color:var(--red)}
 #apkBtn{position:absolute;left:24%;top:80.6%;width:52%;height:5.2%;align-items:center;justify-content:center;font-weight:900;font-size:.95em;color:var(--paper);background:var(--ink);border-radius:12px 9px 13px 8px/9px 13px 8px 12px;text-decoration:none;box-shadow:3px 3px 0 rgba(200,35,29,.85);white-space:nowrap}
 #ver{position:fixed;left:8px;bottom:calc(6px + env(safe-area-inset-bottom));font-size:11px;opacity:.45;z-index:11;direction:ltr}
 </style>
