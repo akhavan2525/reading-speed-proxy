@@ -1419,7 +1419,10 @@ $('tomenu').onclick=toMenu;$('tomenu2').onclick=toMenu;
 $('resume').onclick=()=>{game.paused=false;show(null)};
 function togglePause(){if((game.mode!=='battle'&&game.mode!=='story')||game.phase==='over')return;game.paused=!game.paused;show(game.paused?'pause':null)}
 $('pbtn').onclick=togglePause;
-function setMute(m){AU.mute=m;$('mbtn').style.opacity=m?.4:1;$('sndBtn').textContent=m?'صدا: خاموش':'صدا: روشن'}
+// background music: starts on the first tap/key (browsers block autoplay), follows the sound toggle
+const MUS={a:null,play(){if(AU.mute)return;try{if(!this.a){this.a=new Audio('music.mp3');this.a.loop=true;this.a.volume=.45}this.a.play().catch(()=>{})}catch(e){}},stop(){if(this.a)this.a.pause()}};
+addEventListener('pointerdown',()=>MUS.play(),{once:true});addEventListener('keydown',()=>MUS.play(),{once:true});
+function setMute(m){AU.mute=m;$('mbtn').style.opacity=m?.4:1;$('sndBtn').textContent=m?'صدا: خاموش':'صدا: روشن';if(m)MUS.stop();else MUS.play()}
 $('mbtn').onclick=()=>setMute(!AU.mute);$('sndBtn').onclick=()=>{AU.init();setMute(!AU.mute)};
 $('helpBtn').onclick=()=>show('help');$('helpClose').onclick=()=>show('menu');
 for(const b of document.querySelectorAll('#touch button')){const k=b.dataset.k;
