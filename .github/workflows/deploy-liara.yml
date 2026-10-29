@@ -1,16 +1,19 @@
-# Publishes Paper Fighters (pencil-battle/) for Liara on every push that touches it.
+# Builds the Android app and deploys Paper Fighters (pencil-battle/) to Liara
+# on every push that touches it.
 #
-# 1. publish: copies the game, stamped with a fresh version (so phones show the
-#    update banner), to the root of the `liara-deploy` branch. A Liara app linked
-#    to that branch through Liara's GitHub integration redeploys automatically.
-# 2. deploy-cli (optional): if the LIARA_API_TOKEN secret is set, also deploys
-#    with the Liara CLI, creating the app on first run.
+# Secrets:
+#   LIARA_API_TOKEN   Liara API token (required for the deploy)
+#   APK_KEY_PASSWORD  password of the APK signing key (optional; without it the
+#                     site deploys without the APK). On the first run with it,
+#                     a signing key is created and stored encrypted with this
+#                     password in android/release.jks.enc. Keep the password:
+#                     every future update of the app must be signed with it.
 name: Deploy Paper Fighters to Liara
 
 on:
   push:
     branches: [main, claude/wizardly-mayer-edw703]
-    paths: ['pencil-battle/**', '.github/workflows/deploy-liara.yml']
+    paths: ['pencil-battle/**', 'android/**', '.github/workflows/deploy-liara.yml']
   workflow_dispatch:
 
 concurrency:
@@ -18,31 +21,66 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  APP: paper-fighters-game # Liara app id, used by the CLI path only
-  PLAN: '' # plan for first-time app creation by the CLI; empty = only list plans
+  APP: paper-fighters-game # Liara app id
+  PLAN: '' # plan for first-time app creation; empty = only list plans
 
 jobs:
-  publish:
+  apk:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    env:
+      APK_KEY_PASSWORD: ${{ secrets.APK_KEY_PASSWORD }}
+    outputs:
+      built: ${{ steps.build.outputs.built }}
     steps:
       - uses: actions/checkout@v4
-      - name: Build the deploy branch
+      - name: Check password
+        id: pw
         run: |
-          V="$(date -u +%y%m%d.%H%M)-${GITHUB_SHA::7}"
-          rm -rf /tmp/site && cp -r pencil-battle /tmp/site
-          sed -i "s/__VERSION__/$V/g" /tmp/site/sw.js /tmp/site/game.html
-          cd /tmp/site
-          git init -q -b liara-deploy
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
-          git commit -q -m "Paper Fighters $V (from ${GITHUB_SHA::7})"
-          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" liara-deploy
-          echo "Published version $V to branch liara-deploy"
+          if [ -z "$APK_KEY_PASSWORD" ]; then echo "APK_KEY_PASSWORD not set, skipping the APK"; echo "ok=0" >> "$GITHUB_OUTPUT"; else echo "ok=1" >> "$GITHUB_OUTPUT"; fi
+      - uses: actions/setup-java@v4
+        if: steps.pw.outputs.ok == '1'
+        with:
+          distribution: temurin
+          java-version: 17
+      - name: Signing key (create once, then reuse)
+        if: steps.pw.outputs.ok == '1'
+        run: |
+          if [ ! -f android/release.jks.enc ]; then
+            keytool -genkeypair -keystore release.jks -storepass "$APK_KEY_PASSWORD" -keypass "$APK_KEY_PASSWORD" \
+              -alias paperfighters -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Paper Fighters, O=akhavandp.ir"
+            openssl enc -aes-256-cbc -pbkdf2 -iter 200000 -salt -pass env:APK_KEY_PASSWORD -in release.jks -out android/release.jks.enc
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add android/release.jks.enc
+            git commit -m "Android: add encrypted APK signing key"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+            echo "Created a new signing key"
+          fi
+          openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -pass env:APK_KEY_PASSWORD -in android/release.jks.enc -out "$RUNNER_TEMP/release.jks"
+      - name: Build APK
+        id: build
+        if: steps.pw.outputs.ok == '1'
+        working-directory: android
+        run: |
+          export APK_KEYSTORE="$RUNNER_TEMP/release.jks"
+          export APK_VERSION_CODE="${{ github.run_number }}"
+          export APK_VERSION_NAME="1.${{ github.run_number }}"
+          ./gradlew assembleRelease --no-daemon -q
+          cp app/build/outputs/apk/release/app-release.apk "$RUNNER_TEMP/paper-fighters.apk"
+          "$ANDROID_HOME"/build-tools/*/apksigner verify "$RUNNER_TEMP/paper-fighters.apk" 2>/dev/null || ls "$ANDROID_HOME/build-tools"
+          echo "built=1" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@v4
+        if: steps.build.outputs.built == '1'
+        with:
+          name: apk
+          path: ${{ runner.temp }}/paper-fighters.apk
+          retention-days: 7
 
-  deploy-cli:
+  deploy:
+    needs: apk
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     env:
       LIARA_API_TOKEN: ${{ secrets.LIARA_API_TOKEN }}
@@ -50,11 +88,16 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
       - name: Check token
         id: tok
         run: |
-          if [ -z "$LIARA_API_TOKEN" ]; then echo "LIARA_API_TOKEN not set, skipping CLI deploy"; echo "ok=0" >> "$GITHUB_OUTPUT"; else echo "ok=1" >> "$GITHUB_OUTPUT"; fi
+          if [ -z "$LIARA_API_TOKEN" ]; then echo "LIARA_API_TOKEN not set, skipping deploy"; echo "ok=0" >> "$GITHUB_OUTPUT"; else echo "ok=1" >> "$GITHUB_OUTPUT"; fi
+      - uses: actions/download-artifact@v4
+        if: steps.tok.outputs.ok == '1' && needs.apk.outputs.built == '1'
+        with:
+          name: apk
+          path: pencil-battle
       - name: Install Liara CLI
         if: steps.tok.outputs.ok == '1'
         run: npm i -g @liara/cli@9
@@ -72,9 +115,10 @@ jobs:
         run: |
           V="$(date -u +%y%m%d.%H%M)-${GITHUB_SHA::7}"
           sed -i "s/__VERSION__/$V/g" pencil-battle/sw.js pencil-battle/game.html
+          ls -la pencil-battle/*.apk 2>/dev/null || echo "(no APK this time)"
       - name: Deploy
         if: steps.tok.outputs.ok == '1'
         run: |
           liara deploy --path pencil-battle --app "$APP" --api-token "$LIARA_API_TOKEN" \
             --platform node --port 3000 --no-app-logs -m "${GITHUB_SHA::7}"
-          echo "Live at https://$APP.liara.run"
+          echo "Live at https://game.akhavandp.ir"

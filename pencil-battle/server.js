@@ -15,6 +15,7 @@ const TYPES = {
   '.mp3': 'audio/mpeg',
   '.png': 'image/png',
   '.svg': 'image/svg+xml',
+  '.apk': 'application/vnd.android.package-archive',
 };
 const PRIVATE = new Set(['server.js', 'package.json', 'liara.json']);
 

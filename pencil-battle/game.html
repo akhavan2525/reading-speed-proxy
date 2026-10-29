@@ -96,6 +96,7 @@ kbd{font-family:inherit;border:1.5px solid var(--ink);border-radius:5px;padding:
     <button class="hb big" id="start" style="left:13.28%;top:58.79%;width:73.43%;height:11.54%">شروع</button>
     <button class="hb sm" id="helpBtn" style="left:51.97%;top:72.85%;width:25.50%;height:6.34%">کنترل‌ها</button>
     <button class="hb sm" id="sndBtn" style="left:22.32%;top:72.85%;width:25.61%;height:6.34%">صدا: روشن</button>
+    <a id="apkBtn" href="paper-fighters.apk" download style="display:none">📱 دانلود اپ اندروید</a>
   </div>
 </div>
 
@@ -1509,11 +1510,13 @@ window.__game={get game(){return game},get P1(){return P1},get P2(){return P2},g
   background:var(--paper);border:2.5px solid var(--ink);border-radius:14px 10px 15px 9px;box-shadow:4px 4px 0 rgba(29,28,26,.9);padding:8px 10px 8px 14px;font-weight:700;font-size:15px;white-space:nowrap}
 #upd.hidden{display:none}
 #upd button{font-family:inherit;font-weight:900;font-size:15px;border:2px solid var(--ink);background:var(--red);color:var(--paper);border-radius:10px 8px 11px 7px;padding:5px 12px;cursor:pointer}
+#apkBtn{position:absolute;left:24%;top:80.6%;width:52%;height:5.2%;align-items:center;justify-content:center;font-weight:900;font-size:.95em;color:var(--paper);background:var(--ink);border-radius:12px 9px 13px 8px/9px 13px 8px 12px;text-decoration:none;box-shadow:3px 3px 0 rgba(200,35,29,.85);white-space:nowrap}
 #ver{position:fixed;left:8px;bottom:calc(6px + env(safe-area-inset-bottom));font-size:11px;opacity:.45;z-index:11;direction:ltr}
 </style>
 <script>
 // installable app + update prompt (only where sw.js is served, i.e. the Liara server)
-(function(){const V='__VERSION__';if(!V.startsWith('__')){const e=document.createElement('div');e.id='ver';e.textContent='v'+V;document.getElementById('menu').appendChild(e)}
+(function(){const ua=navigator.userAgent;if(/Android/i.test(ua)&&!/PaperFightersApp/.test(ua))fetch('paper-fighters.apk',{method:'HEAD'}).then(r=>{if(r.ok)document.getElementById('apkBtn').style.display='flex'}).catch(()=>{});
+  const V='__VERSION__';if(!V.startsWith('__')){const e=document.createElement('div');e.id='ver';e.textContent='v'+V;document.getElementById('menu').appendChild(e)}
   if(!('serviceWorker' in navigator))return;let reloading=false,asked=false;
   const ask=w=>{const b=document.getElementById('upd');b.classList.remove('hidden');document.getElementById('updBtn').onclick=()=>{asked=true;b.querySelector('span').textContent='در حال بروزرسانی...';w.postMessage('update')}};
   navigator.serviceWorker.addEventListener('controllerchange',()=>{if(asked&&!reloading){reloading=true;location.reload()}});
