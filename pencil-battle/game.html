@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>نبرد مدادی</title>
+<title>جنگجوهای کاغذی · Paper Fighters</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
@@ -68,9 +68,10 @@ kbd{font-family:inherit;border:1.5px solid var(--ink);border-radius:5px;padding:
 .hb.stage span{color:var(--red)}
 .arr{position:absolute;background:transparent;border:0;padding:0;cursor:pointer;border-radius:50%}
 .arr:active{transform:scale(.9)}
-#menu .ttl{position:absolute;display:flex;align-items:center;justify-content:center;transform:rotate(-2deg)}
-#menu .ttl h1{margin:0;font-size:3.1em;font-weight:900;line-height:1.1;color:var(--ink)}
+#menu .ttl{position:absolute;display:flex;flex-direction:column;align-items:center;justify-content:center;transform:rotate(-2deg)}
+#menu .ttl h1{margin:0;font-size:2.1em;white-space:nowrap;font-weight:900;line-height:1.1;color:var(--ink)}
 #menu .ttl h1 span{color:var(--red)}
+#menu .ttl .en{font-family:Georgia,"Times New Roman",serif;font-size:.78em;font-weight:700;letter-spacing:.32em;margin-top:.25em;opacity:.75;direction:ltr}
 #menu .tsub{position:absolute;display:flex;align-items:center;justify-content:center;text-align:center;font-size:.6em;opacity:.7}
 
 </style>
@@ -80,7 +81,7 @@ kbd{font-family:inherit;border:1.5px solid var(--ink);border-radius:5px;padding:
 
 <div id="menu" class="overlay">
   <div class="sheet">
-    <div class="ttl" style="left:12.75%;top:5.98%;width:74.50%;height:11.36%"><h1>نبرد <span>مدادی</span></h1></div>
+    <div class="ttl" style="left:12.75%;top:5.98%;width:74.50%;height:11.36%"><h1>جنگجوهای <span>کاغذی</span></h1><div class="en">PAPER FIGHTERS</div></div>
     <div class="tsub" style="left:12.75%;top:19.44%;width:74.50%;height:4.78%">مبارزه‌ی آدمک‌های سیاه و قرمز توی دنیای خط‌خطی</div>
     <div class="grp" id="mode"><button class="hb on" data-v="story" style="left:52.28%;top:25.12%;width:34.33%;height:7.95%">داستانی</button><button class="hb" data-v="battle" style="left:13.28%;top:25.12%;width:34.96%;height:7.95%">تن‌به‌تن</button></div>
     <button class="hb stage" id="stName" style="left:13.60%;top:36.18%;width:72.69%;height:7.60%"></button>
