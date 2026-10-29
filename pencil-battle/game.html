@@ -240,6 +240,10 @@ const JOKES={
  cafe:['قهوه نداریم، کتک داریم!','وای‌فای: لگد۱۲۳','هر چی بشکنه، دوبرابر حساب میشه','چای‌مون سرده، دلمون گرمه','لطفاً میزها رو پرت نکنید (عکس بگیرید)'],
  dojo:['کمربند مشکی؟ کمربندم سیاه‌تره!','یه ضربه، یه خنده','صبر کن تا بزنمت!','استاد خوابه، آروم‌تر!','اول سلام، بعد لگد'],
  temple:['شمشیر دارم، عقل ندارم','ممنوع: نصف کردن بدون اجازه','دعای امروز: خدایا آردم نکنن!','اینجا معبده، داد نزن!','نصفم کردی؟ اشکال نداره، می‌چسبم'],
+ bazaar:['چونه نزن، مشت بزن!','نسیه نمی‌دیم، کتک نقده','فرش دستباف، دعوا دستی!','ادویه داریم، تند و تیز!'],
+ zurkhaneh:['یا علی مدد!','پهلوون، مرام داره','اول ادب، بعد کشتی','میل سنگینه، دلت سنگین نشه'],
+ beach:['شنا ممنوع، دعوا آزاد!','کرم ضدآفتاب یادت نره','موج میاد، تو برو','قلعه‌ی شنی رو خراب نکن!'],
+ roof:['از لبه دور باش!','منبع آب، دست نزن','بالای شهر، پایین زمین','شب‌ها اینجا لاک‌پشت میاد'],
  desk:['روی میز، دعوا ممنوع!','رئیس آخر در کمین است','مداد تراش فقط برای مداد','این برگه رو خط نزن!','آدمک‌ها: اینجا کلاس درسه!'],
  alley:['اینجا امنه (به‌جز برای تو)','کوچه بن‌بسته، آدمک‌بسته!','خنجر دارم ولی دلم نمیاد','ممنوع: سلفی با غول','هر کی اینجا رد شد، رد داد']};
 function wallJokes(s,theme,x0,x1,L){const list=JOKES[theme];if(!list)return;let i=Math.floor(L()*list.length);
@@ -435,6 +439,51 @@ Object.assign(MODS,{
   crates:{a:0,b:150,f(s,L){for(const[x,y,w,h]of[[6,FL,70,60],[82,FL,62,48],[22,FL+60,58,48]]){s.fill([[x,y],[x+w,y],[x+w,y+h],[x,y+h]],1,'paper');s.rect(x,y,w,h,1.3,.9,2);s.line(x,y,x+w,y+h,.7,.6,1);s.line(x,y+h,x+w,y,.7,.6,1);s.hatch(x+w-9,y,9,h,60,3,.5,.35)}}},
   door:{a:668,b:858,f(s,L){MODS.shop.door.f(s,L)}},
  },
+ bazaar:{
+  arch:{a:0,b:260,f(s,L){const y1=FL+400;s.fill([[0,FL],[260,FL],[260,y1],[0,y1]],1,'paper');s.rect(0,FL,260,y1-FL,1.4,.9,2);
+    s.arc(130,FL+250,100,110,0,Math.PI,1.6,.9);s.arc(130,FL+250,86,96,0,Math.PI,.9,.7);s.line(30,FL,30,FL+250,1.3,.9,1);s.line(230,FL,230,FL+250,1.3,.9,1);
+    for(let i=0;i<9;i++){const a=i/8*Math.PI,x=130+Math.cos(a)*93,y=FL+250+Math.sin(a)*103;s.ell(x,y,4,4,.7,.7,1)}s.hatch(30,FL,200,250,60,7,.5,.22)}},
+  carpets:{a:0,b:220,f(s,L){s.line(10,FL+330,210,FL+330,1.4,.9,2);for(const [x,h] of[[20,230],[80,260],[140,215]]){const y0=FL+330-h;s.fill([[x,y0],[x+56,y0],[x+56,FL+330],[x,FL+330]],1,'paper');s.rect(x,y0,56,h,1.2,.9,2);
+    s.rect(x+6,y0+8,44,h-16,.8,.7,1);s.poly([[x+28,y0+30],[x+46,y0+h/2],[x+28,y0+h-30],[x+10,y0+h/2]],true,.9,.75,1);for(let k=0;k<5;k++)s.line(x+6+k*11,y0,x+6+k*11,y0-10,.5,.6,1)}}},
+  spices:{a:0,b:240,f(s,L){s.fill([[10,FL],[230,FL],[230,FL+60],[10,FL+60]],1,'paper');s.rect(10,FL,220,60,1.4,.9,2);
+    for(const [x,w] of[[30,46],[90,52],[150,46]]){s.arc(x+w/2,FL+60,w/2,30,Math.PI,TAU,1.2,.9);s.hatch(x,FL+60,w,24,30+L()*60,4,.5,.35);s.line(x,FL+60,x+w,FL+60,1,.8,1)}
+    TXT(s,{x:120,y:FL+28,t:'ادویه‌ی تازه',s:16,w:900});s.line(18,FL+120,222,FL+120,.6,.4,1)}},
+  lanternsB:{a:0,b:160,f(s,L){for(const [x,h] of[[30,120],[80,150],[130,110]]){s.line(x,CEIL,x,FL+h+180,.7,.7,1);const y=FL+h+160;s.poly([[x-12,y],[x+12,y],[x+16,y-26],[x,y-38],[x-16,y-26]],true,1.1,.85,1);s.hatch(x-10,y-30,20,28,70,4,.5,.35)}}},
+  pots:{a:0,b:200,f(s,L){for(const [x,r] of[[40,30],[110,40],[170,24]]){s.ell(x,FL+r,r,r,1.3,.9,2);s.ell(x,FL+r*2,r*.45,6,1,.8,1);s.arc(x,FL+r,r*.7,r*.4,Math.PI*1.1,Math.PI*1.9,.6,.5);s.hatch(x+r*.2,FL+4,r*.7,r*1.4,60,4,.45,.3)}
+    TXT(s,{x:100,y:FL+110,t:'مس و برنج',s:14,w:700})}},
+ },
+ zurkhaneh:{
+  dome:{a:0,b:320,f(s,L){const y1=FL+430;s.fill([[0,FL],[320,FL],[320,y1],[0,y1]],1,'paper');s.rect(0,FL,320,y1-FL,1.4,.9,2);
+    for(let k=0;k<14;k++){const x=12+k*22;s.poly([[x,FL+300],[x+11,FL+316],[x+22,FL+300],[x+11,FL+284]],true,.7,.6,1)}s.arc(160,FL+430,140,90,Math.PI,TAU,1.2,.8);s.hatch(0,FL+380,320,50,20,6,.4,.2)}},
+  gowd:{a:0,b:300,f(s,L){s.ell(150,FL+12,140,16,1.6,.9,2);s.ell(150,FL+12,124,11,.9,.7,1);for(let k=0;k<10;k++){const a=Math.PI+k/9*Math.PI;s.line(150+Math.cos(a)*132,FL+12+Math.sin(a)*14,150+Math.cos(a)*132,FL+2+Math.sin(a)*14,.6,.6,1)}
+    TXT(s,{x:150,y:FL+70,t:'گود',s:20,w:900})}},
+  meels:{a:0,b:180,f(s,L){s.line(10,FL,170,FL,1.2,.9,1);for(const x of[25,55,85,115,145]){s.poly([[x-5,FL],[x+5,FL],[x+9,FL+60],[x+11,FL+120],[x+4,FL+150],[x-4,FL+150],[x-11,FL+120],[x-9,FL+60]],true,1.1,.85,1);s.line(x-10,FL+95,x+10,FL+95,.8,.7,1);s.line(x-11,FL+115,x+11,FL+115,.8,.7,1)}}},
+  drum:{a:0,b:190,f(s,L){s.rect(30,FL,130,150,1.3,.9,2);s.ell(95,FL+190,48,48,1.5,.9,2);s.ell(95,FL+190,38,38,.8,.7,1);for(let k=0;k<12;k++){const a=k/12*TAU;s.line(95+Math.cos(a)*38,FL+190+Math.sin(a)*38,95+Math.cos(a)*48,FL+190+Math.sin(a)*48,.6,.6,1)}
+    TXT(s,{x:95,y:FL+90,t:'سَردَم',s:18,w:900});s.line(150,FL+240,182,FL+270,1.6,.9,1)}},
+  plaques:{a:0,b:200,f(s,L){for(const [y,t] of[[FL+330,'یا علی مدد'],[FL+240,'پهلوانی، مرام است'],[FL+150,'ورزش باستانی']]){s.rect(10,y,180,46,1.2,.9,2);s.rect(16,y+6,168,34,.6,.6,1);TXT(s,{x:100,y:y+16,t,s:15,w:900})}}},
+ },
+ beach:{
+  sea:{a:0,b:340,f(s,L){for(let k=0;k<6;k++){const y=FL+40+k*22;let pts=[];for(let x=0;x<=340;x+=20)pts.push([x,y+Math.sin(x/30+k)*5]);s.poly(pts,false,.8,.55,1)}
+    s.ell(250,FL+330,44,44,1.3,.85,2);for(let k=0;k<10;k++){const a=k/10*TAU;s.line(250+Math.cos(a)*54,FL+330+Math.sin(a)*54,250+Math.cos(a)*70,FL+330+Math.sin(a)*70,.9,.7,1)}s.arc(80,FL+300,22,10,Math.PI*1.1,Math.PI*1.9,.8,.6);s.arc(122,FL+320,16,7,Math.PI*1.1,Math.PI*1.9,.8,.6)}},
+  palm:{a:0,b:220,f(s,L){let x=100;for(let y=FL;y<FL+330;y+=26){s.arc(x,y+13,13,13,Math.PI*1.2,Math.PI*1.8,1,.8);x+=3}const tx=x,ty=FL+340;
+    for(const [dx,dy] of[[-90,-40],[-70,10],[80,-30],[60,20],[10,40]]){s.poly([[tx,ty],[tx+dx*.5,ty+dy*.5+20],[tx+dx,ty+dy]],false,1.3,.9,1);for(let k=1;k<6;k++){const px=tx+dx*k/6,py=ty+dy*k/6+Math.sin(k/6*Math.PI)*20;s.line(px,py,px+dy*.15,py-12,.6,.6,1)}}
+    s.ell(tx-6,ty-8,8,8,1,.8,1);s.ell(tx+8,ty-6,8,8,1,.8,1)}},
+  umbrella:{a:0,b:230,f(s,L){s.line(110,FL,120,FL+220,1.4,.9,1);s.arc(120,FL+220,100,60,0,Math.PI,1.5,.9);s.line(20,FL+220,220,FL+220,1.2,.9,1);for(const x of[50,85,120,155,190])s.line(120,FL+278,x,FL+220,.7,.6,1);
+    s.rect(20,FL,90,14,1,.8,1);s.line(30,FL+14,40,FL+70,.9,.8,1);s.line(100,FL+14,90,FL+70,.9,.8,1);s.line(40,FL+70,90,FL+70,.9,.8,1)}},
+  castle:{a:0,b:180,f(s,L){s.rect(30,FL,120,60,1.3,.9,2);s.rect(50,FL+60,80,40,1.2,.85,2);s.rect(75,FL+100,30,24,1.1,.8,1);
+    s.line(90,FL+124,90,FL+160,.8,.8,1);s.poly([[90,FL+160],[112,FL+150],[90,FL+142]],true,.8,.8,1);s.hatch(30,FL,120,60,30,5,.4,.3);TXT(s,{x:90,y:FL+20,t:'قلعه‌ی شنی',s:13,w:700})}},
+  sign:{a:0,b:170,f(s,L){s.line(80,FL,80,FL+170,1.3,.9,1);s.rect(10,FL+150,140,56,1.3,.9,2);TXT(s,{x:80,y:FL+168,t:'شنا ممنوع، دعوا آزاد!',s:13,w:900})}},
+ },
+ roof:{
+  water:{a:0,b:200,f(s,L){s.line(30,FL,40,FL+170,1.2,.9,1);s.line(170,FL,160,FL+170,1.2,.9,1);s.line(40,FL+170,160,FL+170,1,.8,1);s.line(35,FL+80,165,FL+80,.8,.7,1);
+    s.rect(30,FL+170,140,110,1.4,.9,2);s.ell(100,FL+280,70,12,1.2,.85,1);s.hatch(120,FL+170,50,110,70,5,.5,.3);TXT(s,{x:100,y:FL+215,t:'منبع آب',s:15,w:900})}},
+  antenna:{a:0,b:140,f(s,L){s.line(70,FL,70,FL+340,1.3,.9,1);for(const [y,w] of[[FL+300,60],[FL+260,46],[FL+220,34]])s.line(70-w,y,70+w,y,1.1,.85,1);s.ell(70,FL+130,30,30,1,.8,1);s.line(70,FL+130,92,FL+150,.8,.8,1)}},
+  skyline:{a:0,b:360,f(s,L){let x=0;while(x<350){const w=40+L()*50,h=120+L()*230;s.rect(x,FL+60,w,h,1,.7,1);for(let wy=FL+80;wy<FL+40+h;wy+=26)for(let wx=x+8;wx<x+w-10;wx+=16)if(L()<.55)s.rect(wx,wy,7,10,.6,.6,1);x+=w+6}
+    s.ell(300,FL+420,26,26,1.2,.85,2);s.ell(312,FL+426,22,22,0,0,1)}},
+  ac:{a:0,b:160,f(s,L){s.rect(20,FL,120,80,1.3,.9,2);s.ell(80,FL+40,26,26,1,.8,1);for(let k=0;k<4;k++){const a=k/4*TAU+.4;s.line(80,FL+40,80+Math.cos(a)*22,FL+40+Math.sin(a)*22,.8,.8,1)}s.hatch(20,FL,120,14,20,4,.4,.3)}},
+  laundry:{a:0,b:260,f(s,L){s.line(10,FL+300,250,FL+290,.9,.8,1);s.line(10,FL,10,FL+310,1.1,.85,1);s.line(250,FL,250,FL+300,1.1,.85,1);
+    for(const [x,w,h] of[[40,40,60],[100,30,80],[150,50,50],[210,26,40]]){const y=FL+296-(x/240)*10;s.rect(x,y-h,w,h,1,.8,1);s.line(x+4,y,x+4,y+4,.6,.6,1)}}},
+ },
  desk:{
   notebook:{a:0,b:330,f(s,L){const y0=FL+6,y1=FL+430;s.fill([[0,y0],[330,y0],[330,y1],[0,y1]],1,'paper');s.rect(0,y0,330,y1-y0,1.5,.9,2);
     for(let y=y0+30;y<y1-10;y+=24)s.line(8,y,322,y+(L()-.5)*2,.5,.3,1);s.line(46,y0,46,y1,.9,.75,1);s.line(50,y0,50,y1,.5,.5,1);
@@ -460,9 +509,9 @@ Object.assign(MODS,{
 });
 MODS.temple.bamboo=MODS.dojo.bamboo;
 const THEME_LIST={shop:['shelf','plant','window','counter','fridge','door'],cafe:['window','counter','tables','pics','sacks','door'],dojo:['shoji','rack','scroll','dummy','drum','bamboo'],
-  temple:['torii','lant','sakura','hall','swords','bamboo'],alley:['brick','dumpster','escape','posters','fence','crates','door'],desk:['notebook','pencils','ruler','books','mug','sticky','sharpener']};
-const THEME_TITLE={shop:'سوپرمارکت مداد',cafe:'کافه مداد',dojo:'باشگاه رزمی',temple:'معبد مداد',alley:'کوچه‌ی مداد',desk:'میز تحریر'};
-const LAMP={shop:lampCone,cafe:lampDome,dojo:lantern,temple:lantern,alley:lampCone,desk:lampCone};
+  temple:['torii','lant','sakura','hall','swords','bamboo'],alley:['brick','dumpster','escape','posters','fence','crates','door'],desk:['notebook','pencils','ruler','books','mug','sticky','sharpener'],bazaar:['arch','carpets','spices','lanternsB','pots'],zurkhaneh:['dome','gowd','meels','drum','plaques'],beach:['sea','palm','umbrella','castle','sign'],roof:['water','antenna','skyline','ac','laundry']};
+const THEME_TITLE={shop:'سوپرمارکت مداد',cafe:'کافه مداد',dojo:'باشگاه رزمی',temple:'معبد مداد',alley:'کوچه‌ی مداد',desk:'میز تحریر',bazaar:'بازار سنتی',zurkhaneh:'زورخانه',beach:'ساحل',roof:'پشت‌بام شبانه'};
+const LAMP={shop:lampCone,cafe:lampDome,dojo:lantern,temple:lantern,alley:lampCone,desk:lampCone,bazaar:lantern,zurkhaneh:lampDome,beach:lampCone,roof:lampCone};
 const WPN={shop:'none',cafe:'nun',dojo:'staff',temple:'sword',alley:'dagger'};
 // playable roster. stats = [power, speed, defense] out of 5; spd/dmg/hp/kb scale the fighter; look = costume drawn on the stick figure
 const CHARS=[
@@ -496,7 +545,7 @@ function addCoins(n){if(!n||game.mode==='demo')return 0;SAVE.coins+=n;saveGame()
 // what the player wears/holds; silly weapons reuse a real weapon's moves (battle mode only)
 function applyEquip(f,weapons,eq=SAVE.equip){eq=eq||{};f.cos={hat:eq.hat||null,face:eq.face||null};const w=weapons&&eq.weapon&&SHOP.find(i=>i.id===eq.weapon);
   if(w){f.wskin=w.real?null:w;if(f.ch&&f.ch.weapon!==w.base){const sp=f.ch.weapon==='none'?f.ch.special:(w.base==='sword'?'kspin':'sspin');f.ch={...f.ch,moves:null,stance:null,block:null,ginga:0,special:sp}}f.weapon=w.base;f.reset(f.x,f.face)}}
-const BOSSCH=['boxer','dragon','master','samurai','shadow','ninja'];  // stage boss = a roster character
+const BOSSCH=['boxer','dragon','master','samurai','shadow','ninja','gladiator','pahlevan','dancer','turtle'];  // stage boss = a roster character
 const BOSSLOOK=[
   {id:'b1',special:'cartrush',sname:'حمله‌ی چرخ‌دستی!',look:{eyes:1,belly:1,apron:'#f4f2ec',cart:1},face:'chars/boss1-face.png'},
   {id:'b2',special:'splash',sname:'قهوه‌ی داغ!',sc:1.08,look:{eyes:1,thin:1,apron:'#f4f2ec',apronLong:1,pot:1},face:'chars/boss2-face.png'},
@@ -519,7 +568,7 @@ function layoutBattle(s,theme){const L=mulberry32(5);structure(s,theme,-950,950)
     for(const x of[-770,330,560])lampDome(s,x);banner(s,-108,THEME_TITLE.cafe,260)}
   if(theme==='dojo'){place(s,'dojo','shoji',-950,L);place(s,'dojo','rack',-610,L);place(s,'dojo','scroll',-340,L);place(s,'dojo','dummy',-150,L);place(s,'dojo','shoji',-10,L);place(s,'dojo','drum',330,L);place(s,'dojo','scroll',510,L);place(s,'dojo','bamboo',700,L);place(s,'dojo','bamboo',810,L);
     for(const x of[-700,-440,440,700])lantern(s,x);banner(s,0,THEME_TITLE.dojo)}
-  if(theme==='temple'||theme==='alley'||theme==='desk'){const nm=THEME_LIST[theme];let x=-940,i=0;while(x<900){x=place(s,theme,nm[i++%nm.length],x,L)+14+L()*40}
+  if(['temple','alley','desk','bazaar','zurkhaneh','beach','roof'].includes(theme)){const nm=THEME_LIST[theme];let x=-940,i=0;while(x<900){x=place(s,theme,nm[i++%nm.length],x,L)+14+L()*40}
     for(const lx of[-700,-380,400,720])LAMP[theme](s,lx);banner(s,0,THEME_TITLE[theme])}
   wallJokes(s,theme,-940,940,L)}
 function layoutStory(s,theme,len,bossX){const L=mulberry32(len*7+theme.length*99),names=THEME_LIST[theme];structure(s,theme,-300,len+300);
@@ -959,6 +1008,8 @@ const VLINES={
   b5:['این کوچه مال منه... پول پارکینگم باید بدی!','b',3.6],blow:['صبر کن صبر کن! بیا حرف بزنیم!','b',3],
   'e-spawn':['این کاغذیه؟ پاره‌ش می‌کنیم!','e',3.2],'e-ko':['من فقط اومده بودم نون بخرم!','e',3.2],
   st6:['روی میز تحریر؟ اینجا دیگه کجاست؟!','h',3.3],b6:['اینجا آخرِ خطه! با شمشیرِ نور خط‌خطیت می‌کنم!','b',4.5],
+  st7:['بازار شلوغه... حواسم به جیبم باشه!','h',3.5],st8:['زورخونه؟ امیدوارم میل‌ها سمت من نیان!','h',4.2],st9:['ساحل! آفتاب، دریا... و یه عالمه کتک!','h',5.6],st10:['پشت‌بوم، شب، آخرین مبارزه. بزن بریم!','h',4.1],
+  b7:['توی این بازار، فقط مشت من خریدار داره!','b',3.6],b8:['یا علی! بیا تو گود، ببینم چند مَردی!','b',4.4],b9:['بیا برقصیم! فقط... پاهام یه کم سنگینه!','b',5.1],b10:['اینجا پشت‌بوم منه! لاکم سفته، چوبم سفت‌تر!','b',4.7],
   'a-r1':['راند یک!','a',1.6],'a-r2':['راند دو!','a',1.6],'a-final':['راند آخر!','a',1.8],'a-fight':['مبارزه!','a',1.5],'a-ko':['ناک‌اوت!','a',1.6]};
 // one voice at a time: a line only cuts in over a lower-priority one (pri 0 chatter, 1 normal, 2 story beats, 3 cutscene)
 const VO={a:{},cur:null,pri:-1,end:0,cd:{},
@@ -1268,10 +1319,11 @@ const PROPDEF={box:{w:62,h:52,m:1.3},box2:{w:52,h:44,m:1},box3:{w:46,h:40,m:.9},
 function mkProp(type,x,y=0,extra={}){const d=PROPDEF[type];return{type:type.replace(/\d$/,''),x,y,w:d.w,h:d.h,m:d.m,vx:0,vy:0,rot:0,vr:0,cd:0,...extra}}
 function battleProps(theme){if(theme==='shop')return[mkProp('box',-725),mkProp('box2',-722,52),mkProp('box3',-655),mkProp('sign',-360),mkProp('bin',610),mkProp('can',262),mkProp('can',280),mkProp('can',271,20)];
   if(theme==='cafe')return[mkProp('table',-420),mkProp('cup',-428,64),mkProp('chair',-472),mkProp('chair',-368),mkProp('table',420),mkProp('cup',414,64),mkProp('chair',368),mkProp('chair',474),mkProp('cup',-80)];
+  if(['bazaar','zurkhaneh','beach','roof'].includes(theme))return[mkProp('box',-640),mkProp('barrel',-560),mkProp('can',300),mkProp('box3',620)];
   if(theme==='desk')return[mkProp('box',-640),mkProp('box3',-585),mkProp('can',300),mkProp('can',318),mkProp('barrel',620)];
   if(theme==='alley')return[mkProp('bin',-660),mkProp('box',-560),mkProp('box3',-505),mkProp('barrel',640),mkProp('can',250),mkProp('can',268),mkProp('sign',-250)];
   return[mkProp('barrel',-660),mkProp('bucket',-600),mkProp('stool',-300),mkProp('barrel',680),mkProp('bucket',520),mkProp('stool',300)]}
-function storyProps(st){const L=mulberry32(st.len),out=[],pool={desk:['box','box3','can','barrel'],shop:['box','box3','sign','bin','can'],cafe:['table','chair','chair','cup'],dojo:['barrel','bucket','stool'],temple:['barrel','bucket','stool','stool'],alley:['bin','box','box3','can','barrel','sign']}[st.theme];
+function storyProps(st){const L=mulberry32(st.len),out=[],pool={desk:['box','box3','can','barrel'],bazaar:['box','box3','barrel','can'],zurkhaneh:['barrel','bucket','stool'],beach:['box','can','bucket'],roof:['box','box3','barrel','bin'],shop:['box','box3','sign','bin','can'],cafe:['table','chair','chair','cup'],dojo:['barrel','bucket','stool'],temple:['barrel','bucket','stool','stool'],alley:['bin','box','box3','can','barrel','sign']}[st.theme];
   for(let x=300;x<st.len-200;x+=260+L()*260){const t=pool[L()*pool.length|0];out.push(mkProp(t,x));if(t==='table')out.push(mkProp('cup',x-4,64))}
   // crates without a heart hold the stage's weapons, in random order
   const loot=(st.loot||[]).slice().sort(()=>Math.random()-.5);let li=0;
@@ -1402,6 +1454,10 @@ const STORY=[
   {theme:'temple',weapon:'sword',name:'معبد سامورایی',len:4100,waves:[{x:760,n:3},{x:1650,n:4},{x:2600,n:4}],boss:{x:3600,hp:420,weapon:'sword',name:'سامورایی معبد'},ehp:68,edmg:.85,ai:'g3',wch:.5,maxEng:3,crates:[[470,1],[1250,1],[1350,0],[2150,1],[3050,1],[3150,0]]},
   {theme:'alley',weapon:'dagger',name:'کوچه‌ی شبانه',len:4200,waves:[{x:760,n:4},{x:1700,n:4},{x:2650,n:5}],boss:{x:3700,hp:460,weapon:'none',name:'سایه‌ی کوچه'},ehp:72,edmg:.9,ai:'g3',wch:.55,maxEng:3,crates:[[480,1],[1300,1],[1400,0],[2200,1],[3100,1],[3200,0]]},
   {theme:'desk',weapon:'none',name:'روی میز تحریر',len:4400,waves:[{x:760,n:4},{x:1700,n:5},{x:2700,n:5}],boss:{x:3900,hp:560,weapon:'none',name:'آذرخش'},ehp:78,edmg:.95,ai:'g3',wch:0,maxEng:3,loot:['nun','sword','staff','dagger'],crates:[[480,1],[1300,0],[1400,0],[2200,1],[3100,0],[3200,1]]},
+  {theme:'bazaar',weapon:'none',name:'بازار سنتی',len:4400,waves:[{x:760,n:4},{x:1700,n:5},{x:2700,n:5}],boss:{x:3900,hp:600,weapon:'none',name:'گلادیاتورِ بازار'},ehp:82,edmg:.95,ai:'g3',wch:.3,maxEng:3,loot:['nun','sword','staff','dagger'],crates:[[480,1],[1300,0],[1400,1],[2200,0],[3100,1],[3200,0]]},
+  {theme:'zurkhaneh',weapon:'none',name:'زورخانه',len:4500,waves:[{x:760,n:4},{x:1700,n:5},{x:2750,n:6}],boss:{x:4000,hp:650,weapon:'none',name:'پهلوونِ زورخانه'},ehp:86,edmg:1,ai:'g3',wch:.35,maxEng:3,loot:['staff','nun'],crates:[[480,1],[1300,0],[1400,1],[2200,1],[3100,0],[3200,1]]},
+  {theme:'beach',weapon:'none',name:'ساحل',len:4500,waves:[{x:760,n:5},{x:1700,n:5},{x:2750,n:6}],boss:{x:4000,hp:680,weapon:'none',name:'رقصنده‌ی ساحل'},ehp:88,edmg:1,ai:'g3',wch:.35,maxEng:3,loot:['sword','dagger'],crates:[[480,1],[1300,0],[1400,1],[2200,0],[3100,1],[3200,1]]},
+  {theme:'roof',weapon:'none',name:'پشت‌بام شبانه',len:4600,waves:[{x:760,n:5},{x:1750,n:6},{x:2800,n:6}],boss:{x:4100,hp:740,weapon:'none',name:'لاکیِ پشت‌بام'},ehp:92,edmg:1.05,ai:'g3',wch:.4,maxEng:3,loot:['nun','sword','staff','dagger'],crates:[[480,1],[1300,1],[1400,0],[2200,1],[3100,0],[3200,1]]},
 ];
 const story={stage:0,len:3500,waveIdx:0,lock:null,spawnQ:[],boss:null,result:null,kills:0,arrowT:0};
 function resize(){DPR=Math.min(2,devicePixelRatio||1);W=innerWidth;H=innerHeight;cv.width=W*DPR|0;cv.height=H*DPR|0;vign=null}
@@ -1415,14 +1471,14 @@ function setTheme(theme,mode,len,bossX){game.theme=theme;buildBG(theme,mode,len|
 function startBattle(){game.mode='battle';const th=game.stageSel;setTheme(th,'battle');const c1=PLAYABLE[game.p1ch||0],c2=PLAYABLE[game.p2ch??1];
   P1=new Fighter({team:0,c:COLORS.black,ch:c1,weapon:c1.weapon,x:-170,face:1});P2=new Fighter({team:1,c:COLORS.red,ch:c2,weapon:c2.weapon,x:170,face:-1,dmg:LV[game.diff].dmg});
   P1.inp=human;fighters=[P1,P2];P2.ai=new AI(P2,game.diff);ctrl=[P2.ai];game.wins=[0,0];game.round=1;props=battleProps(th);pickups=[];startRound()}
-function startDemo(){game.mode='demo';const th=['shop','cafe','dojo','temple','alley','desk'][game.demoI++%6];setTheme(th,'battle');
+function startDemo(){game.mode='demo';const th=['shop','cafe','dojo','temple','alley','desk','bazaar','zurkhaneh','beach','roof'][game.demoI++%10];setTheme(th,'battle');
   const c1=PLAYABLE[Math.random()*PLAYABLE.length|0],c2=PLAYABLE[Math.random()*PLAYABLE.length|0];
   P1=new Fighter({team:0,c:COLORS.black,ch:c1,weapon:c1.weapon,x:-170,face:1});P2=new Fighter({team:1,c:COLORS.red,ch:c2,weapon:c2.weapon,x:170,face:-1});
   fighters=[P1,P2];P1.ai=new AI(P1,'medium');P2.ai=new AI(P2,'medium');ctrl=[P1.ai,P2.ai];props=battleProps(th);pickups=[];startRound()}
-function startRound(){P1.reset(-170,1);P2.reset(170,-1);fx=[];speed=null;projs=[];game.timer=60;game.endT=0;game.winner=null;game.slow=0;game.fin=null;cam.x=0;
+function startRound(){game.cine=null;P1.reset(-170,1);P2.reset(170,-1);fx=[];speed=null;projs=[];game.timer=60;game.endT=0;game.winner=null;game.slow=0;game.fin=null;cam.x=0;
   if(game.mode==='demo'){game.phase='fight';game.msgs=[];return}
   game.phase='intro';game.introT=0;say(game.round===3?'راند آخر':'راند '+fa(game.round),1.1);VO.say(game.round===3?'a-final':'a-r'+game.round,{pri:2})}
-function startStory(i,keepMeter){const st=STORY[i];game.mode='story';story.stage=i;story.len=st.len;story.waveIdx=0;story.lock=null;story.spawnQ=[];story.boss=null;story.result=null;story.arrowT=0;
+function startStory(i,keepMeter){const st=STORY[i];game.cine=null;game.sub=null;game.mode='story';story.stage=i;story.len=st.len;story.waveIdx=0;story.lock=null;story.spawnQ=[];story.boss=null;story.result=null;story.arrowT=0;
   setTheme(st.theme,'story',st.len,st.boss.x);const m=P1&&keepMeter?P1.meter:0;
   const ew=SAVE.equip.weapon&&SHOP.find(i=>i.id===SAVE.equip.weapon),U=SAVE.up;
   P1=new Fighter({team:0,c:COLORS.black,ch:{id:'hero',name:'قهرمان',weapon:'none',special:'special',sname:'طوفان!',look:{}},weapon:ew?ew.base:st.weapon,x:150,face:1,hp:100+15*U.hp,dmg:1+.1*U.pow});P1.spd*=1+.06*U.spd;
@@ -1462,7 +1518,7 @@ function endRound(){
     addCoins(25+10*story.stage);
     if(story.stage<STORY.length-1){startStory(story.stage+1,true);return}
     addCoins(100);
-    showOver('قهرمان شدی!','هر شش رئیس رو شکست دادی: مشت‌زن، اژدها، استاد، سامورایی، سایه و آذرخش. تعداد آدمک‌های زده‌شده: '+fa(story.kills),'از اول',()=>{story.kills=0;startStory(0)});return}
+    showOver('قهرمان شدی!','هر ده رئیس رو شکست دادی و قهرمان دنیای کاغذی شدی! تعداد آدمک‌های زده‌شده: '+fa(story.kills),'از اول',()=>{story.kills=0;startStory(0)});return}
   
   if(game.winner===P1)game.wins[0]++;else if(game.winner===P2)game.wins[1]++;
   if(net.on&&(game.wins[0]>=2||game.wins[1]>=2)){netSend({t:'over',w:game.wins});netHostTick();netOver(game.wins[0]>=2);return}
@@ -1520,7 +1576,7 @@ function makeGrain(){const g=document.createElement('canvas');g.width=g.height=2
 function worldTf(sx=0,sy=0){let a=DPR*cam.z,e=DPR*(W/2-cam.x*cam.z+sx);
   ctx.setTransform(a,0,0,-DPR*cam.z,e,DPR*(groundY()+sy))}
 const toScreen=(x,y)=>[W/2+(x-cam.x)*cam.z,groundY()-y*cam.z];
-function drawFloorDyn(boil){const sp={shop:72,cafe:60,dojo:44,temple:50,alley:64,desk:56}[game.theme],half=W/2/cam.z+500,st=Math.floor((cam.x-half)/sp)*sp;
+function drawFloorDyn(boil){const sp={shop:72,cafe:60,dojo:44,temple:50,alley:64,desk:56,bazaar:60,zurkhaneh:46,beach:70,roof:62}[game.theme]||60,half=W/2/cam.z+500,st=Math.floor((cam.x-half)/sp)*sp;
   ctx.strokeStyle='#2a2826';ctx.globalAlpha=game.theme==='dojo'?.26:.32;ctx.lineWidth=.8;ctx.beginPath();
   for(let gx=st;gx<cam.x+half;gx+=sp)pencilLine(ctx,mulberry32(gx*13+boil),gx,FL,gx+(gx-cam.x)*1.6,-470,.7);ctx.stroke();ctx.globalAlpha=1}
 function drawBGText(v){const r=mulberry32(v*99+1);
@@ -1860,10 +1916,10 @@ function show(id){for(const o of['menu','pause','over','help','select','shop','l
 function showOver(t,s,btn,act,col){game.phase='over';$('tomenu2').style.display=btn==='منو'?'none':'';$('overT').textContent=t;$('overT').style.color=col||'';$('overS').textContent=s;$('again').textContent=btn;game.overAct=act;show('over')}
 function seg(id,cb){$(id).addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;for(const x of $(id).children)x.classList.toggle('on',x===b);cb(b.dataset.v)})}
 seg('mode',v=>{game.modeSel=v;updStage()});
-const STG=[['shop','سوپرمارکت','میدان مبارزه'],['cafe','کافه','میدان مبارزه'],['dojo','باشگاه','میدان مبارزه'],['temple','معبد','میدان مبارزه'],['alley','کوچه','میدان مبارزه'],['desk','میز تحریر','میدان مبارزه']];
+const STG=[['shop','سوپرمارکت','میدان مبارزه'],['cafe','کافه','میدان مبارزه'],['dojo','باشگاه','میدان مبارزه'],['temple','معبد','میدان مبارزه'],['alley','کوچه','میدان مبارزه'],['desk','میز تحریر','میدان مبارزه'],['bazaar','بازار سنتی','میدان مبارزه'],['zurkhaneh','زورخانه','میدان مبارزه'],['beach','ساحل','میدان مبارزه'],['roof','پشت‌بام','میدان مبارزه']];
 let stI=0;
 function updStage(){const s=STG[stI];game.stageSel=s[0];
-  $('stName').innerHTML=game.modeSel==='story'?'<b>۶ مرحله، ۶ <span>رئیس</span></b><small>با سکه قهرمانت رو قوی کن</small>':s[1]+'<small>'+s[2]+'</small>'}
+  $('stName').innerHTML=game.modeSel==='story'?'<b>۱۰ مرحله، ۱۰ <span>رئیس</span></b><small>با سکه قهرمانت رو قوی کن</small>':s[1]+'<small>'+s[2]+'</small>'}
 function stepStage(d){if(game.modeSel==='story'){game.modeSel='battle';for(const x of $('mode').children)x.classList.toggle('on',x.dataset.v==='battle')}else stI=(stI+d+STG.length)%STG.length;updStage()}
 $('stNext').onclick=()=>stepStage(1);$('stPrev').onclick=()=>stepStage(-1);$('stName').onclick=()=>stepStage(1);
 updStage();
