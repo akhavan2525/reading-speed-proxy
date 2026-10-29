@@ -761,10 +761,11 @@ const AU={c:null,mute:false,nb:null,
   clips:['hit-light','hit-heavy','whoosh-light','whoosh-heavy','whoosh-weapon','wood','shing','block','land','thud','ko','super','heal'],buf:{},
   init(){if(this.c)return;try{this.c=new(window.AudioContext||window.webkitAudioContext)();const n=this.c.sampleRate*.5;this.nb=this.c.createBuffer(1,n,this.c.sampleRate);const d=this.nb.getChannelData(0);for(let i=0;i<n;i++)d[i]=Math.random()*2-1;
     for(const k of this.clips)fetch('sfx/'+k+'.mp3').then(r=>r.ok?r.arrayBuffer():Promise.reject()).then(b=>new Promise((ok,no)=>this.c.decodeAudioData(b,ok,no))).then(b=>{this.buf[k]=b}).catch(()=>{})}catch(e){}},
-  clip(k,vol=1,vary=.08){if(!this.c||this.mute)return true;const b=this.buf[k];if(!b)return false;const s=this.c.createBufferSource(),g=this.c.createGain();s.buffer=b;s.playbackRate.value=1+(Math.random()-.5)*vary*2;g.gain.value=vol;s.connect(g).connect(this.c.destination);s.start();return true},
+  get quiet(){return this.mute||(typeof game!=='undefined'&&game.mode==='demo')},
+  clip(k,vol=1,vary=.08){if(!this.c||this.quiet)return true;const b=this.buf[k];if(!b)return false;const s=this.c.createBufferSource(),g=this.c.createGain();s.buffer=b;s.playbackRate.value=1+(Math.random()-.5)*vary*2;g.gain.value=vol;s.connect(g).connect(this.c.destination);s.start();return true},
   env(g,t,a,v,d){g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+a);g.gain.exponentialRampToValueAtTime(.0001,t+d)},
-  noise(f0,f1,dur,vol,q=1.2){if(!this.c||this.mute)return;const t=this.c.currentTime,s=this.c.createBufferSource(),bp=this.c.createBiquadFilter(),g=this.c.createGain();s.buffer=this.nb;bp.type='bandpass';bp.Q.value=q;bp.frequency.setValueAtTime(f0,t);bp.frequency.exponentialRampToValueAtTime(f1,t+dur);this.env(g,t,.01,vol,dur);s.connect(bp).connect(g).connect(this.c.destination);s.start(t);s.stop(t+dur+.05)},
-  tone(f0,f1,dur,vol,type='sine'){if(!this.c||this.mute)return;const t=this.c.currentTime,o=this.c.createOscillator(),g=this.c.createGain();o.type=type;o.frequency.setValueAtTime(f0,t);o.frequency.exponentialRampToValueAtTime(f1,t+dur);this.env(g,t,.005,vol,dur);o.connect(g).connect(this.c.destination);o.start(t);o.stop(t+dur+.05)},
+  noise(f0,f1,dur,vol,q=1.2){if(!this.c||this.quiet)return;const t=this.c.currentTime,s=this.c.createBufferSource(),bp=this.c.createBiquadFilter(),g=this.c.createGain();s.buffer=this.nb;bp.type='bandpass';bp.Q.value=q;bp.frequency.setValueAtTime(f0,t);bp.frequency.exponentialRampToValueAtTime(f1,t+dur);this.env(g,t,.01,vol,dur);s.connect(bp).connect(g).connect(this.c.destination);s.start(t);s.stop(t+dur+.05)},
+  tone(f0,f1,dur,vol,type='sine'){if(!this.c||this.quiet)return;const t=this.c.currentTime,o=this.c.createOscillator(),g=this.c.createGain();o.type=type;o.frequency.setValueAtTime(f0,t);o.frequency.exponentialRampToValueAtTime(f1,t+dur);this.env(g,t,.005,vol,dur);o.connect(g).connect(this.c.destination);o.start(t);o.stop(t+dur+.05)},
   whoosh(h,w){if(this.clip(w?'whoosh-weapon':h?'whoosh-heavy':'whoosh-light',h?.55:.4,.12))return;if(w){this.noise(900,3200,.14,.18,1.6);return}this.noise(h?300:500,h?1600:2400,h?.2:.12,h?.22:.12,.9)},
   hit(h){if(this.clip(h?'hit-heavy':'hit-light',h?.95:.7,.1))return;this.tone(h?150:220,h?45:80,h?.2:.1,h?.7:.45);this.noise(h?900:1500,300,h?.12:.07,h?.5:.3,.7)},
   wood(){if(this.clip('wood',.6,.12))return;this.tone(420,160,.07,.35,'triangle');this.noise(2500,900,.05,.25,2)},
@@ -1393,13 +1394,15 @@ $('tomenu').onclick=toMenu;$('tomenu2').onclick=toMenu;
 $('resume').onclick=()=>{game.paused=false;show(null)};
 function togglePause(){if((game.mode!=='battle'&&game.mode!=='story')||game.phase==='over')return;game.paused=!game.paused;show(game.paused?'pause':null)}
 $('pbtn').onclick=togglePause;
-// background music: starts on the first tap/key (browsers block autoplay), follows the sound toggle
+// background music: browsers block autoplay, so every tap/key retries until it plays; follows the sound toggle
 const MUS={a:null,play(){if(AU.mute)return;try{if(!this.a){this.a=new Audio('music.mp3');this.a.loop=true;this.a.volume=.45}this.a.play().catch(()=>{})}catch(e){}},stop(){if(this.a)this.a.pause()}};
 // recorded sound clips (files in sfx/); music dips while one plays
 const SND={c:{},play(n,vol=1){if(AU.mute)return;try{let a=this.c[n];if(!a){a=this.c[n]=new Audio('sfx/'+n+'.mp3')}a.currentTime=0;a.volume=vol;a.play().catch(()=>{});
   if(MUS.a){MUS.a.volume=.15;clearTimeout(this.t);this.t=setTimeout(()=>{if(MUS.a)MUS.a.volume=.45},2600)}}catch(e){}}};
 let finSaid=null;
-addEventListener('pointerdown',()=>MUS.play(),{once:true});addEventListener('keydown',()=>MUS.play(),{once:true});
+const GEST=['pointerdown','pointerup','touchend','click','keydown'];
+function unlockAudio(){AU.init();if(AU.c&&AU.c.state==='suspended')AU.c.resume().catch(()=>{});MUS.play()}  // harmless once playing; the sound toggle still wins
+for(const e of GEST)addEventListener(e,unlockAudio,true);
 function setMute(m){AU.mute=m;$('mbtn').style.opacity=m?.4:1;$('sndBtn').textContent=m?'صدا: خاموش':'صدا: روشن';if(m)MUS.stop();else MUS.play()}
 $('mbtn').onclick=()=>setMute(!AU.mute);$('sndBtn').onclick=()=>{AU.init();setMute(!AU.mute)};
 $('helpBtn').onclick=()=>show('help');$('helpClose').onclick=()=>show('menu');
