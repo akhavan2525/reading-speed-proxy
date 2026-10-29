@@ -1,0 +1,12 @@
+{
+  "name": "paper-fighters",
+  "version": "1.0.0",
+  "private": true,
+  "description": "جنگجوهای کاغذی · Paper Fighters",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

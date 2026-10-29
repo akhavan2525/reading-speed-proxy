@@ -1,0 +1,12 @@
+{
+  "app": "paper-fighters-game",
+  "platform": "node",
+  "port": 3000,
+  "node": {
+    "version": "22"
+  },
+  "build": {
+    "location": "iran"
+  },
+  "disks": []
+}
