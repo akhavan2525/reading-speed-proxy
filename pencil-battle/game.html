@@ -112,6 +112,7 @@ kbd{font-family:inherit;border:1.5px solid var(--ink);border-radius:5px;padding:
     <button class="hb sm" id="helpBtn" style="left:51.97%;top:72.85%;width:25.50%;height:6.34%">کنترل‌ها</button>
     <button class="hb sm" id="sndBtn" style="left:22.32%;top:72.85%;width:25.61%;height:6.34%">صدا: روشن</button>
     <button id="shopBtn">🛒 فروشگاه</button>
+    <button id="onlineBtn">🌐 آنلاین</button>
     <a id="apkBtn" href="paper-fighters.apk" download style="display:none">📱 دانلود اپ اندروید</a>
     <div id="menuCoins">🪙 ۰</div>
   </div>
@@ -129,6 +130,16 @@ kbd{font-family:inherit;border:1.5px solid var(--ink);border-radius:5px;padding:
   <div id="shopGrid" class="sgrid"></div>
   <div class="sinfo" id="shopInfo"></div>
   <div class="row"><button class="btn" id="shopBack">برگشت</button><button class="btn big" id="shopAct" style="margin:0">خرید</button></div>
+</div></div>
+<div id="lobby" class="overlay hidden"><div class="card" style="transform:none">
+  <h1 style="font-size:26px">مبارزه‌ی آنلاین</h1><div class="sub">با یه دوست، هر جا که باشه</div>
+  <div id="lbMain"><button class="btn big" id="lbCreate">ساخت اتاق</button>
+    <div class="lbl">یا کد اتاق دوستت رو وارد کن:</div>
+    <div class="row"><input id="lbCode" inputmode="numeric" maxlength="4" placeholder="کد ۴ رقمی" autocomplete="off"><button class="btn" id="lbJoin">ورود</button></div></div>
+  <div id="lbWait" class="hidden"><div class="lbl">کد اتاقت:</div><div id="lbCodeShow" class="bigcode">----</div>
+    <div class="sub">این کد رو برای دوستت بفرست… منتظر حریف</div><button class="btn" id="lbShare" style="width:100%">ارسال کد برای دوست</button></div>
+  <div id="lbMsg" class="note" style="display:none;margin-top:10px"></div>
+  <button class="btn" id="lbBack" style="width:100%;margin-top:10px">برگشت</button>
 </div></div>
 <div id="coinToast"></div>
 <div id="help" class="overlay hidden"><div class="card" style="text-align:right;transform:none">
@@ -480,7 +491,7 @@ function saveGame(){try{localStorage.setItem('pf-save',JSON.stringify(SAVE))}cat
 function updCoins(){for(const id of['menuCoins','shopCoins']){const e=document.getElementById(id);if(e)e.textContent='🪙 '+fa(SAVE.coins)}}
 function addCoins(n){if(!n||game.mode==='demo')return 0;SAVE.coins+=n;saveGame();const t=document.getElementById('coinToast');if(t){t.textContent='+'+fa(n)+' سکه 🪙';t.classList.remove('show');void t.offsetWidth;t.classList.add('show')}return n}
 // what the player wears/holds; silly weapons reuse a real weapon's moves (battle mode only)
-function applyEquip(f,weapons){f.cos={hat:SAVE.equip.hat,face:SAVE.equip.face};const w=weapons&&SAVE.equip.weapon&&SHOP.find(i=>i.id===SAVE.equip.weapon);
+function applyEquip(f,weapons,eq=SAVE.equip){eq=eq||{};f.cos={hat:eq.hat||null,face:eq.face||null};const w=weapons&&eq.weapon&&SHOP.find(i=>i.id===eq.weapon);
   if(w){f.wskin=w;if(f.ch&&f.ch.weapon!==w.base){const sp=f.ch.weapon==='none'?f.ch.special:(w.base==='sword'?'kspin':'sspin');f.ch={...f.ch,moves:null,stance:null,block:null,ginga:0,special:sp}}f.weapon=w.base;f.reset(f.x,f.face)}}
 const BOSSLOOK=[
   {id:'b1',special:'cartrush',sname:'حمله‌ی چرخ‌دستی!',look:{eyes:1,belly:1,apron:'#f4f2ec',cart:1},face:'chars/boss1-face.png'},
@@ -965,6 +976,54 @@ const AU={c:null,mute:false,nb:null,
 // ================= haptics =================
 let vibeOn=true;try{vibeOn=localStorage.getItem('pf-vibe')!=='0'}catch(e){}
 function buzz(p){if(!vibeOn||!navigator.vibrate||game.mode==='demo')return;try{navigator.vibrate(p)}catch(e){}}
+// ================= online (room code; the creator's game is authoritative) =================
+const net={ws:null,on:false,role:null,remote:null,pressQ:[],lastIn:'',snap:null,lastSnap:0,au:[],pingT:null,prevHp:null};
+const r1=v=>Math.round(v*10)/10;
+function netUrl(){return(location.protocol==='https:'?'wss://':'ws://')+location.host+'/ws'}
+function netSend(m){if(net.ws&&net.ws.readyState===1)net.ws.send(JSON.stringify(m))}
+function netClose(){net.on=false;net.role=null;clearInterval(net.pingT);if(net.ws){try{net.ws.onclose=null;net.ws.close()}catch(e){}}net.ws=null}
+function netConnect(first){netClose();let ws;try{ws=new WebSocket(netUrl())}catch(e){lobbyMsg('اتصال به سرور ممکن نیست.');return}
+  net.ws=ws;ws.onopen=()=>{net.pingT=setInterval(()=>netSend({t:'ping'}),15000);netSend(first)};
+  ws.onerror=()=>lobbyMsg('اتصال به سرور برقرار نشد. اینترنت رو چک کن.');
+  ws.onclose=()=>{const was=net.on;netClose();if(was&&game.phase!=='over')showOver('ارتباط قطع شد','اتصال به سرور یا حریف قطع شد.','منو',()=>{show('menu');startDemo()},'#cf241d')};
+  ws.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch(_){return}netMsg(m)}}
+function myInfo(){return{ch:game.p1ch||0,cos:{...SAVE.equip},stage:game.stageSel}}
+function netMsg(m){
+  if(m.t==='created'){$('lbMain').classList.add('hidden');$('lbWait').classList.remove('hidden');$('lbCodeShow').textContent=fa(m.code);net.code=m.code;lobbyMsg('')}
+  else if(m.t==='err')lobbyMsg(m.e==='notfound'?'اتاقی با این کد پیدا نشد.':m.e==='full'?'این اتاق پره.':'سرور شلوغه، دوباره امتحان کن.');
+  else if(m.t==='start')startOnline(m);
+  else if(m.t==='in'&&net.role==='host'){const R_=net.remote;R_.left=m.l;R_.right=m.r;R_.up=m.u;R_.down=m.d;R_.block=m.b;for(const k of m.p||[])if(k in R_.buf)R_.buf[k]=nowS()}
+  else if(m.t==='st'&&net.role==='guest')net.snap=m;
+  else if(m.t==='over'&&net.role==='guest')netOver(m.w[1]>=2);
+  else if(m.t==='left'){const was=net.on;netClose();if(was&&game.phase!=='over')showOver('حریف رفت!','ارتباط حریف قطع شد.','منو',()=>{show('menu');startDemo()},'#cf241d')}}
+function startOnline(m){net.on=true;net.role=m.role;net.prevHp=null;const hi=m.host||{},gi=m.guest||{};game.paused=false;
+  game.mode='battle';game.stageSel=hi.stage||'dojo';setTheme(game.stageSel,'battle');const c1=PLAYABLE[hi.ch]||PLAYABLE[0],c2=PLAYABLE[gi.ch]||PLAYABLE[1];
+  P1=new Fighter({team:0,c:COLORS.black,ch:c1,weapon:c1.weapon,x:-170,face:1});P2=new Fighter({team:1,c:COLORS.red,ch:c2,weapon:c2.weapon,x:170,face:-1});
+  applyEquip(P1,true,hi.cos);applyEquip(P2,true,gi.cos);
+  if(net.role==='host'){P1.inp=human;P2.inp=net.remote=mkInput()}else{P1.inp=mkInput();P2.inp=human}
+  fighters=[P1,P2];ctrl=[];game.wins=[0,0];game.round=1;props=battleProps(game.stageSel);pickups=[];startRound();show(null);AU.sup()}
+function netOver(won){if(game.phase==='over')return;const cn=addCoins(won?40:5);
+  showOver(won?'بردی!':'باختی!',(won?'حریفت رو شکست دادی!':'این دفعه حریفت برد. یه دست دیگه؟')+' جایزه: '+fa(cn)+' سکه 🪙','منو',()=>{netClose();show('menu');startDemo()},won?'':'#cf241d')}
+// host: 30 snapshots a second
+const fSnap=f=>{const d={};for(const k of KEYS)d[k]=r1(f.disp[k]||0);d.sw=f.disp.sw;d.wb=f.disp.wb;
+  return{x:r1(f.x),y:r1(f.y),vx:r1(f.vx),vy:r1(f.vy),f:f.face,df:f.dff,s:f.state,hp:r1(f.hp),g:r1(f.ghost),m:r1(f.meter),fl:r1(f.flash),a:f.alpha,cr:f.crouch,bl:f.blocking,ko:f.ko,k:f.kOut,mv:f.move?[f.move.name,Math.round(f.move.t)]:null,d}};
+function netHostTick(){if(game.rt-net.lastSnap<1/30)return;net.lastSnap=game.rt;const nf=[];for(const e of fx)if(!e._n){e._n=1;if(nf.length<50)nf.push(e)}
+  const m=game.msgs[0];netSend({t:'st',g:{tm:r1(game.timer),rd:game.round,w:game.wins,ph:game.phase,sT:r1(game.superT),fT:r1(game.flashT),zp:r1(game.zp),sh:r1(game.shake),
+    fin:game.fin?[fighters.indexOf(game.fin.att),fighters.indexOf(game.fin.vic)]:null,win:game.winner?fighters.indexOf(game.winner):-1,msg:m?[m.text,m.dur,m.big,m.col||null,r1(m.t)]:null},
+    f:[fSnap(P1),fSnap(P2)],pr:props.map(q=>[r1(q.x),r1(q.y),r1(q.rot)]),pj:projs.map(q=>[r1(q.x),r1(q.y),r1(q.rot),q.dir,q.slip?1:0]),fx:nf,sp:speed,au:net.au.splice(0)})}
+// guest: send the controls, draw the host's world
+function netGuestFrame(rdt){const H_=human,inp={l:H_.left,r:H_.right,u:H_.up,d:H_.down,b:H_.block},key=JSON.stringify(inp);
+  if(key!==net.lastIn||net.pressQ.length){net.lastIn=key;netSend({t:'in',...inp,p:net.pressQ.splice(0)})}
+  const S_=net.snap;if(S_){net.snap=null;const g=S_.g;game.timer=g.tm;game.round=g.rd;game.wins=g.w;game.phase=g.ph;game.superT=g.sT;game.flashT=g.fT;game.zp=g.zp;game.shake=Math.max(game.shake,g.sh);
+    game.fin=g.fin?{att:fighters[g.fin[0]],vic:fighters[g.fin[1]]}:null;game.winner=g.win>=0?fighters[g.win]:null;game.msgs=g.msg?[{text:g.msg[0],dur:g.msg[1],big:g.msg[2],col:g.msg[3],t:g.msg[4]}]:[];
+    [P1,P2].forEach((f,i)=>{const o=S_.f[i];f.x=o.x;f.y=o.y;f.vx=o.vx;f.vy=o.vy;f.face=o.f;f.dff=o.df;f.state=o.s;f.hp=o.hp;f.ghost=o.g;f.meter=o.m;f.flash=o.fl;f.alpha=o.a;f.crouch=o.cr;f.blocking=o.bl;f.ko=o.ko;f.kOut=o.k;
+      const d=o.mv&&MOVES[o.mv[0]];f.move=d?{d,name:o.mv[0],t:o.mv[1],hits:new Set(),props:new Set(),seg:d.seq[0]}:null;Object.assign(f.disp,o.d);f.sk=skel(f.disp,f.x,f.y,f.dff,f.sc,f.weapon,f.y<=.01&&f.vy<=0);f.updNun(1/30)});
+    S_.pr.forEach((q,i)=>{if(props[i]){props[i].x=q[0];props[i].y=q[1];props[i].rot=q[2]}});projs=S_.pj.map(q=>({x:q[0],y:q[1],rot:q[2],dir:q[3],slip:q[4]}));
+    for(const e of S_.fx)fx.push(e);speed=S_.sp;for(const a of S_.au){const[k,...args]=a;if(AU[k])AU[k](...args)}
+    const hp=[P1.hp,P2.hp];if(net.prevHp){if(hp[1]<net.prevHp[1])buzz(40);else if(hp[0]<net.prevHp[0])buzz(15)}net.prevHp=hp}
+  for(const f of fighters)if(f.flash>0)f.flash-=rdt;updFx(rdt);updCam(rdt)}
+// sounds made on the host are replayed on the guest
+for(const k of['hit','wood','block','land','ko','sup','heal','thud','shing','whoosh']){const o=AU[k].bind(AU);AU[k]=(...a)=>{if(net.on&&net.role==='host')net.au.push([k,...a]);return o(...a)}}
 // ================= input =================
 const mkInput=()=>({left:0,right:0,up:0,down:0,block:0,buf:{punch:-9,kick:-9,up:-9,special:-9,fin:-9}});
 function take(I,k){if(nowS()-I.buf[k]<.26){I.buf[k]=-9;return true}return false}
@@ -972,7 +1031,7 @@ const KEYMAP={KeyA:'left',ArrowLeft:'left',KeyD:'right',ArrowRight:'right',KeyW:
   KeyJ:'punch',KeyZ:'punch',KeyK:'kick',KeyX:'kick',KeyL:'block',KeyC:'block',ShiftLeft:'block',Space:'special',KeyU:'special',KeyV:'special',KeyF:'fin',KeyI:'fin'};
 const PRESS=['punch','kick','special','fin'];
 const human=mkInput();
-function press(k,on){if(on){if(k in human.buf)human.buf[k]=nowS();if(!PRESS.includes(k))human[k]=1}else if(!PRESS.includes(k))human[k]=0}
+function press(k,on){if(on&&net.on&&net.role==='guest'&&PRESS.concat('up').includes(k))net.pressQ.push(k);if(on){if(k in human.buf)human.buf[k]=nowS();if(!PRESS.includes(k))human[k]=1}else if(!PRESS.includes(k))human[k]=0}
 addEventListener('keydown',e=>{AU.init();if(e.code==='Escape'||e.code==='KeyP'){togglePause();return}const k=KEYMAP[e.code];if(!k)return;e.preventDefault();if(e.repeat&&(PRESS.includes(k)||k==='up'))return;press(k,true)});
 addEventListener('keyup',e=>{const k=KEYMAP[e.code];if(k)press(k,false)});
 addEventListener('blur',()=>{for(const k of['left','right','up','down','block'])human[k]=0});
@@ -1379,12 +1438,14 @@ function endRound(){
     showOver('قهرمان شدی!','هر شش غول رو شکست دادی: سوپرمارکت، کافه، باشگاه، معبد، کوچه و میز تحریر. تعداد آدمک‌های زده‌شده: '+fa(story.kills),'از اول',()=>{story.kills=0;startStory(0)});return}
   
   if(game.winner===P1)game.wins[0]++;else if(game.winner===P2)game.wins[1]++;
+  if(net.on&&(game.wins[0]>=2||game.wins[1]>=2)){netSend({t:'over',w:game.wins});netHostTick();netOver(game.wins[0]>=2);return}
   if(game.wins[0]>=2||game.wins[1]>=2){const won=game.wins[0]>=2,cn=addCoins(won?{easy:20,medium:35,hard:60}[game.diff]:5),ct=' جایزه: '+fa(cn)+' سکه 🪙';
     showOver(won?'بردی!':'باختی!',(won?'آدمک قرمز رو با خاک یکسان کردی. حالا سخت‌ترش رو امتحان کن.':'قرمزه این دفعه زرنگ‌تر بود. یه دست دیگه؟')+ct,'دوباره',startBattle,won?'':'#cf241d');return}
   game.round++;startRound()}
 
 function update(rdt){
   game.rt+=rdt;if(game.paused||game.phase==='over')return;
+  if(net.on&&net.role==='guest'){netGuestFrame(rdt);return}
   if(game.sub){game.sub.t+=rdt;if(game.sub.t>game.sub.dur)game.sub=null}
   if(game.cine){if(nowS()-human.buf.punch<.1||nowS()-human.buf.kick<.1)game.cine.skip=game.cine.t>.8;cineUpdate(rdt);updFx(rdt);if(game.cine)for(const f of fighters)f.pose(rdt);updCam(rdt);return}
   if(P1&&game.phase==='fight'&&game.mode!=='demo'){if(!P1.lowSaid&&P1.hp>0&&P1.hp<P1.maxHp*.25){P1.lowSaid=true;VO.say('low',{pri:1})}else if(P1.hp>P1.maxHp*.45)P1.lowSaid=false;
@@ -1678,7 +1739,7 @@ function drawBar(x,top,bw,bh,f,left,label,boil,meter){
 function drawHUD(boil){
   const pad=12,bw=Math.min(W*.38,440),bh=clamp(H*.028,13,22),top=pad+(portrait()?6:0);
   if(game.mode==='battle'){
-    for(const f of[P1,P2]){const left=f===P1,x=left?pad:W-pad-bw;const y2=drawBar(x,top,bw,bh,f,left,left?'سیاه (تو)':'قرمز',boil,true);
+    for(const f of[P1,P2]){const left=f===P1,x=left?pad:W-pad-bw;const y2=drawBar(x,top,bw,bh,f,left,net.on?((left===(net.role==='host'))?'تو':'حریف'):(left?'سیاه (تو)':'قرمز'),boil,true);
       for(let i=0;i<2;i++){const cx=left?x+bw-10-i*18:x+10+i*18,cy=y2+10;ctx.beginPath();ctx.arc(cx,cy,6,0,TAU);ctx.lineWidth=1.8;ctx.strokeStyle=INK;ctx.stroke();if(game.wins[left?0:1]>i){ctx.fillStyle=f.c.front;ctx.fill()}}}
     const tx=W/2,ty=top+bh/2+6,R=Math.max(22,bh*1.25);ctx.fillStyle='rgba(243,239,230,.92)';ctx.beginPath();ctx.arc(tx,ty,R,0,TAU);ctx.fill();
     const r=mulberry32(boil*3+9);ctx.strokeStyle=INK;ctx.lineWidth=2;for(let p=0;p<2;p++){ctx.beginPath();const st=r()*TAU;for(let i=0;i<=24;i++){const a=st+i/24*(TAU+.3),rr=R*(1+(r()-.5)*.05);i?ctx.lineTo(tx+Math.cos(a)*rr,ty+Math.sin(a)*rr):ctx.moveTo(tx+Math.cos(a)*rr,ty+Math.sin(a)*rr)}ctx.stroke()}
@@ -1739,8 +1800,8 @@ let cineHid=false;
 // ================= UI wiring =================
 const $=id=>document.getElementById(id);
 const isTouch=matchMedia('(pointer:coarse)').matches||'ontouchstart' in window;
-function show(id){for(const o of['menu','pause','over','help','select','shop'])$(o).classList.toggle('hidden',o!==id);const playing=!id&&(game.mode==='battle'||game.mode==='story');$('topbtns').style.display=playing?'flex':'none';$('touch').style.display=playing&&isTouch?'block':'none'}
-function showOver(t,s,btn,act,col){game.phase='over';$('overT').textContent=t;$('overT').style.color=col||'';$('overS').textContent=s;$('again').textContent=btn;game.overAct=act;show('over')}
+function show(id){for(const o of['menu','pause','over','help','select','shop','lobby'])$(o).classList.toggle('hidden',o!==id);const playing=!id&&(game.mode==='battle'||game.mode==='story');$('topbtns').style.display=playing?'flex':'none';$('touch').style.display=playing&&isTouch?'block':'none'}
+function showOver(t,s,btn,act,col){game.phase='over';$('tomenu2').style.display=btn==='منو'?'none':'';$('overT').textContent=t;$('overT').style.color=col||'';$('overS').textContent=s;$('again').textContent=btn;game.overAct=act;show('over')}
 function seg(id,cb){$(id).addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;for(const x of $(id).children)x.classList.toggle('on',x===b);cb(b.dataset.v)})}
 seg('mode',v=>{game.modeSel=v;updStage()});
 const STG=[['shop','سوپرمارکت','میدان مبارزه'],['cafe','کافه','میدان مبارزه'],['dojo','باشگاه','میدان مبارزه'],['temple','معبد','میدان مبارزه'],['alley','کوچه','میدان مبارزه'],['desk','میز تحریر','میدان مبارزه']];
@@ -1751,7 +1812,7 @@ function stepStage(d){if(game.modeSel==='story'){game.modeSel='battle';for(const
 $('stNext').onclick=()=>stepStage(1);$('stPrev').onclick=()=>stepStage(-1);$('stName').onclick=()=>stepStage(1);
 updStage();
 seg('diff',v=>game.diff=v);
-const begin=()=>{AU.init();game.paused=false;if(game.modeSel!=='story'){openSelect();return}story.kills=0;startStory(0);show(null);VO.say('intro',{pri:2,delay:.5})};
+const begin=()=>{AU.init();game.paused=false;sel.online=false;if(game.modeSel!=='story'){openSelect();return}story.kills=0;startStory(0);show(null);VO.say('intro',{pri:2,delay:.5})};
 const startFight=()=>{game.paused=false;startBattle();show(null);VO.say('intro',{pri:2,delay:3.4})};
 $('start').onclick=begin;
 // ===== character select (Tekken-style): pick yourself, then the opponent =====
@@ -1761,7 +1822,7 @@ function drawPreviews(dt,list){for(const cv of list){const f=cv._f;if(!f)continu
   g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,W_,H_);const z=cv._head?H_/88:H_/150;g.setTransform(z,0,0,-z,W_/2-(cv._head?2:8)*z,cv._head?H_*.42+124*z:H_-6);ctx=g;try{drawFighter(f)}catch(e){}ctx=old}}
 function openSelect(){sel.step=0;sel.pick=[game.p1ch||0,game.p2ch??1];renderSelect();show('select')}
 function renderSelect(){const g=$('selGrid');g.innerHTML='';sel.prev=[];
-  $('selT').textContent=sel.step?'حریفت رو انتخاب کن':'کاراکترت رو انتخاب کن';$('selGo').textContent=sel.step?'شروع مبارزه!':'انتخاب';
+  $('selT').textContent=sel.step?'حریفت رو انتخاب کن':'کاراکترت رو انتخاب کن';$('selGo').textContent=sel.online?'ادامه':sel.step?'شروع مبارزه!':'انتخاب';
   CHARS.forEach((c,i)=>{const b=document.createElement('button');b.className='ccard'+(c.lock?' lock':'');const pi=PLAYABLE.indexOf(c);
     if(!c.lock&&pi===sel.pick[sel.step])b.classList.add('on');
     if(c.lock)b.innerHTML='<div class="sil">?</div><b>'+c.name+'</b><small>به‌زودی</small>';
@@ -1772,7 +1833,7 @@ function renderSelect(){const g=$('selGrid');g.innerHTML='';sel.prev=[];
     g.appendChild(b)});
   const c=PLAYABLE[sel.pick[sel.step]],bar=(l,v)=>'<div class="st"><span>'+l+'</span><i style="width:'+v*20+'%"></i></div>';
   $('selInfo').innerHTML='<div class="nm">'+c.name+' <small>'+c.style+'</small></div>'+bar('قدرت',c.stats[0])+bar('سرعت',c.stats[1])+bar('دفاع',c.stats[2])+'<div class="sp">حرکت ویژه: '+c.sname.replace('!','')+'</div>'}
-$('selGo').onclick=()=>{if(!sel.step){sel.step=1;if(sel.pick[1]===sel.pick[0])sel.pick[1]=(sel.pick[0]+1+(Math.random()*(PLAYABLE.length-1)|0))%PLAYABLE.length;renderSelect();return}
+$('selGo').onclick=()=>{if(sel.online){game.p1ch=sel.pick[0];openLobby();return}if(!sel.step){sel.step=1;if(sel.pick[1]===sel.pick[0])sel.pick[1]=(sel.pick[0]+1+(Math.random()*(PLAYABLE.length-1)|0))%PLAYABLE.length;renderSelect();return}
   game.p1ch=sel.pick[0];game.p2ch=sel.pick[1];startFight()};
 const shop={tab:'hat',sel:null,prev:[]};
 function openShop(){shop.sel=null;renderShop();show('shop')}
@@ -1790,13 +1851,20 @@ $('shopAct').onclick=()=>{const it=shop.sel;if(!it)return;if(!SAVE.owned.include
   else SAVE.equip[it.slot]=SAVE.equip[it.slot]===it.id?null:it.id;saveGame();renderShop()};
 $('shopTabs').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;shop.tab=b.dataset.v;shop.sel=null;renderShop()});
 $('shopBack').onclick=()=>show('menu');$('shopBtn').onclick=()=>{AU.init();openShop()};updCoins();
-$('selBack').onclick=()=>{if(sel.step){sel.step=0;renderSelect()}else show('menu')};
+function lobbyMsg(t){const e=$('lbMsg');e.textContent=t;e.style.display=t?'block':'none'}
+function openLobby(){netClose();$('lbMain').classList.remove('hidden');$('lbWait').classList.add('hidden');$('lbCode').value='';lobbyMsg('');show('lobby')}
+$('onlineBtn').onclick=()=>{AU.init();sel.online=true;openSelect()};
+$('lbCreate').onclick=()=>{lobbyMsg('در حال اتصال…');netConnect({t:'create',info:myInfo()})};
+$('lbJoin').onclick=()=>{const c=$('lbCode').value.replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/\D/g,'');if(c.length!==4){lobbyMsg('کد ۴ رقمی رو کامل وارد کن.');return}lobbyMsg('در حال اتصال…');netConnect({t:'join',code:c,info:myInfo()})};
+$('lbShare').onclick=()=>{const t='بیا جنگجوهای کاغذی آنلاین بازی کنیم! کد اتاق: '+net.code+'\nhttps://game.akhavandp.ir';if(navigator.share)navigator.share({text:t}).catch(()=>{});else{try{navigator.clipboard.writeText(t);lobbyMsg('کد کپی شد.')}catch(e){}}};
+$('lbBack').onclick=()=>{netClose();sel.online=false;show('menu')};
+$('selBack').onclick=()=>{if(sel.step){sel.step=0;renderSelect()}else{sel.online=false;show('menu')}};
 $('again').onclick=()=>{const a=game.overAct;if(a)a();show(null)};
 $('restart').onclick=()=>{game.paused=false;if(game.mode==='story')startStory(story.stage);else startBattle();show(null)};
-const toMenu=()=>{game.paused=false;VO.stop();game.sub=null;game.cine=null;show('menu');startDemo()};
+const toMenu=()=>{netClose();game.paused=false;VO.stop();game.sub=null;game.cine=null;show('menu');startDemo()};
 $('tomenu').onclick=toMenu;$('tomenu2').onclick=toMenu;
 $('resume').onclick=()=>{game.paused=false;show(null)};
-function togglePause(){if((game.mode!=='battle'&&game.mode!=='story')||game.phase==='over')return;game.paused=!game.paused;show(game.paused?'pause':null)}
+function togglePause(){if(net.on)return;if((game.mode!=='battle'&&game.mode!=='story')||game.phase==='over')return;game.paused=!game.paused;show(game.paused?'pause':null)}
 $('pbtn').onclick=togglePause;
 // background music: browsers block autoplay, so every tap/key retries until it plays; follows the sound toggle
 const MUS={a:null,play(){if(AU.mute)return;try{if(!this.a){this.a=new Audio('music.mp3');this.a.loop=true;this.a.volume=.45}this.a.play().catch(()=>{})}catch(e){}},stop(){if(this.a)this.a.pause()}};
@@ -1839,7 +1907,7 @@ document.addEventListener('contextmenu',e=>e.preventDefault());
 // ================= boot =================
 resize();makeGrain();startDemo();
 let last=performance.now();
-function loop(t){const dt=clamp((t-last)/1000,0,.05);last=t;update(dt);render();if(sel.prev.length&&!$('select').classList.contains('hidden'))drawPreviews(dt,sel.prev);if(shop.prev.length&&!$('shop').classList.contains('hidden'))drawPreviews(dt,shop.prev);requestAnimationFrame(loop)}
+function loop(t){const dt=clamp((t-last)/1000,0,.05);last=t;update(dt);if(net.on&&net.role==='host'&&game.phase!=='over')netHostTick();render();if(sel.prev.length&&!$('select').classList.contains('hidden'))drawPreviews(dt,sel.prev);if(shop.prev.length&&!$('shop').classList.contains('hidden'))drawPreviews(dt,shop.prev);requestAnimationFrame(loop)}
 requestAnimationFrame(loop);
 window.__game={get game(){return game},get P1(){return P1},get P2(){return P2},get fighters(){return fighters},story,startBattle,startStory,startDemo,human,press,cam,MOVES,P,skel,canFinish,startFinisher};
 </script>
@@ -1864,13 +1932,16 @@ window.__game={get game(){return game},get P1(){return P1},get P2(){return P2},g
 .sinfo .st{display:flex;align-items:center;gap:8px;margin:2px 0}.sinfo .st span{width:42px;font-weight:700}
 .sinfo .st i{display:block;height:8px;background:var(--ink);border-radius:5px 3px 6px 2px}
 .sinfo .sp{margin-top:4px;font-weight:700;color:var(--red)}
-#shopBtn{position:absolute;left:24%;top:80.6%;width:52%;height:5.2%;display:flex;align-items:center;justify-content:center;font-family:inherit;font-weight:900;font-size:.95em;color:var(--paper);background:var(--red);border:2.5px solid var(--ink);border-radius:12px 9px 13px 8px/9px 13px 8px 12px;box-shadow:3px 3px 0 var(--ink);cursor:pointer}
+#onlineBtn{position:absolute;left:51%;top:80.6%;width:36%;height:5.2%;display:flex;align-items:center;justify-content:center;font-family:inherit;font-weight:900;font-size:.95em;color:var(--paper);background:#2f6db3;border:2.5px solid var(--ink);border-radius:12px 9px 13px 8px/9px 13px 8px 12px;box-shadow:3px 3px 0 var(--ink);cursor:pointer}
+#shopBtn{position:absolute;left:13%;top:80.6%;width:36%;height:5.2%;display:flex;align-items:center;justify-content:center;font-family:inherit;font-weight:900;font-size:.95em;color:var(--paper);background:var(--red);border:2.5px solid var(--ink);border-radius:12px 9px 13px 8px/9px 13px 8px 12px;box-shadow:3px 3px 0 var(--ink);cursor:pointer}
 #menuCoins{position:absolute;right:4%;top:2.2%;font-weight:900;font-size:.95em;background:rgba(243,239,230,.9);border:2px solid var(--ink);border-radius:10px;padding:2px 9px}
 #coinToast{position:fixed;left:50%;top:calc(96px + env(safe-area-inset-top));transform:translateX(-50%);z-index:40;font-weight:900;font-size:17px;color:#7a5a0a;background:#fbe9a8;border:2.5px solid var(--ink);border-radius:12px;padding:4px 12px;opacity:0;pointer-events:none}
 #coinToast.show{animation:toast 1.5s ease-out}
 @keyframes toast{0%{opacity:0;transform:translate(-50%,8px)}12%{opacity:1;transform:translate(-50%,0)}75%{opacity:1}100%{opacity:0;transform:translate(-50%,-10px)}}
 .shead{display:flex;align-items:center;justify-content:space-between}.coins{font-weight:900;font-size:18px;background:#fbe9a8;border:2px solid var(--ink);border-radius:10px;padding:2px 10px}
 .ccard .pr{font-size:11px;font-weight:900;color:#7a5a0a}.ccard .pr.own{color:#2f7d3a}
+#lbCode{flex:1;min-width:0;font-family:inherit;font-weight:900;font-size:22px;text-align:center;letter-spacing:4px;border:2.5px solid var(--ink);border-radius:12px 9px 13px 8px;background:#fff8;color:var(--ink);padding:6px}
+.bigcode{font-size:48px;font-weight:900;letter-spacing:8px;color:var(--red);margin:2px 0 4px}#lbWait.hidden,#lbMain.hidden{display:none}
 #apkBtn{position:absolute;left:24%;top:87%;width:52%;height:5.2%;align-items:center;justify-content:center;font-weight:900;font-size:.95em;color:var(--paper);background:var(--ink);border-radius:12px 9px 13px 8px/9px 13px 8px 12px;text-decoration:none;box-shadow:3px 3px 0 rgba(200,35,29,.85);white-space:nowrap}
 #ver{position:fixed;left:8px;bottom:calc(6px + env(safe-area-inset-bottom));font-size:11px;opacity:.45;z-index:11;direction:ltr}
 </style>
