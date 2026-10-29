@@ -41,12 +41,19 @@ kbd{font-family:inherit;border:1.5px solid var(--ink);border-radius:5px;padding:
 #topbtns button{font-family:inherit;width:34px;height:34px;border-radius:50%;border:2px solid var(--ink);background:rgba(243,239,230,.8);font-size:14px;font-weight:900;color:var(--ink);cursor:pointer;padding:0}
 #touch{position:fixed;inset:0;pointer-events:none;direction:ltr;z-index:4;display:none}
 #touch .grp{position:absolute;pointer-events:auto}
-#pad{left:calc(14px + env(safe-area-inset-left));bottom:calc(14px + env(safe-area-inset-bottom));width:168px;height:168px}
+#pad{left:calc(16px + env(safe-area-inset-left));bottom:calc(16px + env(safe-area-inset-bottom));width:164px;height:164px}
 #acts{right:calc(14px + env(safe-area-inset-right));bottom:calc(14px + env(safe-area-inset-bottom));width:180px;height:168px}
 #touch button{position:absolute;font-family:Vazirmatn,sans-serif;font-weight:900;color:var(--ink);background:rgba(243,239,230,.72);border:2.5px solid var(--ink);border-radius:50% 46% 52% 48%/48% 52% 46% 50%;touch-action:none;padding:0;font-size:15px}
 #touch button.on{background:var(--ink);color:var(--paper)}
-#pad button{width:58px;height:58px;font-size:20px}
-#bU{left:55px;top:0}#bD{left:55px;bottom:0}#bL{left:0;top:55px}#bR{right:0;top:55px}
+#stick{position:absolute;inset:0;border-radius:50%;border:2.5px solid var(--ink);background:rgba(243,239,230,.6);touch-action:none;box-shadow:inset 0 0 0 10px rgba(29,28,26,.05)}
+#knob{position:absolute;left:50%;top:50%;width:66px;height:66px;margin:-33px 0 0 -33px;border-radius:50%;background:var(--ink);box-shadow:inset -5px -6px 0 rgba(255,255,255,.13),0 4px 0 rgba(0,0,0,.22);transition:transform .09s ease-out;pointer-events:none}
+#knob.drag{transition:none}
+#stick .tk{position:absolute;width:0;height:0;border:7px solid transparent;opacity:.45}
+#stick .tu{left:50%;top:7px;margin-left:-7px;border-bottom:9px solid var(--ink);border-top:0}
+#stick .td{left:50%;bottom:7px;margin-left:-7px;border-top:9px solid var(--ink);border-bottom:0}
+#stick .tl{top:50%;left:7px;margin-top:-7px;border-right:9px solid var(--ink);border-left:0}
+#stick .tr{top:50%;right:7px;margin-top:-7px;border-left:9px solid var(--ink);border-right:0}
+#stick .tk.on{opacity:1}
 #bP{width:76px;height:76px;left:0;bottom:0;font-size:17px}
 #bK{width:76px;height:76px;right:0;top:30px;font-size:17px}
 #bB{width:58px;height:58px;right:12px;bottom:-6px;font-size:13px}
@@ -123,6 +130,7 @@ kbd{font-family:inherit;border:1.5px solid var(--ink);border-radius:5px;padding:
   <h1>توقف</h1><div class="sub">نفس بگیر…</div>
   <button class="btn big" id="resume">ادامه</button>
   <div class="row"><button class="btn" id="restart">از اول</button><button class="btn" id="tomenu">منو</button></div>
+  <button class="btn" id="vibeBtn" style="width:100%;margin-top:8px">لرزش: روشن</button>
 </div></div>
 
 <div id="over" class="overlay hidden"><div class="card">
@@ -134,10 +142,7 @@ kbd{font-family:inherit;border:1.5px solid var(--ink);border-radius:5px;padding:
 <div id="topbtns"><button id="pbtn" title="توقف">II</button><button id="mbtn" title="صدا">♪</button></div>
 
 <div id="touch">
-  <div class="grp" id="pad">
-    <button id="bU" data-k="up">▲</button><button id="bD" data-k="down">▼</button>
-    <button id="bL" data-k="left">◀</button><button id="bR" data-k="right">▶</button>
-  </div>
+  <div class="grp" id="pad"><div id="stick"><i class="tk tu"></i><i class="tk td"></i><i class="tk tl"></i><i class="tk tr"></i><div id="knob"></div></div></div>
   <div class="grp" id="acts">
     <button id="bF" data-k="fin">فینیشر!</button>
     <button id="bS" data-k="special">ویژه</button>
@@ -870,6 +875,9 @@ const AU={c:null,mute:false,nb:null,
   shing(){if(this.clip('shing',.75,.06))return;this.noise(2500,9000,.3,.32,3);this.tone(1800,3400,.25,.08,'triangle')}
 };
 
+// ================= haptics =================
+let vibeOn=true;try{vibeOn=localStorage.getItem('pf-vibe')!=='0'}catch(e){}
+function buzz(p){if(!vibeOn||!navigator.vibrate||game.mode==='demo')return;try{navigator.vibrate(p)}catch(e){}}
 // ================= input =================
 const mkInput=()=>({left:0,right:0,up:0,down:0,block:0,buf:{punch:-9,kick:-9,up:-9,special:-9,fin:-9}});
 function take(I,k){if(nowS()-I.buf[k]<.26){I.buf[k]=-9;return true}return false}
@@ -1052,8 +1060,9 @@ function applyHit(att,def,h,p){
   if(md&&def.move.t>=md[0]&&def.move.t<=md[1]){spark(p,0,true);AU.block();AU.wood();att.vx=-dir*240;game.hitstop=.05;fx.push({k:'word',x:p[0],y:p[1]+20,t:0,life:.5,txt:'دفع!',rot:0,col:def.c.ink});return}
   const canBlock=(def.state==='stand'||def.state==='bstun')&&def.blocking&&def.face===-dir&&(!h.low||def.crouch);
   let dmg=h.dmg*att.dmgMul;
-  if(canBlock){def.hp=Math.max(1,def.hp-dmg*.12);def.state='bstun';def.stun=.16;def.vx=dir*h.kb*.55*def.kbRes;def.meter=Math.min(100,def.meter+3);spark(p,0,true);AU.block();if(wpn)AU.wood();game.hitstop=.04;return}
+  if(canBlock){if(def===P1||att===P1)buzz(12);def.hp=Math.max(1,def.hp-dmg*.12);def.state='bstun';def.stun=.16;def.vx=dir*h.kb*.55*def.kbRes;def.meter=Math.min(100,def.meter+3);spark(p,0,true);AU.block();if(wpn)AU.wood();game.hitstop=.04;return}
   if(att===P1){const t=game.rt;P1.cmb=t-(P1.cmbT||-9)<1.1?(P1.cmb||0)+1:1;P1.cmbT=t;if(P1.cmb===5)VO.say('combo',{pri:0,cd:10})}
+  if(def===P1)buzz(h.kind==='light'?30:60);else if(att===P1)buzz(h.kind==='light'?14:32);
   def.hp-=dmg;att.meter=Math.min(100,att.meter+dmg*1.7);def.meter=Math.min(100,def.meter+dmg*.9);
   def.flash=.13;def.move=null;def.blocking=false;
   const heavy=h.kind!=='light'||h.sup,kb=h.kb*def.kbRes;
@@ -1157,7 +1166,7 @@ const WORDS=['تق!','بوم!','پاق!','شترق!','دَنگ!','گرومپ!','
 function pop(p){fx.push({k:'word',x:p[0],y:p[1]+30,t:0,life:.7,txt:WORDS[Math.random()*WORDS.length|0],rot:(Math.random()-.5)*.4})}
 function speedLines(p,d){speed={x:p[0],y:p[1],t:0,life:d}}
 function shake(v){game.shake=Math.max(game.shake,v)}
-function superFlash(f){if(f===P1&&(!f.ch||f.ch.id==='sia'))VO.say('super',{pri:1});game.superT=.6;game.hitstop=.34;speedLines([f.x,f.y+90],.6);AU.sup();fx.push({k:'word',x:f.x,y:f.y+175,t:0,life:.9,txt:(f.ch&&f.ch.sname)||'طوفان!',rot:-.08,big:1,col:f.c.ink})}
+function superFlash(f){if(f===P1)buzz(50);if(f===P1&&(!f.ch||f.ch.id==='sia'))VO.say('super',{pri:1});game.superT=.6;game.hitstop=.34;speedLines([f.x,f.y+90],.6);AU.sup();fx.push({k:'word',x:f.x,y:f.y+175,t:0,life:.9,txt:(f.ch&&f.ch.sname)||'طوفان!',rot:-.08,big:1,col:f.c.ink})}
 const CNAMES={dashk:'لگد دَش!',adr:'دوبل هوایی!',slide:'جارو + صعودی!',bflip:'لگد پشتک!',multi:'رگبار لگد!',aslam:'کوبش هوایی!'};
 function cineStart(f,mv){game.superT=.32;game.hitstop=.13;AU.sup();fx.push({k:'word',x:f.x,y:f.y+175*f.sc,t:0,life:.8,txt:CNAMES[mv]||'!',rot:-.06,big:1,col:f.c.ink})}
 function updFx(dt){for(const e of fx){e.t+=dt;
@@ -1250,13 +1259,13 @@ function storyUpdate(dt){const st=STORY[story.stage];story.arrowT=Math.max(0,sto
   else if(story.wave){const alive=fighters.filter(f=>f.team===1&&!f.gone&&f.state!=='ko');
     if(!story.spawnQ.length&&!alive.length){story.lock=null;story.wave=false;story.waveIdx++;story.arrowT=3;say('برو جلو →',1,.8);VO.say('clear',{pri:1,cd:4})}}}
 // boss entrance: freeze, dark stage, spotlight + close-up on the boss's taunt, then the hero answers and the fight resumes
-function startBossCine(b){const st=STORY[story.stage];P1.move=null;P1.state='stand';P1.vx=0;P1.blocking=false;b.state='win';
+function startBossCine(b){buzz([60,40,60,40,90]);const st=STORY[story.stage];P1.move=null;P1.state='stand';P1.vx=0;P1.blocking=false;b.state='win';
   for(const f of fighters){f.vx=0}game.cine={t:0,boss:b,focus:b,line:'b'+(story.stage+1),d1:VLINES['b'+(story.stage+1)][2],name:st.boss.name,said:0};game.msgs=[];AU.ko();shake(10)}
 function cineUpdate(dt){const c=game.cine;c.t+=dt;const t1=.6,t2=t1+c.d1+.35,t3=t2+VLINES.reply[2]+.3;
   if(c.said===0&&c.t>t1){c.said=1;VO.say(c.line,{pri:3})}
   if(c.said===1&&c.t>t2){c.said=2;c.focus=P1;VO.say('reply',{pri:3})}
   if(c.t>t3||c.skip){if(c.skip)VO.stop();game.cine=null;c.boss.state='stand';P1.state='stand';say(c.name+'!',1.4,1.2,'#cf241d');AU.sup()}}
-function koEvent(att,def,byFin){
+function koEvent(att,def,byFin){if(def===P1||att===P1)buzz([90,50,140]);
   if(game.mode==='story'){
     if(def===P1){if(game.phase!=='fight')return;game.phase='roundEnd';game.endT=0;game.slow=1.2;AU.ko();say('ناک‌اوت!',2,1.3,'#cf241d');story.result='lose';VO.say('lose',{pri:2,delay:.6});return}
     if(def.boss){speak('boss');game.phase='roundEnd';game.endT=0;game.slow=1.6;game.winner=P1;AU.ko();say(byFin?'نابود شد!':'غول افتاد!',2.2,1.3,'#cf241d');story.result='win';return}
@@ -1636,10 +1645,21 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden)appPause();
 MUS.play();  // the Android app allows this; browsers wait for the first tap
 function setMute(m){AU.mute=m;$('mbtn').style.opacity=m?.4:1;$('sndBtn').textContent=m?'صدا: خاموش':'صدا: روشن';if(m)MUS.stop();else MUS.play()}
 $('mbtn').onclick=()=>setMute(!AU.mute);$('sndBtn').onclick=()=>{AU.init();setMute(!AU.mute)};
-$('helpBtn').onclick=()=>show('help');$('helpClose').onclick=()=>show('menu');
+$('helpBtn').onclick=()=>show('help');
+const updVibe=()=>{$('vibeBtn').textContent=vibeOn?'لرزش: روشن':'لرزش: خاموش'};updVibe();
+$('vibeBtn').onclick=()=>{vibeOn=!vibeOn;try{localStorage.setItem('pf-vibe',vibeOn?'1':'0')}catch(e){}updVibe();buzz(40)};$('helpClose').onclick=()=>show('menu');
 for(const b of document.querySelectorAll('#touch button')){const k=b.dataset.k;
   b.addEventListener('pointerdown',e=>{e.preventDefault();AU.init();try{b.setPointerCapture(e.pointerId)}catch(_){}b.classList.add('on');press(k,true)});
   const up=()=>{b.classList.remove('on');press(k,false)};b.addEventListener('pointerup',up);b.addEventListener('pointercancel',up);b.addEventListener('lostpointercapture',up)}
+// analog stick: drag the knob; 8 directions with a dead zone
+(function(){const st=$('stick'),kn=$('knob'),dirs={left:0,right:0,up:0,down:0},tk={left:st.querySelector('.tl'),right:st.querySelector('.tr'),up:st.querySelector('.tu'),down:st.querySelector('.td')};let id=null;
+  const set=(k,on)=>{if(dirs[k]===on)return;dirs[k]=on;press(k,!!on);tk[k].classList.toggle('on',!!on);if(on)buzz(6)};
+  const move=e=>{const r=st.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,R=r.width*.34;let dx=e.clientX-cx,dy=e.clientY-cy;const d=Math.hypot(dx,dy);if(d>R){dx*=R/d;dy*=R/d}
+    kn.style.transform=`translate(${dx}px,${dy}px)`;const x=dx/R,y=dy/R;set('right',x>.38?1:0);set('left',x<-.38?1:0);set('up',y<-.55?1:0);set('down',y>.55?1:0)};
+  const end=()=>{id=null;kn.classList.remove('drag');kn.style.transform='';for(const k in dirs)set(k,0)};
+  st.addEventListener('pointerdown',e=>{e.preventDefault();AU.init();id=e.pointerId;try{st.setPointerCapture(id)}catch(_){}kn.classList.add('drag');move(e)});
+  st.addEventListener('pointermove',e=>{if(e.pointerId===id)move(e)});
+  for(const ev of['pointerup','pointercancel','lostpointercapture'])st.addEventListener(ev,e=>{if(e.pointerId===id)end()})})();
 let lastReady=null,lastFin=null;
 function updTouchUI(){const fv=finTarget();if(fv&&fv!==finSaid){finSaid=fv;SND.play('finish-him')}
   const r=!!P1&&P1.meter>=BAR-.01&&game.mode!=='demo';if(r!==lastReady){lastReady=r;$('bS').classList.toggle('ready',r)}
