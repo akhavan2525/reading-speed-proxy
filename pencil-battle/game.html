@@ -126,8 +126,8 @@ kbd{font-family:inherit;border:1.5px solid var(--ink);border-radius:5px;padding:
   <div class="row"><button class="btn" id="selBack">برگشت</button><button class="btn big" id="selGo" style="margin:0">انتخاب</button></div>
 </div></div>
 <div id="shop" class="overlay hidden"><div class="card selc">
-  <div class="shead"><h1 style="font-size:24px;margin:0">فروشگاه</h1><div class="coins" id="shopCoins">🪙 ۰</div></div>
-  <div class="seg small" id="shopTabs" style="margin:8px 0 4px"><button data-v="hat" class="on">کلاه</button><button data-v="face">صورت</button><button data-v="weapon">سلاح عجیب</button></div>
+  <div class="shead"><h1 style="font-size:22px;margin:0">فروشگاه قهرمان</h1><div class="coins" id="shopCoins">🪙 ۰</div></div>
+  <div class="seg small" id="shopTabs" style="margin:8px 0 4px"><button data-v="up" class="on">ارتقا</button><button data-v="weapon">سلاح</button><button data-v="hat">کلاه</button><button data-v="face">صورت</button></div>
   <div id="shopGrid" class="sgrid"></div>
   <div class="sinfo" id="shopInfo"></div>
   <div class="row"><button class="btn" id="shopBack">برگشت</button><button class="btn big" id="shopAct" style="margin:0">خرید</button></div>
@@ -240,7 +240,7 @@ const JOKES={
  cafe:['قهوه نداریم، کتک داریم!','وای‌فای: لگد۱۲۳','هر چی بشکنه، دوبرابر حساب میشه','چای‌مون سرده، دلمون گرمه','لطفاً میزها رو پرت نکنید (عکس بگیرید)'],
  dojo:['کمربند مشکی؟ کمربندم سیاه‌تره!','یه ضربه، یه خنده','صبر کن تا بزنمت!','استاد خوابه، آروم‌تر!','اول سلام، بعد لگد'],
  temple:['شمشیر دارم، عقل ندارم','ممنوع: نصف کردن بدون اجازه','دعای امروز: خدایا آردم نکنن!','اینجا معبده، داد نزن!','نصفم کردی؟ اشکال نداره، می‌چسبم'],
- desk:['روی میز، دعوا ممنوع!','پاک‌کن غول در کمین است','مداد تراش فقط برای مداد','این برگه رو خط نزن!','آدمک‌ها: اینجا کلاس درسه!'],
+ desk:['روی میز، دعوا ممنوع!','رئیس آخر در کمین است','مداد تراش فقط برای مداد','این برگه رو خط نزن!','آدمک‌ها: اینجا کلاس درسه!'],
  alley:['اینجا امنه (به‌جز برای تو)','کوچه بن‌بسته، آدمک‌بسته!','خنجر دارم ولی دلم نمیاد','ممنوع: سلفی با غول','هر کی اینجا رد شد، رد داد']};
 function wallJokes(s,theme,x0,x1,L){const list=JOKES[theme];if(!list)return;let i=Math.floor(L()*list.length);
   for(let x=x0+260+L()*140;x<x1-200;x+=420+L()*340){const t=list[i++%list.length],sz=19+L()*7|0,y=300+L()*170|0,w=t.length*sz*.5;
@@ -453,7 +453,7 @@ Object.assign(MODS,{
     s.arc(140,FL+80,30,34,-Math.PI/2,Math.PI/2,1.4,.9);s.arc(140,FL+80,18,22,-Math.PI/2,Math.PI/2,1,.8);for(const x of[60,85,110])s.poly([[x,y1+20],[x+10,y1+45],[x-4,y1+70],[x+8,y1+95]],false,.8,.5,1);
     TXT(s,{x:85,y:FL+70,t:'قهوه',s:22,w:900});s.hatch(x0,FL,30,y1-FL,60,5,.5,.3)}},
   sticky:{a:0,b:170,f(s,L){for(const [x,y,r] of [[20,FL+230,-.06],[90,FL+300,.05],[40,FL+330,.03]]){const w=70;s.fill([[x,y],[x+w,y],[x+w,y+w],[x,y+w]],1,'paper');s.rect(x,y,w,w,1.1,.85,1);s.hatch(x,y+w-14,w,14,10,4,.4,.3)}
-    TXT(s,{x:56,y:FL+262,t:'یادم باشه',s:13,w:700});TXT(s,{x:126,y:FL+332,t:'غول!',s:16,w:900})}},
+    TXT(s,{x:56,y:FL+262,t:'یادم باشه',s:13,w:700});TXT(s,{x:126,y:FL+332,t:'رئیس!',s:16,w:900})}},
   sharpener:{a:0,b:150,f(s,L){const x0=20,x1=120,y1=FL+80;s.fill([[x0,FL],[x1,FL],[x1,y1],[x0,y1]],1,'paper');s.rect(x0,FL,x1-x0,y1-FL,1.4,.9,2);s.ell(70,FL+42,18,18,1.2,.9,1);s.ell(70,FL+42,8,8,.9,.85,1);
     s.line(30,y1-10,110,y1-6,.9,.8,1);s.hatch(x0,FL,100,24,30,5,.5,.3);for(let k=0;k<5;k++){const x=120+L()*30,y=FL+4+L()*14;s.arc(x,y,9,5,0,Math.PI*1.4,.8,.6)}}},
  },
@@ -480,20 +480,23 @@ const CHARS=[
 const PLAYABLE=CHARS.filter(c=>!c.lock);
 // ===== shop: coins buy hats, face items and silly weapons (saved on this device) =====
 const SHOP=[
+  {id:'up_pow',slot:'up',stat:'pow',name:'قدرت',price:[80,150,250,400,600]},{id:'up_spd',slot:'up',stat:'spd',name:'سرعت',price:[80,150,250,400,600]},{id:'up_hp',slot:'up',stat:'hp',name:'خون',price:[80,150,250,400,600]},
+  {id:'w_nun',slot:'weapon',base:'nun',real:1,name:'نانچیکو',price:150},{id:'w_staff',slot:'weapon',base:'staff',real:1,name:'چوب رزمی',price:150},{id:'w_sword',slot:'weapon',base:'sword',real:1,name:'کاتانا',price:250},{id:'w_dagger',slot:'weapon',base:'dagger',real:1,name:'دو خنجر',price:250},
   {id:'party',slot:'hat',name:'کلاه تولد',price:60},{id:'cap',slot:'hat',name:'کلاه کپ',price:80},{id:'cowboy',slot:'hat',name:'کلاه کابوی',price:120},
   {id:'chef',slot:'hat',name:'کلاه آشپزی',price:150},{id:'viking',slot:'hat',name:'کلاه وایکینگ',price:220},{id:'crown',slot:'hat',name:'تاج پادشاهی',price:300},
   {id:'mustache',slot:'face',name:'سبیل',price:50},{id:'sun',slot:'face',name:'عینک آفتابی',price:70},{id:'mask',slot:'face',name:'نقاب قهرمان',price:90},
   {id:'broom',slot:'weapon',base:'staff',name:'جارو',price:120,word:'فیش!'},{id:'baguette',slot:'weapon',base:'staff',name:'نون باگت',price:140,word:'خِرت!'},
   {id:'fish',slot:'weapon',base:'sword',name:'ماهی',price:160,word:'شالاپ!'},{id:'umbrella',slot:'weapon',base:'sword',name:'چتر',price:180,word:'تاپ!'},
   {id:'pan',slot:'weapon',base:'sword',name:'ماهیتابه',price:200,word:'دَنگ!'},{id:'chicken',slot:'weapon',base:'sword',name:'مرغ پلاستیکی',price:250,word:'قُدقُد!'}];
-const SAVE={coins:0,owned:[],equip:{hat:null,face:null,weapon:null}};
-try{const d=JSON.parse(localStorage.getItem('pf-save')||'null');if(d){SAVE.coins=d.coins|0;SAVE.owned=Array.isArray(d.owned)?d.owned:[];Object.assign(SAVE.equip,d.equip||{})}}catch(e){}
+const SAVE={coins:0,owned:[],equip:{hat:null,face:null,weapon:null},up:{pow:0,spd:0,hp:0}};
+try{const d=JSON.parse(localStorage.getItem('pf-save')||'null');if(d){SAVE.coins=d.coins|0;SAVE.owned=Array.isArray(d.owned)?d.owned:[];Object.assign(SAVE.equip,d.equip||{});Object.assign(SAVE.up,d.up||{})}}catch(e){}
 function saveGame(){try{localStorage.setItem('pf-save',JSON.stringify(SAVE))}catch(e){}updCoins()}
 function updCoins(){for(const id of['menuCoins','shopCoins']){const e=document.getElementById(id);if(e)e.textContent='🪙 '+fa(SAVE.coins)}}
 function addCoins(n){if(!n||game.mode==='demo')return 0;SAVE.coins+=n;saveGame();const t=document.getElementById('coinToast');if(t){t.textContent='+'+fa(n)+' سکه 🪙';t.classList.remove('show');void t.offsetWidth;t.classList.add('show')}return n}
 // what the player wears/holds; silly weapons reuse a real weapon's moves (battle mode only)
 function applyEquip(f,weapons,eq=SAVE.equip){eq=eq||{};f.cos={hat:eq.hat||null,face:eq.face||null};const w=weapons&&eq.weapon&&SHOP.find(i=>i.id===eq.weapon);
-  if(w){f.wskin=w;if(f.ch&&f.ch.weapon!==w.base){const sp=f.ch.weapon==='none'?f.ch.special:(w.base==='sword'?'kspin':'sspin');f.ch={...f.ch,moves:null,stance:null,block:null,ginga:0,special:sp}}f.weapon=w.base;f.reset(f.x,f.face)}}
+  if(w){f.wskin=w.real?null:w;if(f.ch&&f.ch.weapon!==w.base){const sp=f.ch.weapon==='none'?f.ch.special:(w.base==='sword'?'kspin':'sspin');f.ch={...f.ch,moves:null,stance:null,block:null,ginga:0,special:sp}}f.weapon=w.base;f.reset(f.x,f.face)}}
+const BOSSCH=['boxer','dragon','master','samurai','shadow','ninja'];  // stage boss = a roster character
 const BOSSLOOK=[
   {id:'b1',special:'cartrush',sname:'حمله‌ی چرخ‌دستی!',look:{eyes:1,belly:1,apron:'#f4f2ec',cart:1},face:'chars/boss1-face.png'},
   {id:'b2',special:'splash',sname:'قهوه‌ی داغ!',sc:1.08,look:{eyes:1,thin:1,apron:'#f4f2ec',apronLong:1,pot:1},face:'chars/boss2-face.png'},
@@ -501,7 +504,7 @@ const BOSSLOOK=[
   {id:'b4',special:'xslash',sname:'موج دو شمشیر!',look:{eyes:1,kabuto:1,suit:'#2b2b2b',trim:'#c9a23a',sash:'#c0392b',twin:1,tassets:'#2b2b2b'},face:'chars/boss4-face.png'},
   {id:'b5',special:'chainw',sname:'گردباد زنجیر!',look:{eyes:1,shades:1,suit:'#1f1f1f',tee:'#d4d4d4',studs:1,bat:1,chain:1},face:'chars/boss5-face.png'},
   {id:'b6',special:'erase',sname:'پاک‌کن بزرگ!',look:{eyes:1,eraser:'#f2a6b4',band6:'#8fc4ea'},face:'chars/boss6-face.png'}];
-for(const b of BOSSLOOK){const im=new Image();im.src=b.face;b.faceImg=im}
+for(const c of CHARS)if(c.img){const im=new Image();im.src=c.img;c.faceImg=im}
 function place(s,theme,name,X,L){const m=MODS[theme][name];s.ox=X-m.a;m.f(s,L);s.ox=0;return X+(m.b-m.a)}
 function structure(s,theme,x0,x1){const L=mulberry32(77);s.ox=0;
   s.line(x0-500,FL,x1+500,FL,1.6,.9,3);s.line(x0-500,CEIL,x1+500,CEIL,1.4,.8,2);s.line(x0-500,CEIL-16,x1+500,CEIL-16,.8,.45,1);
@@ -521,7 +524,7 @@ function layoutBattle(s,theme){const L=mulberry32(5);structure(s,theme,-950,950)
   wallJokes(s,theme,-940,940,L)}
 function layoutStory(s,theme,len,bossX){const L=mulberry32(len*7+theme.length*99),names=THEME_LIST[theme];structure(s,theme,-300,len+300);
   let x=-280,last='';while(x<len+300){let n;do n=names[L()*names.length|0];while(n===last);last=n;x=place(s,theme,n,x,L)+30+L()*90}
-  const bns=[[380,THEME_TITLE[theme]],[bossX,'قلمرو غول']];for(const[bx,t]of bns)banner(s,bx,t);
+  const bns=[[380,THEME_TITLE[theme]],[bossX,'قلمرو رئیس']];for(const[bx,t]of bns)banner(s,bx,t);
   wallJokes(s,theme,-200,len+200,L);
   for(let lx=-100;lx<len+200;lx+=470+L()*230){if(bns.some(b=>Math.abs(b[0]-lx)<330))continue;LAMP[theme](s,lx)}}
 let BG=[],bgKey='';
@@ -944,10 +947,10 @@ const MOVE_RATE=.88;  // < 1 = slower, more flowing moves
 // ================= voice lines =================
 // [caption, speaker, seconds]; audio is sfx/v-<key>.mp3 (ElevenLabs). speakers: h hero, b boss, e enemy, a announcer (no caption)
 const VLINES={
-  intro:['اومدم اینجا تا آردِت کنم!','h',2.3],fin:['تمومت کردم!','h',1.6],boss:['یه غول بود، آرد شد!','h',2.4],hurt:['آخ! پشتم!','h',2.6],
+  intro:['اومدم اینجا تا آردِت کنم!','h',2.3],fin:['تمومت کردم!','h',1.6],boss:['اینم از رئیس! آرد شد!','h',2.7],hurt:['آخ! پشتم!','h',2.6],
   st1:['اول یه دور خرید، بعد یه دور دعوا.','h',3.2],st2:['فقط یه چایی می‌خواستم... ببین چی شد!','h',4.3],st3:['باشگاه؟ من فقط ثبت‌نام کردم، هیچ‌وقت نرفتم!','h',5.1],
   st4:['آروم باش... کاغذی‌ام، ولی ترسو نیستم!','h',4.4],st5:['شب، کوچه، چند تا غول... عالیه!','h',4],
-  reply:['چه غولِ خوش‌صحبتی! حیف که باید آردت کنم.','h',4.5],combo:['یکی دیگه بیار!','h',1.3],low:['دارم پاره می‌شم!','h',1.8],heal:['آخیش، جون گرفتم!','h',2.4],
+  reply:['چه حریفِ خوش‌صحبتی! حیف که باید آردت کنم.','h',4.7],combo:['یکی دیگه بیار!','h',1.3],low:['دارم پاره می‌شم!','h',1.8],heal:['آخیش، جون گرفتم!','h',2.4],
   crate:['ببخشید آقای فروشنده!','h',2.4],'g-nun':['نانچیکو! حالا شدم بروس لی!','h',3],'g-sword':['شمشیر! همه برن عقب!','h',2.5],
   'g-staff':['چوب! وقتِ جارو کشیدنه!','h',2.8],'g-dagger':['خنجر! دوتا بهتر از یکیه!','h',3.2],drop:['خداحافظ رفیق!','h',1.4],
   super:['طوفااان!','h',1.2],clear:['همین بود؟ بعدی!','h',1.8],lose:['فقط... یه... خراش بود...','h',3],
@@ -955,7 +958,7 @@ const VLINES={
   b3:['سی سال تمرین کردم برای همین لحظه... البته بیشترش خواب بودم!','b',6.8],b4:['شمشیرم تیزه، حوصله‌م کُند!','b',3.1],
   b5:['این کوچه مال منه... پول پارکینگم باید بدی!','b',3.6],blow:['صبر کن صبر کن! بیا حرف بزنیم!','b',3],
   'e-spawn':['این کاغذیه؟ پاره‌ش می‌کنیم!','e',3.2],'e-ko':['من فقط اومده بودم نون بخرم!','e',3.2],
-  st6:['روی میز تحریر؟ اینجا دیگه کجاست؟!','h',3.3],b6:['مداد می‌کشه... من پاک می‌کنم! تو هم یه خط اضافه‌ای!','b',5.9],
+  st6:['روی میز تحریر؟ اینجا دیگه کجاست؟!','h',3.3],b6:['اینجا آخرِ خطه! با شمشیرِ نور خط‌خطیت می‌کنم!','b',4.5],
   'a-r1':['راند یک!','a',1.6],'a-r2':['راند دو!','a',1.6],'a-final':['راند آخر!','a',1.8],'a-fight':['مبارزه!','a',1.5],'a-ko':['ناک‌اوت!','a',1.6]};
 // one voice at a time: a line only cuts in over a lower-priority one (pri 0 chatter, 1 normal, 2 story beats, 3 cutscene)
 const VO={a:{},cur:null,pri:-1,end:0,cd:{},
@@ -1020,7 +1023,6 @@ function netMsg(m){
 function startOnline(m){net.on=true;net.role=m.role;net.prevHp=null;const hi=m.host||{},gi=m.guest||{};game.paused=false;
   game.mode='battle';game.stageSel=hi.stage||'dojo';setTheme(game.stageSel,'battle');const c1=PLAYABLE[hi.ch]||PLAYABLE[0],c2=PLAYABLE[gi.ch]||PLAYABLE[1];
   P1=new Fighter({team:0,c:COLORS.black,ch:c1,weapon:c1.weapon,x:-170,face:1});P2=new Fighter({team:1,c:COLORS.red,ch:c2,weapon:c2.weapon,x:170,face:-1});
-  applyEquip(P1,true,hi.cos);applyEquip(P2,true,gi.cos);
   if(net.role==='host'){P1.inp=human;P2.inp=net.remote=mkInput()}else{P1.inp=mkInput();P2.inp=human}
   fighters=[P1,P2];ctrl=[];game.wins=[0,0];game.round=1;props=battleProps(game.stageSel);pickups=[];startRound();show(null);AU.sup()}
 function netOver(won){if(game.phase==='over')return;const cn=addCoins(won?40:5);
@@ -1394,12 +1396,12 @@ let fighters=[],P1=null,P2=null,ctrl=[];
 const game={phase:'fight',mode:'demo',theme:'shop',rt:0,hitstop:0,shake:0,superT:0,slow:0,round:1,wins:[0,0],timer:60,msgs:[],endT:0,winner:null,introT:0,paused:false,diff:'medium',zp:0,flashT:0,fin:null,stageSel:'shop',modeSel:'story',demoI:0};
 const cam={x:0,z:1};
 const STORY=[
-  {theme:'shop',weapon:'none',name:'سوپرمارکت',len:3500,waves:[{x:750,n:2},{x:1500,n:3},{x:2300,n:4}],boss:{x:3050,hp:240,weapon:'none',name:'غولِ سوپرمارکت'},ehp:40,edmg:.6,ai:'g1',wch:0,maxEng:2,loot:['nun'],crates:[[480,1],[1150,0],[1250,1],[1900,1],[2700,0],[2780,1]]},
-  {theme:'cafe',weapon:'nun',name:'کافه',len:3700,waves:[{x:750,n:3},{x:1550,n:3},{x:2400,n:4}],boss:{x:3250,hp:300,weapon:'none',name:'غولِ کافه'},ehp:50,edmg:.7,ai:'g2',wch:.35,maxEng:2,loot:['sword'],crates:[[450,1],[1150,1],[1950,0],[2050,1],[2850,1]]},
-  {theme:'dojo',weapon:'staff',name:'باشگاه رزمی',len:3900,waves:[{x:750,n:3},{x:1600,n:4},{x:2500,n:4}],boss:{x:3450,hp:360,weapon:'staff',name:'استادِ غول'},ehp:60,edmg:.8,ai:'g3',wch:.45,maxEng:3,loot:['nun','sword'],crates:[[460,1],[1200,0],[1300,1],[2050,1],[2950,1],[3050,0]]},
-  {theme:'temple',weapon:'sword',name:'معبد سامورایی',len:4100,waves:[{x:760,n:3},{x:1650,n:4},{x:2600,n:4}],boss:{x:3600,hp:420,weapon:'sword',name:'سردارِ شمشیر'},ehp:68,edmg:.85,ai:'g3',wch:.5,maxEng:3,crates:[[470,1],[1250,1],[1350,0],[2150,1],[3050,1],[3150,0]]},
-  {theme:'alley',weapon:'dagger',name:'کوچه‌ی شبانه',len:4200,waves:[{x:760,n:4},{x:1700,n:4},{x:2650,n:5}],boss:{x:3700,hp:460,weapon:'none',name:'غولِ کوچه'},ehp:72,edmg:.9,ai:'g3',wch:.55,maxEng:3,crates:[[480,1],[1300,1],[1400,0],[2200,1],[3100,1],[3200,0]]},
-  {theme:'desk',weapon:'none',name:'روی میز تحریر',len:4400,waves:[{x:760,n:4},{x:1700,n:5},{x:2700,n:5}],boss:{x:3900,hp:560,weapon:'none',name:'پاک‌کنِ غول'},ehp:78,edmg:.95,ai:'g3',wch:0,maxEng:3,loot:['nun','sword','staff','dagger'],crates:[[480,1],[1300,0],[1400,0],[2200,1],[3100,0],[3200,1]]},
+  {theme:'shop',weapon:'none',name:'سوپرمارکت',len:3500,waves:[{x:750,n:2},{x:1500,n:3},{x:2300,n:4}],boss:{x:3050,hp:240,weapon:'none',name:'مشت‌زنِ سوپرمارکت'},ehp:40,edmg:.6,ai:'g1',wch:0,maxEng:2,loot:['nun'],crates:[[480,1],[1150,0],[1250,1],[1900,1],[2700,0],[2780,1]]},
+  {theme:'cafe',weapon:'nun',name:'کافه',len:3700,waves:[{x:750,n:3},{x:1550,n:3},{x:2400,n:4}],boss:{x:3250,hp:300,weapon:'none',name:'اژدهای کافه'},ehp:50,edmg:.7,ai:'g2',wch:.35,maxEng:2,loot:['sword'],crates:[[450,1],[1150,1],[1950,0],[2050,1],[2850,1]]},
+  {theme:'dojo',weapon:'staff',name:'باشگاه رزمی',len:3900,waves:[{x:750,n:3},{x:1600,n:4},{x:2500,n:4}],boss:{x:3450,hp:360,weapon:'staff',name:'استادِ مست'},ehp:60,edmg:.8,ai:'g3',wch:.45,maxEng:3,loot:['nun','sword'],crates:[[460,1],[1200,0],[1300,1],[2050,1],[2950,1],[3050,0]]},
+  {theme:'temple',weapon:'sword',name:'معبد سامورایی',len:4100,waves:[{x:760,n:3},{x:1650,n:4},{x:2600,n:4}],boss:{x:3600,hp:420,weapon:'sword',name:'سامورایی معبد'},ehp:68,edmg:.85,ai:'g3',wch:.5,maxEng:3,crates:[[470,1],[1250,1],[1350,0],[2150,1],[3050,1],[3150,0]]},
+  {theme:'alley',weapon:'dagger',name:'کوچه‌ی شبانه',len:4200,waves:[{x:760,n:4},{x:1700,n:4},{x:2650,n:5}],boss:{x:3700,hp:460,weapon:'none',name:'سایه‌ی کوچه'},ehp:72,edmg:.9,ai:'g3',wch:.55,maxEng:3,crates:[[480,1],[1300,1],[1400,0],[2200,1],[3100,1],[3200,0]]},
+  {theme:'desk',weapon:'none',name:'روی میز تحریر',len:4400,waves:[{x:760,n:4},{x:1700,n:5},{x:2700,n:5}],boss:{x:3900,hp:560,weapon:'none',name:'آذرخش'},ehp:78,edmg:.95,ai:'g3',wch:0,maxEng:3,loot:['nun','sword','staff','dagger'],crates:[[480,1],[1300,0],[1400,0],[2200,1],[3100,0],[3200,1]]},
 ];
 const story={stage:0,len:3500,waveIdx:0,lock:null,spawnQ:[],boss:null,result:null,kills:0,arrowT:0};
 function resize(){DPR=Math.min(2,devicePixelRatio||1);W=innerWidth;H=innerHeight;cv.width=W*DPR|0;cv.height=H*DPR|0;vign=null}
@@ -1412,7 +1414,7 @@ function queueMsg(text,dur=1.1,big=1,col){game.msgs.push({text,t:0,dur,big,col})
 function setTheme(theme,mode,len,bossX){game.theme=theme;buildBG(theme,mode,len||0,bossX||0)}
 function startBattle(){game.mode='battle';const th=game.stageSel;setTheme(th,'battle');const c1=PLAYABLE[game.p1ch||0],c2=PLAYABLE[game.p2ch??1];
   P1=new Fighter({team:0,c:COLORS.black,ch:c1,weapon:c1.weapon,x:-170,face:1});P2=new Fighter({team:1,c:COLORS.red,ch:c2,weapon:c2.weapon,x:170,face:-1,dmg:LV[game.diff].dmg});
-  applyEquip(P1,true);P1.inp=human;fighters=[P1,P2];P2.ai=new AI(P2,game.diff);ctrl=[P2.ai];game.wins=[0,0];game.round=1;props=battleProps(th);pickups=[];startRound()}
+  P1.inp=human;fighters=[P1,P2];P2.ai=new AI(P2,game.diff);ctrl=[P2.ai];game.wins=[0,0];game.round=1;props=battleProps(th);pickups=[];startRound()}
 function startDemo(){game.mode='demo';const th=['shop','cafe','dojo','temple','alley','desk'][game.demoI++%6];setTheme(th,'battle');
   const c1=PLAYABLE[Math.random()*PLAYABLE.length|0],c2=PLAYABLE[Math.random()*PLAYABLE.length|0];
   P1=new Fighter({team:0,c:COLORS.black,ch:c1,weapon:c1.weapon,x:-170,face:1});P2=new Fighter({team:1,c:COLORS.red,ch:c2,weapon:c2.weapon,x:170,face:-1});
@@ -1422,12 +1424,15 @@ function startRound(){P1.reset(-170,1);P2.reset(170,-1);fx=[];speed=null;projs=[
   game.phase='intro';game.introT=0;say(game.round===3?'راند آخر':'راند '+fa(game.round),1.1);VO.say(game.round===3?'a-final':'a-r'+game.round,{pri:2})}
 function startStory(i,keepMeter){const st=STORY[i];game.mode='story';story.stage=i;story.len=st.len;story.waveIdx=0;story.lock=null;story.spawnQ=[];story.boss=null;story.result=null;story.arrowT=0;
   setTheme(st.theme,'story',st.len,st.boss.x);const m=P1&&keepMeter?P1.meter:0;
-  P1=new Fighter({team:0,c:COLORS.black,ch:{...CHARS[0],special:'special'},weapon:st.weapon,x:150,face:1});applyEquip(P1,false);P1.inp=human;P1.meter=m;P2=null;fighters=[P1];ctrl=[];props=storyProps(st);pickups=[];projs=[];fx=[];speed=null;game.fin=null;game.slow=0;
+  const ew=SAVE.equip.weapon&&SHOP.find(i=>i.id===SAVE.equip.weapon),U=SAVE.up;
+  P1=new Fighter({team:0,c:COLORS.black,ch:{id:'hero',name:'قهرمان',weapon:'none',special:'special',sname:'طوفان!',look:{}},weapon:ew?ew.base:st.weapon,x:150,face:1,hp:100+15*U.hp,dmg:1+.1*U.pow});P1.spd*=1+.06*U.spd;
+  if(ew){P1.wskin=ew.real?null:ew;P1.reset(P1.x,1)}P1.cos={hat:SAVE.equip.hat,face:SAVE.equip.face};P1.inp=human;P1.meter=m;P2=null;fighters=[P1];ctrl=[];props=storyProps(st);pickups=[];projs=[];fx=[];speed=null;game.fin=null;game.slow=0;
   cam.x=150;game.phase='intro';game.introT=0;say('مرحله‌ی '+fa(i+1)+' · '+st.name,1.6,1);
-  if(st.weapon==='nun')queueMsg('نانچیکو گرفتی!',1.3,.8,'#cf241d');if(st.weapon==='staff')queueMsg('چوب رزمی گرفتی!',1.3,.8,'#cf241d');if(st.weapon==='sword')queueMsg('کاتانا گرفتی!',1.3,.8,'#cf241d');if(st.weapon==='dagger')queueMsg('دو خنجر گرفتی!',1.3,.8,'#cf241d');queueMsg('برو جلو →',1,.7);VO.say('st'+(i+1),{pri:1,delay:i===0&&!keepMeter?3.1:1})}
+  if(!ew&&st.weapon==='nun')queueMsg('نانچیکو گرفتی!',1.3,.8,'#cf241d');if(st.weapon==='staff')queueMsg('چوب رزمی گرفتی!',1.3,.8,'#cf241d');if(st.weapon==='sword')queueMsg('کاتانا گرفتی!',1.3,.8,'#cf241d');if(st.weapon==='dagger')queueMsg('دو خنجر گرفتی!',1.3,.8,'#cf241d');queueMsg('برو جلو →',1,.7);VO.say('st'+(i+1),{pri:1,delay:i===0&&!keepMeter?3.1:1})}
 function spawnEnemy(st,side,boss){const L=story.lock,x=boss?Math.min(L[1]-80,P1.x+430):side>0?L[1]+70:L[0]-70;
-  const e=boss?new Fighter({team:1,c:COLORS.boss,ch:BOSSLOOK[story.stage],weapon:st.boss.weapon,hp:st.boss.hp,sc:1.62,boss:true,dmg:1.5*LV[game.diff].dmg,kbRes:.45,spd:.85,name:st.boss.name,x,face:-side,aura:'#ff6a1e'})
-    :new Fighter({team:1,c:[COLORS.red,COLORS.red2,COLORS.red3][Math.random()*3|0],weapon:Math.random()<st.wch?st.weapon:'none',hp:st.ehp,dmg:st.edmg*LV[game.diff].dmg,x,face:-side,spd:.9+Math.random()*.2});
+  const bc=CHARS.find(c=>c.id===BOSSCH[story.stage])||CHARS[0],e=boss?new Fighter({team:1,c:COLORS.boss,ch:{...bc,bossOf:story.stage},weapon:bc.weapon,hp:st.boss.hp,sc:1.22,boss:true,dmg:1.25*LV[game.diff].dmg,kbRes:.6,name:st.boss.name,x,face:-side,aura:'#ff6a1e'})
+    :new Fighter({team:1,c:[COLORS.red,COLORS.red2,COLORS.red3][Math.random()*3|0],weapon:(r=>r<st.wch?st.weapon:r<st.wch+.25?'staff':'none')(Math.random()),hp:st.ehp,dmg:st.edmg*LV[game.diff].dmg,x,face:-side,spd:.9+Math.random()*.2});
+  if(!boss&&Math.random()<.45)e.cos={hat:['cap','party','cowboy','chef','viking'][Math.random()*5|0],face:Math.random()<.25?'sun':null};
   e.ai=new AI(e,boss?'boss':st.ai);e.inp=mkInput();fighters.push(e);ctrl.push(e.ai);if(boss){story.boss=e;startBossCine(e)}else VO.say('e-spawn',{pri:0,cd:16,chance:.5});return e}
 function storyUpdate(dt){const st=STORY[story.stage];story.arrowT=Math.max(0,story.arrowT-dt);
   for(const q of story.spawnQ)q.t-=dt;const due=story.spawnQ.filter(q=>q.t<=0);story.spawnQ=story.spawnQ.filter(q=>q.t>0);for(const q of due)spawnEnemy(st,q.side,q.boss);
@@ -1446,7 +1451,7 @@ function cineUpdate(dt){const c=game.cine;c.t+=dt;const t1=.6,t2=t1+c.d1+.35,t3=
 function koEvent(att,def,byFin){if(def===P1||att===P1)buzz([90,50,140]);
   if(game.mode==='story'){
     if(def===P1){if(game.phase!=='fight')return;game.phase='roundEnd';game.endT=0;game.slow=1.2;AU.ko();say('ناک‌اوت!',2,1.3,'#cf241d');story.result='lose';VO.say('lose',{pri:2,delay:.6});return}
-    if(def.boss){speak('boss');game.phase='roundEnd';game.endT=0;game.slow=1.6;game.winner=P1;AU.ko();say(byFin?'نابود شد!':'غول افتاد!',2.2,1.3,'#cf241d');story.result='win';return}
+    if(def.boss){speak('boss');game.phase='roundEnd';game.endT=0;game.slow=1.6;game.winner=P1;AU.ko();say(byFin?'نابود شد!':'رئیس افتاد!',2.2,1.3,'#cf241d');story.result='win';return}
     story.kills++;if(att===P1)addCoins(2);VO.say('e-ko',{pri:0,cd:14,chance:.4});const alive=fighters.filter(f=>f.team===1&&f!==def&&f.state!=='ko'&&!f.ko);if(!alive.length&&!story.spawnQ.length){game.slow=.5;AU.ko()}return}
   if(game.phase!=='fight')return;game.phase='roundEnd';game.winner=att;game.slow=byFin?1.8:1.4;game.endT=0;AU.ko();
   if(game.mode==='battle'){say(byFin?'نابود شد!':'ناک‌اوت!',2,1.3,'#cf241d');VO.say('a-ko',{pri:2});if(def===P1)VO.say('lose',{pri:2,delay:1.8})}}
@@ -1457,7 +1462,7 @@ function endRound(){
     addCoins(25+10*story.stage);
     if(story.stage<STORY.length-1){startStory(story.stage+1,true);return}
     addCoins(100);
-    showOver('قهرمان شدی!','هر شش غول رو شکست دادی: سوپرمارکت، کافه، باشگاه، معبد، کوچه و میز تحریر. تعداد آدمک‌های زده‌شده: '+fa(story.kills),'از اول',()=>{story.kills=0;startStory(0)});return}
+    showOver('قهرمان شدی!','هر شش رئیس رو شکست دادی: مشت‌زن، اژدها، استاد، سامورایی، سایه و آذرخش. تعداد آدمک‌های زده‌شده: '+fa(story.kills),'از اول',()=>{story.kills=0;startStory(0)});return}
   
   if(game.winner===P1)game.wins[0]++;else if(game.winner===P2)game.wins[1]++;
   if(net.on&&(game.wins[0]>=2||game.wins[1]>=2)){netSend({t:'over',w:game.wins});netHostTick();netOver(game.wins[0]>=2);return}
@@ -1537,7 +1542,7 @@ function drawProjs(){for(const p of projs){ctx.save();ctx.translate(p.x,p.y);ctx
   ctx.globalAlpha=.3;ctx.strokeStyle='#c8231d';ctx.lineWidth=1.6;ctx.beginPath();ctx.arc(0,0,15,0,TAU*.7);ctx.stroke();ctx.globalAlpha=1;
   ctx.translate(-9,0);spr('dag1',[0,0],[38,0],12,-p.dir);ctx.restore()}}
 function drawFighter(f){
-  const s=f.sk,c=f.c,sc=f.sc,fl=f.flash>0,fc=fl?c.flash:c.front,rc=fl?c.flash:c.rear,bs=f.boss,Wd=9.5*sc*(bs&&!(f.ch&&f.ch.look&&f.ch.look.thin)?1.3:1),two=f.weapon==='staff'||f.weapon==='sword',dff=f.dff;
+  const s=f.sk,c=f.c,sc=f.sc,fl=f.flash>0,fc=fl?c.flash:c.front,rc=fl?c.flash:c.rear,bs=f.boss&&!(f.ch&&f.ch.bossOf!=null),Wd=9.5*sc*(bs&&!(f.ch&&f.ch.look&&f.ch.look.thin)?1.3:1),two=f.weapon==='staff'||f.weapon==='sword',dff=f.dff;
   ctx.save();ctx.globalAlpha=f.alpha;ctx.lineCap='round';ctx.lineJoin='round';
   const shd=Math.max(.25,1-f.y/260);ctx.fillStyle='rgba(30,25,20,.16)';ctx.beginPath();ctx.ellipse(s.hip[0],0,38*shd*sc,5*shd*sc,0,0,TAU);ctx.fill();
   const hl=(pts,w)=>{ctx.save();ctx.translate(-1.3,1.3);strokePoly(pts,w*.28,'rgba(255,255,255,.16)');ctx.restore()};
@@ -1858,7 +1863,7 @@ seg('mode',v=>{game.modeSel=v;updStage()});
 const STG=[['shop','سوپرمارکت','میدان مبارزه'],['cafe','کافه','میدان مبارزه'],['dojo','باشگاه','میدان مبارزه'],['temple','معبد','میدان مبارزه'],['alley','کوچه','میدان مبارزه'],['desk','میز تحریر','میدان مبارزه']];
 let stI=0;
 function updStage(){const s=STG[stI];game.stageSel=s[0];
-  $('stName').innerHTML=game.modeSel==='story'?'<b>۶ مرحله تا <span>غول</span></b><small>از سوپرمارکت تا میز تحریر</small>':s[1]+'<small>'+s[2]+'</small>'}
+  $('stName').innerHTML=game.modeSel==='story'?'<b>۶ مرحله، ۶ <span>رئیس</span></b><small>با سکه قهرمانت رو قوی کن</small>':s[1]+'<small>'+s[2]+'</small>'}
 function stepStage(d){if(game.modeSel==='story'){game.modeSel='battle';for(const x of $('mode').children)x.classList.toggle('on',x.dataset.v==='battle')}else stI=(stI+d+STG.length)%STG.length;updStage()}
 $('stNext').onclick=()=>stepStage(1);$('stPrev').onclick=()=>stepStage(-1);$('stName').onclick=()=>stepStage(1);
 updStage();
@@ -1886,19 +1891,25 @@ function renderSelect(){const g=$('selGrid');g.innerHTML='';sel.prev=[];
   $('selInfo').innerHTML='<div class="nm">'+c.name+' <small>'+c.style+'</small></div>'+bar('قدرت',c.stats[0])+bar('سرعت',c.stats[1])+bar('دفاع',c.stats[2])+'<div class="sp">حرکت ویژه: '+c.sname.replace('!','')+'</div>'}
 $('selGo').onclick=()=>{if(sel.online){game.p1ch=sel.pick[0];openLobby();return}if(!sel.step){sel.step=1;if(sel.pick[1]===sel.pick[0])sel.pick[1]=(sel.pick[0]+1+(Math.random()*(PLAYABLE.length-1)|0))%PLAYABLE.length;renderSelect();return}
   game.p1ch=sel.pick[0];game.p2ch=sel.pick[1];startFight()};
-const shop={tab:'hat',sel:null,prev:[]};
+const shop={tab:'up',sel:null,prev:[]};
 function openShop(){shop.sel=null;renderShop();show('shop')}
 function renderShop(){const g=$('shopGrid');g.innerHTML='';shop.prev=[];updCoins();for(const b of $('shopTabs').children)b.classList.toggle('on',b.dataset.v===shop.tab);
   const items=SHOP.filter(i=>i.slot===shop.tab);if(!shop.sel||!items.includes(shop.sel))shop.sel=items[0];
-  for(const it of items){const b=document.createElement('button');b.className='ccard'+(it===shop.sel?' on':'');const own=SAVE.owned.includes(it.id),eq=SAVE.equip[it.slot]===it.id;
-    const cv=document.createElement('canvas');cv.width=160;cv.height=150;const f=new Fighter({team:0,c:COLORS.black,ch:CHARS[0],weapon:it.slot==='weapon'?it.base:'none',x:0,face:1});
-    f.state='stand';f.cos={hat:it.slot==='hat'?it.id:null,face:it.slot==='face'?it.id:null};if(it.slot==='weapon')f.wskin=it;cv._f=f;cv._head=it.slot!=='weapon';shop.prev.push(cv);b.appendChild(cv);
+  for(const it of items){const b=document.createElement('button');b.className='ccard'+(it===shop.sel?' on':'');
+    if(it.slot==='up'){const lv=SAVE.up[it.stat],ic={pow:'💪',spd:'⚡',hp:'❤️'}[it.stat];b.innerHTML='<div class="sil" style="opacity:1;font-size:34px">'+ic+'</div><b>'+it.name+'</b><span class="pr">'+'●'.repeat(lv)+'○'.repeat(5-lv)+'</span>';b.onclick=()=>{shop.sel=it;renderShop()};g.appendChild(b);continue}
+    const own=SAVE.owned.includes(it.id),eq=SAVE.equip[it.slot]===it.id;
+    const cv=document.createElement('canvas');cv.width=160;cv.height=150;const f=new Fighter({team:0,c:COLORS.black,ch:{id:'hero',look:{}},weapon:it.slot==='weapon'?it.base:'none',x:0,face:1});
+    f.state='stand';f.cos={hat:it.slot==='hat'?it.id:null,face:it.slot==='face'?it.id:null};if(it.slot==='weapon')f.wskin=it.real?null:it;cv._f=f;cv._head=it.slot!=='weapon';shop.prev.push(cv);b.appendChild(cv);
     b.insertAdjacentHTML('beforeend','<b>'+it.name+'</b><span class="pr'+(own?' own':'')+'">'+(eq?'✓ پوشیده':own?'✓ داری':'🪙 '+fa(it.price))+'</span>');
     b.onclick=()=>{shop.sel=it;renderShop()};g.appendChild(b)}
-  const it=shop.sel,own=SAVE.owned.includes(it.id),eq=SAVE.equip[it.slot]===it.id,a=$('shopAct');
-  $('shopInfo').innerHTML='<div class="nm">'+it.name+'</div>'+(it.slot==='weapon'?'<div>با حرکات '+(it.base==='sword'?'شمشیر':'چوب رزمی')+' می‌جنگه، با صدای «'+it.word.replace('!','')+'». فقط در حالت تن‌به‌تن.</div>':'<div>روی هر کاراکتری که انتخاب کنی دیده می‌شه.</div>');
+  const it=shop.sel,a=$('shopAct');
+  if(it.slot==='up'){const lv=SAVE.up[it.stat],pr=it.price[lv];$('shopInfo').innerHTML='<div class="nm">'+it.name+' · سطح '+fa(lv)+' از ۵</div><div>'+{pow:'هر سطح ۱۰٪ ضربه‌ی قوی‌تر',spd:'هر سطح ۶٪ سریع‌تر',hp:'هر سطح ۱۵ خون بیشتر'}[it.stat]+' برای قهرمان داستان.</div>';
+    a.disabled=lv>=5||SAVE.coins<pr;a.textContent=lv>=5?'کامل شد':SAVE.coins>=pr?'ارتقا با '+fa(pr)+' سکه':'سکه کافی نیست';return}
+  const own=SAVE.owned.includes(it.id),eq=SAVE.equip[it.slot]===it.id;
+  $('shopInfo').innerHTML='<div class="nm">'+it.name+'</div>'+(it.slot==='weapon'?(it.real?'<div>قهرمان داستان از اول مرحله با این سلاح می‌جنگه.</div>':'<div>با حرکات '+(it.base==='sword'?'شمشیر':'چوب رزمی')+' می‌جنگه، با صدای «'+it.word.replace('!','')+'».</div>'):'<div>قهرمان داستان این رو می‌پوشه.</div>');
   a.disabled=false;if(!own){a.textContent=SAVE.coins>=it.price?'خرید با '+fa(it.price)+' سکه':'سکه کافی نیست';a.disabled=SAVE.coins<it.price}else a.textContent=eq?'دربیار':'بپوش'}
-$('shopAct').onclick=()=>{const it=shop.sel;if(!it)return;if(!SAVE.owned.includes(it.id)){if(SAVE.coins<it.price)return;SAVE.coins-=it.price;SAVE.owned.push(it.id);SAVE.equip[it.slot]=it.id;AU.init();AU.heal();buzz(30)}
+$('shopAct').onclick=()=>{const it=shop.sel;if(!it)return;
+  if(it.slot==='up'){const lv=SAVE.up[it.stat],pr=it.price[lv];if(lv>=5||SAVE.coins<pr)return;SAVE.coins-=pr;SAVE.up[it.stat]=lv+1;AU.init();AU.sup();buzz(30);saveGame();renderShop();return}if(!SAVE.owned.includes(it.id)){if(SAVE.coins<it.price)return;SAVE.coins-=it.price;SAVE.owned.push(it.id);SAVE.equip[it.slot]=it.id;AU.init();AU.heal();buzz(30)}
   else SAVE.equip[it.slot]=SAVE.equip[it.slot]===it.id?null:it.id;saveGame();renderShop()};
 $('shopTabs').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;shop.tab=b.dataset.v;shop.sel=null;renderShop()});
 $('shopBack').onclick=()=>show('menu');
