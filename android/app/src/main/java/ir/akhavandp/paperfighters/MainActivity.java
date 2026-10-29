@@ -8,6 +8,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowManager;
+import android.webkit.JavascriptInterface;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
@@ -38,11 +39,20 @@ public class MainActivity extends Activity {
         s.setMediaPlaybackRequiresUserGesture(false); // music can start right away
         s.setUserAgentString(s.getUserAgentString() + " PaperFightersApp/" + BuildConfig.VERSION_NAME);
         web.setWebViewClient(new Client());
+        web.addJavascriptInterface(new Bridge(), "PFApp"); // lets the menu's exit button close the app
         setContentView(web);
         immersive();
 
         if (state != null) web.restoreState(state);
         else web.loadUrl(URL);
+    }
+
+    /** Called from the game page (window.PFApp). Only the game's own host is ever loaded. */
+    private class Bridge {
+        @JavascriptInterface
+        public void exit() {
+            runOnUiThread(MainActivity.this::finish);
+        }
     }
 
     private class Client extends WebViewClient {
