@@ -1659,10 +1659,24 @@ function drawKabadeh(f){const s=f.sk,sc=f.sc,a=s.h1,b=s.h2,m=lerp2(a,b,.5),up=[0
   ctx.fillStyle='#c9a23a';for(const p of[a,b]){ctx.beginPath();ctx.arc(p[0],p[1],3*sc,0,TAU);ctx.fill()}ctx.restore()}
 function drawGourd(f){const s=f.sk,sc=f.sc,q=torsoFrame(f),c=q(s.hip,-f.dff*10,-4);ctx.fillStyle='#c48a3a';ctx.strokeStyle=INK;ctx.lineWidth=1.2*sc;
   ctx.beginPath();ctx.arc(c[0],c[1]-6*sc,6*sc,0,TAU);ctx.fill();ctx.stroke();ctx.beginPath();ctx.arc(c[0],c[1]+3*sc,4*sc,0,TAU);ctx.fill();ctx.stroke();strokePoly([[c[0],c[1]+7*sc],[c[0],c[1]+10*sc]],2*sc,'#8b5a2b')}
-function drawShell(f,lk){const s=f.sk,sc=f.sc,q=torsoFrame(f),d=f.dff,c=q(lerp2(s.hip,s.chest,.5),-d*9,0),ux=s.chest[0]-s.hip[0],uy=s.chest[1]-s.hip[1],ang=Math.atan2(uy,ux);
-  ctx.save();ctx.translate(c[0],c[1]);ctx.rotate(ang);ctx.fillStyle='#c9a86a';ctx.strokeStyle=INK;ctx.lineWidth=1.6*sc;ctx.beginPath();ctx.ellipse(0,0,30*sc,17*sc,0,0,TAU);ctx.fill();ctx.stroke();
-  ctx.fillStyle=lk.shell;ctx.beginPath();ctx.ellipse(0,-d*2*sc,26*sc,14*sc,0,0,TAU);ctx.fill();ctx.stroke();
-  ctx.strokeStyle='rgba(20,50,20,.55)';ctx.lineWidth=1.2*sc;ctx.beginPath();for(const x of[-13,0,13]){ctx.moveTo(x*sc-5*sc,-d*2*sc);ctx.lineTo(x*sc+5*sc,-d*2*sc)}for(const x of[-7,7]){ctx.moveTo(x*sc,-d*(2+8)*sc);ctx.lineTo(x*sc,-d*(2-8)*sc)}ctx.stroke();ctx.restore()}
+function drawShell(f,lk){const s=f.sk,sc=f.sc,d=f.dff,ux=s.chest[0]-s.hip[0],uy=s.chest[1]-s.hip[1],L=Math.hypot(ux,uy)||1;
+  // torso-local frame: x runs hip -> chest, y = d points out of the back
+  ctx.save();ctx.translate(s.hip[0],s.hip[1]);ctx.rotate(Math.atan2(uy,ux));const k=sc,X=v=>v*L/46,Y=v=>v*d*k,g=lk.shell,dk=shadeHex(g,.62),lt=shadeHex(g,1.25);
+  const dome=(x0,x1,h,y0)=>{ctx.beginPath();ctx.moveTo(X(x0),Y(y0));ctx.bezierCurveTo(X(x0-2),Y(y0+h*1.25),X(x1+2),Y(y0+h*1.25),X(x1),Y(y0));ctx.closePath()};
+  // plastron: segmented pale belly plate on the front of the torso
+  ctx.fillStyle='#d9c48a';ctx.strokeStyle=INK;ctx.lineWidth=1.1*k;ctx.beginPath();ctx.roundRect(X(2),Y(-11),X(38),Y(7)-Y(0)||7*k,3*k);ctx.fill();ctx.stroke();
+  ctx.strokeStyle='rgba(90,70,30,.55)';ctx.lineWidth=.9*k;ctx.beginPath();for(const x of[11,20,29]){ctx.moveTo(X(x),Y(-11));ctx.lineTo(X(x),Y(-4))}ctx.stroke();
+  // carapace: rim then the domed shell
+  dome(-9,49,22,1);ctx.fillStyle=shadeHex(g,.85);ctx.fill();ctx.strokeStyle=INK;ctx.lineWidth=1.8*k;ctx.stroke();
+  dome(-5,45,17,2);ctx.fillStyle=g;ctx.fill();
+  ctx.save();ctx.clip();ctx.fillStyle=lt;ctx.globalAlpha=.35;ctx.beginPath();ctx.ellipse(X(16),Y(14),X(16),Math.abs(Y(5)),0,0,TAU);ctx.fill();ctx.restore();
+  // scutes: three vertebral hexagons and the costal lines out to the rim
+  ctx.strokeStyle=dk;ctx.lineWidth=1.3*k;ctx.lineJoin='round';const hx=(cx,cy,w,h)=>[[cx-w,cy],[cx-w/2,cy+h],[cx+w/2,cy+h],[cx+w,cy],[cx+w/2,cy-h],[cx-w/2,cy-h]];
+  for(const cx of[6,20,34]){const pts=hx(cx,10,6.5,5);ctx.beginPath();pts.forEach((q,i)=>i?ctx.lineTo(X(q[0]),Y(q[1])):ctx.moveTo(X(q[0]),Y(q[1])));ctx.closePath();ctx.stroke()}
+  ctx.beginPath();for(const [x0,y0,x1,y1] of[[-0.5,15,-3,20],[13,15,13,20.5],[27,15,27,20.5],[40.5,15,43,20],[-0.5,5,-4,3],[13,5,13,2.5],[27,5,27,2.5],[40.5,5,44,3]]){ctx.moveTo(X(x0),Y(y0));ctx.lineTo(X(x1),Y(y1))}ctx.stroke();
+  // marginal scutes: little notches around the rim
+  ctx.lineWidth=.9*k;ctx.beginPath();for(let i=1;i<9;i++){const t=i/9,x=-7+56*t,yy=1+21*Math.sin(Math.PI*t)*1.0;ctx.moveTo(X(x),Y(yy*.86));ctx.lineTo(X(x),Y(yy*.97))}ctx.stroke();
+  ctx.restore()}
 function drawCane(f){const s=f.sk,sc=f.sc,h=s.h2,b=[h[0]+f.dff*4*sc,0];strokePoly([[h[0],h[1]+6*sc],b],4.2*sc,INK);strokePoly([[h[0],h[1]+6*sc],b],2.6*sc,'#8b5a2b');
   ctx.strokeStyle=INK;ctx.lineWidth=4.2*sc;ctx.beginPath();ctx.arc(h[0]+f.dff*5*sc,h[1]+6*sc,5*sc,Math.PI,0,f.dff<0);ctx.stroke();ctx.strokeStyle='#8b5a2b';ctx.lineWidth=2.6*sc;ctx.stroke()}
 function drawSlipper(p,a,sc){ctx.save();ctx.translate(p[0],p[1]);ctx.rotate(a);ctx.fillStyle='#2f7fd6';ctx.strokeStyle=INK;ctx.lineWidth=1.3*sc;ctx.beginPath();ctx.ellipse(10*sc,0,12*sc,5.5*sc,0,0,TAU);ctx.fill();ctx.stroke();
