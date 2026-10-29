@@ -1,6 +1,10 @@
-# Deploys Paper Fighters (pencil-battle/) to Liara on every push that touches it.
-# One-time setup: repo secret LIARA_API_TOKEN (Liara API token). Everything else
-# is automatic: the app is created on first run if it doesn't exist.
+# Publishes Paper Fighters (pencil-battle/) for Liara on every push that touches it.
+#
+# 1. publish: copies the game, stamped with a fresh version (so phones show the
+#    update banner), to the root of the `liara-deploy` branch. A Liara app linked
+#    to that branch through Liara's GitHub integration redeploys automatically.
+# 2. deploy-cli (optional): if the LIARA_API_TOKEN secret is set, also deploys
+#    with the Liara CLI, creating the app on first run.
 name: Deploy Paper Fighters to Liara
 
 on:
@@ -14,11 +18,31 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  APP: paper-fighters-game # Liara app id (also the subdomain)
-  PLAN: '' # Liara plan for first-time app creation; empty = only list plans
+  APP: paper-fighters-game # Liara app id, used by the CLI path only
+  PLAN: '' # plan for first-time app creation by the CLI; empty = only list plans
 
 jobs:
-  deploy:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the deploy branch
+        run: |
+          V="$(date -u +%y%m%d.%H%M)-${GITHUB_SHA::7}"
+          rm -rf /tmp/site && cp -r pencil-battle /tmp/site
+          sed -i "s/__VERSION__/$V/g" /tmp/site/sw.js /tmp/site/game.html
+          cd /tmp/site
+          git init -q -b liara-deploy
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Paper Fighters $V (from ${GITHUB_SHA::7})"
+          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" liara-deploy
+          echo "Published version $V to branch liara-deploy"
+
+  deploy-cli:
     runs-on: ubuntu-latest
     env:
       LIARA_API_TOKEN: ${{ secrets.LIARA_API_TOKEN }}
@@ -30,7 +54,7 @@ jobs:
       - name: Check token
         id: tok
         run: |
-          if [ -z "$LIARA_API_TOKEN" ]; then echo "LIARA_API_TOKEN not set, skipping deploy"; echo "ok=0" >> "$GITHUB_OUTPUT"; else echo "ok=1" >> "$GITHUB_OUTPUT"; fi
+          if [ -z "$LIARA_API_TOKEN" ]; then echo "LIARA_API_TOKEN not set, skipping CLI deploy"; echo "ok=0" >> "$GITHUB_OUTPUT"; else echo "ok=1" >> "$GITHUB_OUTPUT"; fi
       - name: Install Liara CLI
         if: steps.tok.outputs.ok == '1'
         run: npm i -g @liara/cli@9
@@ -43,12 +67,11 @@ jobs:
           echo "Plans:"; liara plan list --api-token "$LIARA_API_TOKEN" -x --no-truncate || true
           if [ -z "$PLAN" ]; then echo "::error::App $APP does not exist and PLAN is empty"; exit 1; fi
           liara app create --api-token "$LIARA_API_TOKEN" --app "$APP" --platform node --plan "$PLAN"
-      - name: Stamp version (makes phones see the update)
+      - name: Stamp version
         if: steps.tok.outputs.ok == '1'
         run: |
           V="$(date -u +%y%m%d.%H%M)-${GITHUB_SHA::7}"
           sed -i "s/__VERSION__/$V/g" pencil-battle/sw.js pencil-battle/game.html
-          echo "Version $V"
       - name: Deploy
         if: steps.tok.outputs.ok == '1'
         run: |
