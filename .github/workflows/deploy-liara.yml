@@ -61,10 +61,10 @@ jobs:
       - name: Create app if missing
         if: steps.tok.outputs.ok == '1'
         run: |
-          liara app list --api-token "$LIARA_API_TOKEN" --output json > apps.json || { cat apps.json; exit 1; }
-          echo "Apps:"; cat apps.json
+          # the repo is public, so don't print the account's app list into the logs
+          liara app list --api-token "$LIARA_API_TOKEN" --output json > apps.json 2>/dev/null || { echo "::error::could not list Liara apps (check the token)"; exit 1; }
           if grep -q "\"$APP\"" apps.json; then echo "App $APP exists"; exit 0; fi
-          echo "Plans:"; liara plan list --api-token "$LIARA_API_TOKEN" -x --no-truncate || true
+          echo "Plans:"; liara plan list --api-token "$LIARA_API_TOKEN" || true
           if [ -z "$PLAN" ]; then echo "::error::App $APP does not exist and PLAN is empty"; exit 1; fi
           liara app create --api-token "$LIARA_API_TOKEN" --app "$APP" --platform node --plan "$PLAN"
       - name: Stamp version
