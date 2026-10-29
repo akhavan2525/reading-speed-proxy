@@ -46,4 +46,4 @@ const server = http.createServer((req, res) => {
   });
 });
 
-server.listen(PORT, () => console.log(`Paper Fighters on :${PORT}`));
+server.listen(PORT, '0.0.0.0', () => console.log(`Paper Fighters on :${PORT}`));
