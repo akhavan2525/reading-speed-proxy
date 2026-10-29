@@ -1,6 +1,6 @@
 # Deploys Paper Fighters (pencil-battle/) to Liara on every push that touches it.
-# Setup once: repo variable LIARA_APP = your Liara app id, secret LIARA_API_TOKEN = Liara API token.
-# Without LIARA_APP the job is skipped.
+# One-time setup: repo secret LIARA_API_TOKEN (Liara API token). Everything else
+# is automatic: the app is created on first run if it doesn't exist.
 name: Deploy Paper Fighters to Liara
 
 on:
@@ -13,24 +13,45 @@ concurrency:
   group: liara-deploy
   cancel-in-progress: true
 
+env:
+  APP: paper-fighters-game # Liara app id (also the subdomain)
+  PLAN: '' # Liara plan for first-time app creation; empty = only list plans
+
 jobs:
   deploy:
-    if: ${{ vars.LIARA_APP != '' }}
     runs-on: ubuntu-latest
+    env:
+      LIARA_API_TOKEN: ${{ secrets.LIARA_API_TOKEN }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+      - name: Check token
+        id: tok
+        run: |
+          if [ -z "$LIARA_API_TOKEN" ]; then echo "LIARA_API_TOKEN not set, skipping deploy"; echo "ok=0" >> "$GITHUB_OUTPUT"; else echo "ok=1" >> "$GITHUB_OUTPUT"; fi
+      - name: Install Liara CLI
+        if: steps.tok.outputs.ok == '1'
+        run: npm i -g @liara/cli@9
+      - name: Create app if missing
+        if: steps.tok.outputs.ok == '1'
+        run: |
+          liara app list --api-token "$LIARA_API_TOKEN" --output json > apps.json || { cat apps.json; exit 1; }
+          echo "Apps:"; cat apps.json
+          if grep -q "\"$APP\"" apps.json; then echo "App $APP exists"; exit 0; fi
+          echo "Plans:"; liara plan list --api-token "$LIARA_API_TOKEN" -x --no-truncate || true
+          if [ -z "$PLAN" ]; then echo "::error::App $APP does not exist and PLAN is empty"; exit 1; fi
+          liara app create --api-token "$LIARA_API_TOKEN" --app "$APP" --platform node --plan "$PLAN"
       - name: Stamp version (makes phones see the update)
+        if: steps.tok.outputs.ok == '1'
         run: |
           V="$(date -u +%y%m%d.%H%M)-${GITHUB_SHA::7}"
           sed -i "s/__VERSION__/$V/g" pencil-battle/sw.js pencil-battle/game.html
           echo "Version $V"
       - name: Deploy
-        env:
-          LIARA_API_TOKEN: ${{ secrets.LIARA_API_TOKEN }}
+        if: steps.tok.outputs.ok == '1'
         run: |
-          npx --yes @liara/cli@9 deploy --path pencil-battle --app "${{ vars.LIARA_APP }}" \
-            --api-token "$LIARA_API_TOKEN" --platform node --port 3000 --no-app-logs \
-            -m "${GITHUB_SHA::7}"
+          liara deploy --path pencil-battle --app "$APP" --api-token "$LIARA_API_TOKEN" \
+            --platform node --port 3000 --no-app-logs -m "${GITHUB_SHA::7}"
+          echo "Live at https://$APP.liara.run"
