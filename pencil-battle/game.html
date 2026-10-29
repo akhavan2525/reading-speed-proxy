@@ -476,7 +476,7 @@ const CHARS=[
   {id:'gladiator',name:'گلادیاتور',style:'مشت‌های میخ‌دار',weapon:'none',stats:[5,2,4],spd:.85,dmg:1.2,hp:120,kb:.8,sc:1.1,special:'gslam',sname:'زمین‌لرزه!',look:{gloves:'#6e4f3c',spikes:1,helm:'#6e4f3c',skirt:'#6e4f3c',pads:'#6e4f3c'},img:'chars/c8.png'},
   {id:'ninja',name:'آذرخش',style:'نینجای شمشیر نور',weapon:'sword',stats:[3,5,2],spd:1.2,dmg:.95,hp:90,special:'ydash',sname:'یورش آذرخش!',stance:'yStance',moves:{p:'ksw',fp:'ymanji',bp:'ygas',cp:'ymed',k:'fs',fk:'ypoison',bk:'ytele',ck:'sw'},look:{band:'visor',bandCol:'#2f7fd6',cuffs:'#2f7fd6',glow:'#6fd3ff'},img:'chars/c9.png'},
   {id:'pahlevan',name:'پهلوون',style:'زورخانه‌ای، دو میل',weapon:'none',stance:'pStance',stats:[5,1,5],spd:.8,dmg:1.25,hp:125,kb:.75,sc:1.15,special:'kabadeh',sname:'فرفره‌ی کباده!',moves:{p:'mswing',fp:'lunge',bp:'mspin',cp:'upc',k:'fs',fk:'sk',bk:'bk',ck:'sw'},look:{mustache:1,shorts:'#c0392b',shortsTrim:'#e8b53a',belt:'#c0392b',meel:1}},
-  {id:'turtle',name:'لاکی',style:'لاک‌پشت نینجا، چوب',weapon:'staff',stats:[3,4,4],spd:1.05,dmg:1,hp:110,kb:.9,special:'sspin',sname:'گردباد چوب!',bk:'shellsp',look:{shell:'#4f9a4c',band:'tails',bandCol:'#7e57c2'}}];
+  {id:'turtle',name:'لاکی',style:'لاک‌پشت نینجا، چوب',weapon:'staff',stats:[3,4,4],spd:1.05,dmg:1,hp:110,kb:.9,special:'sspin',sname:'گردباد چوب!',bk:'shellsp',look:{shell:'#4f9a4c',band:'tails',bandCol:'#7e57c2',bo:1}}];
 const PLAYABLE=CHARS.filter(c=>!c.lock);
 // ===== shop: coins buy hats, face items and silly weapons (saved on this device) =====
 const SHOP=[
@@ -1571,7 +1571,7 @@ function drawFighter(f){
   const LF=sw?L2:L1;leg(LF,fc);if(!lk.pants)hl(LF,Wd);
   if(lk.shorts)for(const L of[L2,L1])cloth([L[0],lerp2(L[0],L[1],lk.shortsTrim?.62:.78)],Wd*(lk.shortsTrim?1.4:1.9),shade(lk.shorts,L===(sw?L1:L2)));
   if(lk.skirt)drawSkirt(f,lk.skirt);if(lk.chador)drawChadorBody(f,lk);if(lk.shortsTrim)for(const L of[L2,L1]){const m=lerp2(L[0],L[1],.6),dx=L[1][0]-L[0][0],dy=L[1][1]-L[0][1],l=Math.hypot(dx,dy)||1,n=[-dy/l*Wd*.75,dx/l*Wd*.75];ctx.save();ctx.lineCap='butt';strokePoly([[m[0]-n[0],m[1]-n[1]],[m[0]+n[0],m[1]+n[1]]],3.2*sc,lk.shortsTrim);ctx.restore()}if(lk.tassets)drawTassets(f,lk);if(lk.sash)drawBelt(f,lk.sash);if(lk.apron)drawApron(f,lk);if(lk.robe)drawRobe(f,lk.robe);if(lk.cuffs)for(const L of[L1,L2])strokePoly([lerp2(L[1],L[2],.72),lerp2(L[1],L[2],.93)],Wd*1.35,lk.cuffs);
-  if(f.weapon==='staff'){f.wskin?drawSkin(f):drawStaff(f);arm(A2,rc);fist(s.h2,rc)}
+  if(f.weapon==='staff'){f.wskin?drawSkin(f):lk.bo?drawBo(f):drawStaff(f);arm(A2,rc);fist(s.h2,rc)}
   if(f.weapon==='sword'){f.wskin?drawSkin(f):drawSword(f);arm(A2,rc);fist(s.h2,rc)}
   arm(A1,fc);hl(A1,Wd*.9);if(lk.cuffs)for(const A of[A1,A2])strokePoly([lerp2(A[1],A[2],.68),lerp2(A[1],A[2],.9)],Wd*1.3,lk.cuffs);fist(s.h1,fc);
   if(lk.pads)fillPts(padPts(f),lk.pads,1.4*sc);if(lk.trim)fillPts(padPts(f),lk.suit,1.4*sc);if(lk.studs)drawStuds(f);
@@ -1659,6 +1659,10 @@ function drawKabadeh(f){const s=f.sk,sc=f.sc,a=s.h1,b=s.h2,m=lerp2(a,b,.5),up=[0
   ctx.fillStyle='#c9a23a';for(const p of[a,b]){ctx.beginPath();ctx.arc(p[0],p[1],3*sc,0,TAU);ctx.fill()}ctx.restore()}
 function drawGourd(f){const s=f.sk,sc=f.sc,q=torsoFrame(f),c=q(s.hip,-f.dff*10,-4);ctx.fillStyle='#c48a3a';ctx.strokeStyle=INK;ctx.lineWidth=1.2*sc;
   ctx.beginPath();ctx.arc(c[0],c[1]-6*sc,6*sc,0,TAU);ctx.fill();ctx.stroke();ctx.beginPath();ctx.arc(c[0],c[1]+3*sc,4*sc,0,TAU);ctx.fill();ctx.stroke();strokePoly([[c[0],c[1]+7*sc],[c[0],c[1]+10*sc]],2*sc,'#8b5a2b')}
+function drawBo(f){const s=f.sk,sc=f.sc,a=s.wbt,b=s.wt,P_=t=>lerp2(a,b,t),bc=(f.ch.look.bandCol)||'#7e57c2';ctx.save();ctx.lineCap='round';
+  strokePoly([a,b],7*sc,INK);strokePoly([a,b],4.6*sc,'#9c4a2a');strokePoly([P_(.02),P_(.98)],1.4*sc,'rgba(255,220,180,.45)');ctx.lineCap='butt';
+  strokePoly([P_(.42),P_(.58)],6.4*sc,'#1d1c1a');for(const t of[.45,.5,.55])strokePoly([P_(t-.006),P_(t+.006)],6.6*sc,'#4a4a4a');
+  for(const [t0,t1] of[[0,.07],[.93,1]])strokePoly([P_(t0),P_(t1)],6.2*sc,bc);ctx.restore()}
 function drawShell(f,lk){const s=f.sk,sc=f.sc,d=f.dff,ux=s.chest[0]-s.hip[0],uy=s.chest[1]-s.hip[1],L=Math.hypot(ux,uy)||1;
   // torso-local frame: x runs hip -> chest, y = d points out of the back
   ctx.save();ctx.translate(s.hip[0],s.hip[1]);ctx.rotate(Math.atan2(uy,ux));const k=sc,X=v=>v*L/46,Y=v=>v*d*k,g=lk.shell,dk=shadeHex(g,.62),lt=shadeHex(g,1.25);
