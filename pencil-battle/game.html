@@ -105,27 +105,12 @@ kbd{font-family:inherit;border:1.5px solid var(--ink);border-radius:5px;padding:
       <div>هر خونه‌ی نوار ویژه: ویژه / جلو / عقب / پایین / هوا + ویژه ← حرکات سینمایی. وقتی خون حریف (یا غول) کم شد، <b>فینیشر</b> رو بزن.</div></div>
   <div id="storyNote" class="note">داستانی: پنج مرحله، <b>سوپرمارکت</b> مشت و لگد، <b>کافه</b> نانچیکو، <b>باشگاه</b> چوب، <b>معبد</b> شمشیر، <b>کوچه</b> دو خنجر. آدمک‌ها رو بزن تا به <b>غول</b> برسی. بعضی جعبه‌ها خون دارن، بشکنشون!</div>
   <button class="btn big" id="helpClose">برگشت</button>
-  <button class="btn" id="voiceBtn" style="width:100%;font-size:13px;opacity:.7">🎙 صدای شخصیت (AvalAI)</button>
 </div></div>
 
 <div id="pause" class="overlay hidden"><div class="card">
   <h1>توقف</h1><div class="sub">نفس بگیر…</div>
   <button class="btn big" id="resume">ادامه</button>
   <div class="row"><button class="btn" id="restart">از اول</button><button class="btn" id="tomenu">منو</button></div>
-</div></div>
-
-<div id="voice" class="overlay hidden"><div class="card" style="text-align:right;transform:none">
-  <h1 style="font-size:26px;text-align:center">صدای شخصیت</h1>
-  <div class="sub" style="text-align:center">با کلید AvalAI صداها یک‌بار ساخته و روی همین دستگاه ذخیره میشن. کلید جایی ارسال یا ذخیره‌ی عمومی نمیشه.</div>
-  <label class="lbl">کلید API</label><input id="vKey" type="password" dir="ltr" placeholder="sk-..." style="width:100%;padding:8px;border:2px solid var(--ink);border-radius:10px;background:#fff8;font-family:inherit;margin-bottom:6px">
-  <div class="row" style="margin-bottom:6px"><div style="flex:1"><label class="lbl">مدل</label><input id="vModel" dir="ltr" style="width:100%;padding:7px;border:2px solid var(--ink);border-radius:10px;background:#fff8;font-family:inherit"></div>
-  <div style="flex:1"><label class="lbl">صدا</label><input id="vVoice" dir="ltr" style="width:100%;padding:7px;border:2px solid var(--ink);border-radius:10px;background:#fff8;font-family:inherit"></div></div>
-  <label class="lbl">آدرس سرویس</label><input id="vBase" dir="ltr" style="width:100%;padding:7px;border:2px solid var(--ink);border-radius:10px;background:#fff8;font-family:inherit;margin-bottom:6px">
-  <label class="lbl">جمله‌ها</label>
-  <div id="vLines"></div>
-  <div id="vStatus" class="note" style="margin-top:8px">آماده</div>
-  <div class="row"><button class="btn" id="vGen">ساخت صداها</button><button class="btn" id="vTest">پخش جمله‌ی اول</button></div>
-  <div class="row" style="margin-top:8px"><button class="btn" id="vClose">بستن</button></div>
 </div></div>
 
 <div id="over" class="overlay hidden"><div class="card">
@@ -764,27 +749,9 @@ MOVES.fin_sword=buildFin(['ksw','kflr','kthrust']);
 MOVES.fin_dagger=buildFin(['dsw','dspin','dsw']);
 const MOVE_RATE=.88;  // < 1 = slower, more flowing moves
 
-// ================= voice lines (AvalAI text-to-speech; key never leaves this device) =================
-const VLINES=[['intro','شروع بازی','اومدم اینجا تا آردِت کنم!'],['fin','فینیشر','تمومت کردم!'],['boss','افتادن غول','غول بود، آرد شد!'],['hurt','کتک‌خوردن','آخ! پشتم!']];
-const VO={cfg:{base:'https://api.avalai.ir/v1',model:'gpt-4o-mini-tts',voice:'onyx',key:'',lines:{}},urls:{},db:null,audio:null};
-try{Object.assign(VO.cfg,JSON.parse(localStorage.getItem('pf_voice')||'{}'))}catch(e){}
-for(const[k,,d]of VLINES)if(!VO.cfg.lines[k])VO.cfg.lines[k]=d;
-const saveVO=()=>{try{localStorage.setItem('pf_voice',JSON.stringify(VO.cfg))}catch(e){}};
-function vdb(){return new Promise(res=>{if(VO.db)return res(VO.db);try{const r=indexedDB.open('pf_voice',1);r.onupgradeneeded=()=>r.result.createObjectStore('a');r.onsuccess=()=>{VO.db=r.result;res(VO.db)};r.onerror=()=>res(null)}catch(e){res(null)}})}
-async function vPut(k,blob){const db=await vdb();if(!db)return;return new Promise(r=>{const t=db.transaction('a','readwrite');t.objectStore('a').put(blob,k);t.oncomplete=r;t.onerror=r})}
-async function vLoadAll(){const db=await vdb();if(!db)return;for(const[k]of VLINES){await new Promise(r=>{const q=db.transaction('a').objectStore('a').get(k);q.onsuccess=()=>{if(q.result){if(VO.urls[k])URL.revokeObjectURL(VO.urls[k]);VO.urls[k]=URL.createObjectURL(q.result)}r()};q.onerror=r})}}
-function speak(k,caption){const line=VO.cfg.lines[k];if(!line)return;if(caption)queueMsg(line,1.7,.62,'#cf241d');if(AU.mute)return;
-  if(VO.urls[k]){try{if(VO.audio)VO.audio.pause();const a=new Audio(VO.urls[k]);a.volume=1;VO.audio=a;a.play().catch(()=>{})}catch(e){}return}
-  try{if(window.speechSynthesis){const u=new SpeechSynthesisUtterance(line);u.lang='fa-IR';u.rate=1.02;speechSynthesis.cancel();speechSynthesis.speak(u)}}catch(e){}}
-async function genVoice(k,txt){const c=VO.cfg,body={model:c.model,input:txt,voice:c.voice,response_format:'mp3'};
-  if(/gpt-4o/.test(c.model))body.instructions='Speak in Persian (Farsi) like an exaggerated, cheesy, confident action-movie hero: loud, punchy, a bit funny.';
-  const r=await fetch(c.base.replace(/\/+$/,'')+'/audio/speech',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+c.key},body:JSON.stringify(body)});
-  if(!r.ok)throw new Error('HTTP '+r.status+' '+(await r.text()).slice(0,120));return await r.blob()}
-function initVoiceUI(){const $=id=>document.getElementById(id),box=$('vLines');
-  box.innerHTML='';for(const[k,lab]of VLINES){const d=document.createElement('div');d.style.marginBottom='6px';d.innerHTML=`<div style="font-size:12px;opacity:.7">${lab}</div><input data-k="${k}" style="width:100%;padding:7px;border:2px solid var(--ink);border-radius:10px;background:#fff8;font-family:inherit">`;box.appendChild(d);d.querySelector('input').value=VO.cfg.lines[k]}
-  $('vKey').value=VO.cfg.key;$('vModel').value=VO.cfg.model;$('vVoice').value=VO.cfg.voice;$('vBase').value=VO.cfg.base}
-function readVoiceUI(){const $=id=>document.getElementById(id);VO.cfg.key=$('vKey').value.trim();VO.cfg.model=$('vModel').value.trim()||'gpt-4o-mini-tts';VO.cfg.voice=$('vVoice').value.trim()||'onyx';VO.cfg.base=$('vBase').value.trim()||'https://api.avalai.ir/v1';
-  for(const i of document.querySelectorAll('#vLines input'))VO.cfg.lines[i.dataset.k]=i.value.trim();saveVO()}
+// ================= voice lines =================
+const VLINES={intro:'اومدم اینجا تا آردِت کنم!',fin:'تمومت کردم!',boss:'غول بود، آرد شد!',hurt:'آخ! پشتم!'};
+function speak(k,caption){const line=VLINES[k];if(line&&caption)queueMsg(line,1.7,.62,'#cf241d')}
 
 // ================= audio =================
 const AU={c:null,mute:false,nb:null,
@@ -1433,13 +1400,6 @@ let lastReady=null,lastFin=null;
 function updTouchUI(){const r=!!P1&&P1.meter>=BAR-.01&&game.mode!=='demo';if(r!==lastReady){lastReady=r;$('bS').classList.toggle('ready',r)}
   const v=finTarget(),f=!!v&&canFinish(P1,v);if(f!==lastFin){lastFin=f;$('bF').classList.toggle('ready',f)}}
 document.addEventListener('contextmenu',e=>e.preventDefault());
-$('voiceBtn').onclick=()=>{initVoiceUI();$('vStatus').textContent='آماده';for(const o of['menu','pause','over','help'])$(o).classList.add('hidden');$('voice').classList.remove('hidden')};
-$('vClose').onclick=()=>{readVoiceUI();$('voice').classList.add('hidden');show('menu')};
-$('vTest').onclick=()=>{readVoiceUI();speak('intro',false)};
-$('vGen').onclick=async()=>{readVoiceUI();const st=$('vStatus');if(!VO.cfg.key){st.textContent='اول کلید API رو بنویس.';return}
-  $('vGen').disabled=true;let ok=0;for(const[k,lab]of VLINES){st.textContent='در حال ساخت: '+lab+' …';try{const b=await genVoice(k,VO.cfg.lines[k]);await vPut(k,b);ok++}catch(e){st.textContent='خطا در «'+lab+'»: '+e.message+' (اگه خطای شبکه/CORS بود، مرورگر یا آدرس سرویس رو چک کن)';$('vGen').disabled=false;return}}
-  await vLoadAll();st.textContent='انجام شد: '+fa(ok)+' صدا ساخته و ذخیره شد. «پخش جمله‌ی اول» رو بزن.';$('vGen').disabled=false};
-vLoadAll();
 
 // ================= boot =================
 resize();makeGrain();startDemo();
