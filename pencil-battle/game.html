@@ -471,11 +471,11 @@ const CHARS=[
   {id:'samurai',name:'سامورایی',style:'کاتانا',weapon:'sword',stats:[4,3,3],spd:.95,dmg:1.12,hp:100,special:'kspin',sname:'شمشیر طوفانی!',look:{bun:1,belt:'#8d8d8d'}},
   {id:'shadow',name:'سایه',style:'دو خنجر',weapon:'dagger',stats:[2,5,2],spd:1.22,dmg:.85,hp:85,special:'dspin',sname:'رقص خنجر!',look:{hood:1}},
   {id:'master',name:'استاد',style:'چوب رزمی',weapon:'staff',stats:[4,2,4],spd:.85,dmg:1.15,hp:115,kb:.85,special:'sspin',sname:'چرخش استاد!',look:{hat:1,beard:1}},
-  {id:'boxer',name:'مشت‌زن',style:'بوکس',weapon:'none',stats:[5,3,3],spd:1,dmg:1.15,hp:105,special:'bupc',sname:'آپرکات طلایی!',look:{gloves:'#cf241d',guard:'#cf241d',shorts:'#cf241d'},img:'chars/c7.png'},
+  {id:'boxer',name:'مشت‌زن',style:'بوکس',weapon:'none',stance:'bxStance',stats:[5,3,3],spd:1,dmg:1.15,hp:105,special:'bupc',sname:'آپرکات طلایی!',look:{gloves:'#cf241d',guard:'#cf241d',shorts:'#cf241d'},img:'chars/c7.png'},
   {id:'gladiator',name:'گلادیاتور',style:'مشت‌های میخ‌دار',weapon:'none',stats:[5,2,4],spd:.85,dmg:1.2,hp:120,kb:.8,sc:1.1,special:'gslam',sname:'زمین‌لرزه!',look:{gloves:'#6e4f3c',spikes:1,helm:'#6e4f3c',skirt:'#6e4f3c',pads:'#6e4f3c'},img:'chars/c8.png'},
   {id:'ninja',name:'آذرخش',style:'نینجای شمشیر نور',weapon:'sword',stats:[3,5,2],spd:1.2,dmg:.95,hp:90,special:'ydash',sname:'یورش آذرخش!',stance:'yStance',moves:{p:'ksw',fp:'ymanji',bp:'ygas',cp:'ymed',k:'fs',fk:'ypoison',bk:'ytele',ck:'sw'},look:{band:'visor',bandCol:'#2f7fd6',cuffs:'#2f7fd6',glow:'#6fd3ff'},img:'chars/c9.png'},
-  {id:'pahlevan',name:'پهلوون',style:'زورخانه‌ای، دو میل',weapon:'none',stats:[5,1,5],spd:.8,dmg:1.25,hp:125,kb:.75,sc:1.15,special:'mspin',sname:'چرخش میل!',moves:{p:'mswing',fp:'mswing',bp:'mswing',cp:'upc',k:'fs',fk:'sk',bk:'bk',ck:'sw'},look:{mustache:1,shorts:'#c0392b',shortsTrim:'#e8b53a',belt:'#c0392b',meel:1}},
-  {id:'grandma',name:'ننه‌جون',style:'دمپایی و عصا',weapon:'none',stats:[3,2,4],spd:.9,dmg:1,hp:110,sc:.9,special:'slipth',sname:'دمپایی پرنده!',moves:{p:'slap',fp:'slap',bp:'slap',cp:'upc',k:'fs',fk:'sk',bk:'bk',ck:'sw'},look:{chador:'#fbf8f2',glasses:1,cane:1,slipper:'#2f7fd6'}}];
+  {id:'pahlevan',name:'پهلوون',style:'زورخانه‌ای، دو میل',weapon:'none',stance:'pStance',stats:[5,1,5],spd:.8,dmg:1.25,hp:125,kb:.75,sc:1.15,special:'mspin',sname:'چرخش میل!',moves:{p:'mswing',fp:'mswing',bp:'mswing',cp:'upc',k:'fs',fk:'sk',bk:'bk',ck:'sw'},look:{mustache:1,shorts:'#c0392b',shortsTrim:'#e8b53a',belt:'#c0392b',meel:1}},
+  {id:'grandma',name:'ننه‌جون',style:'دمپایی و عصا',weapon:'none',stance:'gStance',stats:[3,2,4],spd:.9,dmg:1,hp:110,sc:.9,special:'slipth',sname:'دمپایی پرنده!',moves:{p:'slap',fp:'slap',bp:'slap',cp:'upc',k:'fs',fk:'sk',bk:'bk',ck:'sw'},look:{chador:'#fbf8f2',glasses:1,cane:1,slipper:'#2f7fd6'}}];
 const PLAYABLE=CHARS.filter(c=>!c.lock);
 // ===== shop: coins buy hats, face items and silly weapons (saved on this device) =====
 const SHOP=[
@@ -541,7 +541,10 @@ function B(o){const p={hy:o.hy??57,hx:o.hx??0,t:o.t??0,h:o.h??0,fo1:o.fo1??82,fo
   p.l1t=L1[0];p.l1s=L1[1];p.l2t=L2[0];p.l2s=L2[1];p.a1u=A1[0];p.a1f=A1[1];p.a2u=A2[0];p.a2f=A2[1];return p}
 const W_=(base,o)=>Object.assign({...base},o);
 const P={
-  stance:B({hy:57,t:8,h:-4,f1:[22,0],f2:[-26,0],h1:[20,16],h2:[12,12]}),
+  stance:B({hy:57,t:8,h:-4,f1:[22,0],f2:[-26,0],h1:[30,-10],h2:[16,-16]}),
+  bxStance:B({hy:57,t:8,h:-4,f1:[22,0],f2:[-26,0],h1:[20,16],h2:[12,12]}),
+  pStance:B({hy:56,t:6,h:-2,f1:[26,0],f2:[-28,0],h1:[0,0],A1:[14,6],A2:[-10,-16]}),
+  gStance:B({hy:53,t:18,h:-10,f1:[22,0],f2:[-24,0],h1:[18,-24],h2:[8,-30]}),
   crouch:B({hy:38,t:24,h:-14,f1:[26,0],f2:[-26,0],h1:[22,10],h2:[14,6]}),
   block:B({hy:55,t:-4,h:8,f1:[20,0],f2:[-26,0],h1:[20,26],h2:[19,17]}),
   cblock:B({hy:38,t:14,h:4,f1:[26,0],f2:[-26,0],h1:[24,20],h2:[21,13]}),
@@ -1547,8 +1550,8 @@ function drawFighter(f){
     strokePoly([H(-5,2),H(-5.5,13)],2.6*sc,'#1b0807');ctx.strokeStyle='#f3efe6';ctx.lineWidth=1.3*sc;ctx.beginPath();for(let i=0;i<5;i++){const a=H(-5+(i%2?-3:0),2.5+i*2.2);ctx.lineTo(a[0],a[1])}ctx.stroke();
     strokePoly([H(8.5,0),H(6,11)],3.2*sc,'#1b0807');const e=H(4.2,6.4);ctx.fillStyle='#ffe27a';ctx.beginPath();ctx.arc(e[0],e[1],2.8*sc,0,TAU);ctx.fill();ctx.fillStyle='#1b0807';ctx.beginPath();ctx.arc(e[0]+hf[0]*1,e[1]+hf[1]*1,1.2*sc,0,TAU);ctx.fill()}
   const LF=sw?L2:L1;leg(LF,fc);if(!lk.pants)hl(LF,Wd);
-  if(lk.shorts)for(const L of[L2,L1])cloth([L[0],lerp2(L[0],L[1],.78)],Wd*1.9,shade(lk.shorts,L===(sw?L1:L2)));
-  if(lk.skirt)drawSkirt(f,lk.skirt);if(lk.chador)drawChadorBody(f,lk);if(lk.shortsTrim)for(const L of[L2,L1])strokePoly([lerp2(L[0],L[1],.62),lerp2(L[0],L[1],.78)],Wd*2,lk.shortsTrim);if(lk.tassets)drawTassets(f,lk);if(lk.sash)drawBelt(f,lk.sash);if(lk.apron)drawApron(f,lk);if(lk.robe)drawRobe(f,lk.robe);if(lk.cuffs)for(const L of[L1,L2])strokePoly([lerp2(L[1],L[2],.72),lerp2(L[1],L[2],.93)],Wd*1.35,lk.cuffs);
+  if(lk.shorts)for(const L of[L2,L1])cloth([L[0],lerp2(L[0],L[1],lk.shortsTrim?.62:.78)],Wd*(lk.shortsTrim?1.4:1.9),shade(lk.shorts,L===(sw?L1:L2)));
+  if(lk.skirt)drawSkirt(f,lk.skirt);if(lk.chador)drawChadorBody(f,lk);if(lk.shortsTrim)for(const L of[L2,L1]){const m=lerp2(L[0],L[1],.6),dx=L[1][0]-L[0][0],dy=L[1][1]-L[0][1],l=Math.hypot(dx,dy)||1,n=[-dy/l*Wd*.75,dx/l*Wd*.75];ctx.save();ctx.lineCap='butt';strokePoly([[m[0]-n[0],m[1]-n[1]],[m[0]+n[0],m[1]+n[1]]],3.2*sc,lk.shortsTrim);ctx.restore()}if(lk.tassets)drawTassets(f,lk);if(lk.sash)drawBelt(f,lk.sash);if(lk.apron)drawApron(f,lk);if(lk.robe)drawRobe(f,lk.robe);if(lk.cuffs)for(const L of[L1,L2])strokePoly([lerp2(L[1],L[2],.72),lerp2(L[1],L[2],.93)],Wd*1.35,lk.cuffs);
   if(f.weapon==='staff'){f.wskin?drawSkin(f):drawStaff(f);arm(A2,rc);fist(s.h2,rc)}
   if(f.weapon==='sword'){f.wskin?drawSkin(f):drawSword(f);arm(A2,rc);fist(s.h2,rc)}
   arm(A1,fc);hl(A1,Wd*.9);if(lk.cuffs)for(const A of[A1,A2])strokePoly([lerp2(A[1],A[2],.68),lerp2(A[1],A[2],.9)],Wd*1.3,lk.cuffs);fist(s.h1,fc);
@@ -1566,6 +1569,7 @@ const shadeHex=(h,k)=>{const n=parseInt(h.slice(1),16);return'rgb('+[(n>>16)&255
 function headFrame(f){const s=f.sk,sc=f.sc,hx=s.head[0]-s.neck[0],hy=s.head[1]-s.neck[1],l=Math.hypot(hx,hy)||1,hu=[hx/l,hy/l],hf=[hu[1]*f.dff,-hu[0]*f.dff];
   return(a,b)=>[s.head[0]+hu[0]*a*sc+hf[0]*b*sc,s.head[1]+hu[1]*a*sc+hf[1]*b*sc]}
 function fillPts(pts,col,outline){ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();ctx.fillStyle=col;ctx.fill();if(outline){ctx.strokeStyle=INK;ctx.lineWidth=outline;ctx.stroke()}}
+function flower(p,sc){ctx.fillStyle='#e0473c';for(let i=0;i<5;i++){const a=i/5*TAU;ctx.beginPath();ctx.arc(p[0]+Math.cos(a)*1.6*sc,p[1]+Math.sin(a)*1.6*sc,1.2*sc,0,TAU);ctx.fill()}ctx.fillStyle='#f4d23c';ctx.beginPath();ctx.arc(p[0],p[1],.9*sc,0,TAU);ctx.fill()}
 function dots(p,r){ctx.fillStyle='#d8433a';for(let i=0;i<3;i++){ctx.beginPath();ctx.arc(p[0]+Math.cos(i*2.1)*r,p[1]+Math.sin(i*2.1)*r,1.3,0,TAU);ctx.fill()}}
 function drawHeadGear(f,fc){const lk=f.ch.look||{},sc=f.sc,H=headFrame(f),R=SEG.HR,s=f.sk,t=game.rt,mv=Math.min(1,Math.abs(f.vx)/300);
   const tail=(a0,b0,len,ph,w,col)=>{const p0=H(a0,b0),wv=Math.sin(t*13+ph)*(3+mv*2),p1=H(a0-3+wv*.5-(1-mv)*4,b0-len*.5),p2=H(a0-6+wv-(1-mv)*9,b0-len);
@@ -1584,13 +1588,12 @@ function drawHeadGear(f,fc){const lk=f.ch.look||{},sc=f.sc,H=headFrame(f),R=SEG.
     fillPts([H(-2,-R-1),H(4,-R-1),H(4,-R-9),H(-6,-R-8)],'#2b2b2b',1.2*sc);
     const hb=H(R+1,3);ctx.strokeStyle='#c9a23a';ctx.lineWidth=3.2*sc;ctx.lineCap='round';ctx.beginPath();const l=H(R+20,-5),r=H(R+20,11);ctx.moveTo(l[0],l[1]);ctx.quadraticCurveTo(hb[0],hb[1],r[0],r[1]);ctx.stroke();
     ctx.strokeStyle=INK;ctx.lineWidth=1*sc;ctx.stroke()}
-  if(lk.mustache){const a=H(-3,R-1),b=H(-6,R-11),c=H(-6,R+5);ctx.fillStyle='#3b3b3b';ctx.strokeStyle=INK;ctx.lineWidth=.8*sc;ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.quadraticCurveTo(...H(1,R-8),...b);ctx.quadraticCurveTo(...H(-6,R-4),...a);ctx.quadraticCurveTo(...H(-6,R+2),...c);ctx.quadraticCurveTo(...H(1,R+2),...a);ctx.fill();ctx.stroke()}
+  if(lk.mustache){const a=H(-3,R-1),b=H(-6,R-11),c=H(-6,R+5);ctx.fillStyle='#9a9a9a';ctx.strokeStyle=INK;ctx.lineWidth=.8*sc;ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.quadraticCurveTo(...H(1,R-8),...b);ctx.quadraticCurveTo(...H(-6,R-4),...a);ctx.quadraticCurveTo(...H(-6,R+2),...c);ctx.quadraticCurveTo(...H(1,R+2),...a);ctx.fill();ctx.stroke()}
   if(lk.glasses){ctx.strokeStyle='#f3efe6';ctx.lineWidth=1.4*sc;for(const b of[R-6,R+1]){const e=H(2,b);ctx.beginPath();ctx.arc(e[0],e[1],3.2*sc,0,TAU);ctx.stroke()}}
   if(lk.shades){fillPts([H(5,1),H(5,R+2),H(1,R+1),H(0,1)],'#111');strokePoly([H(4.5,-R+1),H(4.5,2)],1.6*sc,'#111');strokePoly([H(4,R-3),H(2,R)],1.2*sc,'#e8b53a')}
   if(lk.eyes){ctx.save();ctx.shadowColor='#ffd23a';ctx.shadowBlur=6*sc;ctx.fillStyle='#ffe14a';for(const b of[3,9]){const e=H(2,b);ctx.beginPath();ctx.arc(e[0],e[1],1.9*sc,0,TAU);ctx.fill()}ctx.restore()}
   if(lk.bun){ctx.fillStyle=fc;ctx.beginPath();const b=H(R+3,-3);ctx.arc(b[0],b[1],5*sc,0,TAU);ctx.fill()}
-  if(lk.chador){ctx.save();const c=H(1,-3);ctx.fillStyle=lk.chador;ctx.strokeStyle=INK;ctx.lineWidth=1.3*sc;ctx.beginPath();ctx.arc(c[0],c[1],(R+4)*sc,0,TAU);ctx.fill();ctx.stroke();
-    const o=H(-1,5);ctx.fillStyle=fc;ctx.beginPath();ctx.arc(o[0],o[1],(R-3)*sc,0,TAU);ctx.fill();ctx.restore();dots(H(R,-6),3*sc);dots(H(-4,-R),3*sc)}
+  if(lk.chador){fillPts([H(R+4,2),H(R+2,-8),H(4,-R-5),H(-8,-R-4),H(-14,-R+1),H(-6,-2),H(R-2,-1)],lk.chador,1.3*sc);flower(H(R-1,-6),sc);flower(H(-6,-R),sc)}
   if(lk.hood){const c=H(1,-2);ctx.fillStyle='#4a4a4a';ctx.strokeStyle=INK;ctx.lineWidth=1.6*sc;ctx.beginPath();ctx.arc(c[0],c[1],(R+3.5)*sc,0,TAU);ctx.fill();ctx.stroke();
     const o=H(-1,4);ctx.fillStyle=fc;ctx.beginPath();ctx.arc(o[0],o[1],(R-3.5)*sc,0,TAU);ctx.fill();
     ctx.save();ctx.beginPath();ctx.arc(o[0],o[1],(R-3.5)*sc,0,TAU);ctx.clip();fillPts([H(-1,-8),H(-1,16),H(-14,16),H(-14,-8)],'#8c8c8c');ctx.restore()}
@@ -1634,8 +1637,8 @@ function drawCane(f){const s=f.sk,sc=f.sc,h=s.h2,b=[h[0]+f.dff*4*sc,0];strokePol
   ctx.strokeStyle=INK;ctx.lineWidth=4.2*sc;ctx.beginPath();ctx.arc(h[0]+f.dff*5*sc,h[1]+6*sc,5*sc,Math.PI,0,f.dff<0);ctx.stroke();ctx.strokeStyle='#8b5a2b';ctx.lineWidth=2.6*sc;ctx.stroke()}
 function drawSlipper(p,a,sc){ctx.save();ctx.translate(p[0],p[1]);ctx.rotate(a);ctx.fillStyle='#2f7fd6';ctx.strokeStyle=INK;ctx.lineWidth=1.3*sc;ctx.beginPath();ctx.ellipse(10*sc,0,12*sc,5.5*sc,0,0,TAU);ctx.fill();ctx.stroke();
   ctx.strokeStyle='#1d5aa6';ctx.lineWidth=2.4*sc;ctx.beginPath();ctx.moveTo(6*sc,-5*sc);ctx.lineTo(12*sc,1*sc);ctx.lineTo(18*sc,-5*sc);ctx.stroke();ctx.restore()}
-function drawChadorBody(f,lk){const s=f.sk,q=torsoFrame(f),pts=[q(s.neck,-9,2),q(s.neck,9,2),q(s.chest,15,0),q(s.hip,24,-50),q(s.hip,-22,-52),q(s.chest,-15,0)];fillPts(pts,lk.chador,1.4*f.sc);
-  for(const [a,b] of[[-8,-20],[10,-34],[-14,-44],[6,-8],[16,-50],[-4,-30],[-10,4]])dots(q(s.hip,a,b),2.4*f.sc)}
+function drawChadorBody(f,lk){const s=f.sk,q=torsoFrame(f),d=f.dff;fillPts([q(s.neck,-d*7,8),q(s.neck,d*2,2),q(s.chest,d*3,-6),q(s.hip,d*6,-30),q(s.hip,-d*20,-34),q(s.chest,-d*14,0)],lk.chador,1.3*f.sc);
+  for(const [a,b] of[[-8,-14],[-14,-28],[0,-24],[-6,4],[2,-6]])flower(q(s.hip,-d*Math.abs(a)+d*(a>0?a:0),b),f.sc)}
 function drawSkirt(f,col){const s=f.sk,q=torsoFrame(f),j=[-14,-9,-4,0,5,9,14];
   const pts=[q(s.hip,-11,6),q(s.hip,11,6)];for(let i=j.length-1;i>=0;i--)pts.push(q(s.hip,j[i],i%2?-14:-24));fillPts(pts,col,1.3*f.sc)}
 function padPts(f){const s=f.sk,q=torsoFrame(f),c=s.chest;return[q(c,-13,-2),q(c,-15,6),q(c,-9,10),q(c,0,9),q(c,9,10),q(c,15,6),q(c,13,-2),q(c,0,2)]}
@@ -1819,7 +1822,7 @@ $('start').onclick=begin;
 const sel={step:0,pick:[0,1],prev:[]};
 function cardPreview(cv,c){const g=cv.getContext('2d'),f=new Fighter({team:0,c:COLORS.black,ch:c,weapon:c.weapon,x:0,face:1});f.state='stand';cv._f=f}
 function drawPreviews(dt,list){for(const cv of list){const f=cv._f;if(!f)continue;f.bt+=dt;f.pose(dt);const g=cv.getContext('2d'),W_=cv.width,H_=cv.height,old=ctx;
-  g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,W_,H_);const z=cv._head?H_/88:H_/150;g.setTransform(z,0,0,-z,W_/2-(cv._head?2:8)*z,cv._head?H_*.42+124*z:H_-6);ctx=g;try{drawFighter(f)}catch(e){}ctx=old}}
+  g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,W_,H_);const z=cv._head?H_/88:H_/(150*Math.max(1,f.sc));g.setTransform(z,0,0,-z,W_/2-(cv._head?2:8)*z,cv._head?H_*.42+124*z:H_-6);ctx=g;try{drawFighter(f)}catch(e){}ctx=old}}
 function openSelect(){sel.step=0;sel.pick=[game.p1ch||0,game.p2ch??1];renderSelect();show('select')}
 function renderSelect(){const g=$('selGrid');g.innerHTML='';sel.prev=[];
   $('selT').textContent=sel.step?'حریفت رو انتخاب کن':'کاراکترت رو انتخاب کن';$('selGo').textContent=sel.online?'ادامه':sel.step?'شروع مبارزه!':'انتخاب';
