@@ -410,7 +410,7 @@ const WPN={shop:'none',cafe:'nun',dojo:'staff',temple:'sword',alley:'dagger'};
 const CHARS=[
   {id:'sia',name:'سیاه',style:'مشت و لگد',weapon:'none',stats:[3,3,3],spd:1,dmg:1,hp:100,special:'special',sname:'طوفان!',look:{band:'tails'},img:'chars/c1.png'},
   {id:'dragon',name:'اژدها',style:'کونگ‌فو و نانچیکو',weapon:'nun',stats:[3,5,2],spd:1.18,dmg:.92,hp:90,special:'dflyk',sname:'لگد اژدها!',look:{suit:'#f2c21b'},img:'chars/c2.png'},
-  {id:'dancer',name:'رقصنده',style:'کاپوئرا',weapon:'none',stats:[3,4,2],spd:1.1,dmg:1,hp:95,special:'wind',sname:'آسیاب بادی!',ginga:1,look:{band:'bandana',pants:'#f6f4ee',belt:'#f6f4ee'},img:'chars/c3.png'},
+  {id:'dancer',name:'رقصنده',style:'کاپوئرا',weapon:'none',stats:[3,4,2],spd:1.1,dmg:1,hp:95,special:'wind',sname:'آسیاب بادی!',ginga:1,moves:{p:'cmeia',fp:'cmeia',bp:'cmeia',cp:'cneg',k:'shk',fk:'cau',bk:'cmac',ck:'cneg'},block:['esq','cesq'],look:{band:'bandana',pants:'#f6f4ee',belt:'#f6f4ee'},img:'chars/c3.png'},
   {id:'samurai',name:'سامورایی',style:'کاتانا',weapon:'sword',stats:[4,3,3],spd:.95,dmg:1.12,hp:100,special:'kspin',sname:'شمشیر طوفانی!',look:{bun:1,belt:'#8d8d8d'}},
   {id:'shadow',name:'سایه',style:'دو خنجر',weapon:'dagger',stats:[2,5,2],spd:1.22,dmg:.85,hp:85,special:'dspin',sname:'رقص خنجر!',look:{hood:1}},
   {id:'master',name:'استاد',style:'چوب رزمی',weapon:'staff',stats:[4,2,4],spd:.85,dmg:1.15,hp:115,kb:.85,special:'sspin',sname:'چرخش استاد!',look:{hat:1,beard:1}},
@@ -639,13 +639,23 @@ Object.assign(P,{nsp2:W_(P.nsp,{wb:780}),nj2:W_(P.nj1,{wb:530}),nj3:W_(P.nj1,{wb
   ds3:W_(P.ds2,{}),ssp2:W_(P.ssp,{wa:450}),cr2s:W_(P.cr2,{wa:230}),cr3s:W_(P.cr3,{wa:240}),cr4s:W_(P.cr4,{wa:200}),sj2:W_(P.sj1,{wa:200}),nsw0:W_(P.stN,{wb:-60})});
 // capoeira: two swaying ginga stances and the handstand windmill
 Object.assign(P,{
-  stG:B({hy:40,hx:-4,t:16,h:-8,f1:[38,0],f2:[-40,0],h1:[22,22],h2:[-16,4]}),
-  stG2:B({hy:42,hx:6,t:8,h:-4,f1:[38,0],f2:[-40,0],h1:[-10,8],h2:[24,22]}),
+  stG:B({hy:47,hx:-4,t:12,h:-6,f1:[36,0],f2:[-40,0],h1:[22,24],h2:[-18,2]}),
+  stG2:B({hy:49,hx:6,t:6,h:-4,f1:[36,0],f2:[-40,0],h1:[-12,6],h2:[24,24]}),
   hs0:B({hy:36,t:50,h:-20,f1:[30,0],f2:[-34,0],h1:[30,-30],h2:[24,-34]}),
   hs1:B({hy:46,rot:180,f1:[10,0],f2:[-10,0],h1:[6,46],h2:[-6,46]}),
   hs2:B({hy:46,rot:180,f1:[44,8],f2:[-44,8],h1:[6,46],h2:[-6,46]}),
   hs3:B({hy:46,rot:180,f1:[-40,14],f2:[40,14],h1:[6,46],h2:[-6,46]}),
   hs4:B({hy:40,rot:90,t:20,f1:[30,0],f2:[-30,0],h1:[20,20],h2:[10,10]}),
+  cm1:B({hy:50,t:-8,h:4,f1:[14,26],f2:[-30,0],h1:[16,22],h2:[-18,10]}),
+  cm2:B({hy:58,t:-24,h:12,L1:[150,146],fo1:80,f2:[-26,0],h1:[20,24],h2:[-24,2]}),
+  cm3:B({hy:58,t:-20,h:10,L1:[178,174],fo1:100,f2:[-26,0],h1:[22,18],h2:[-22,6]}),
+  cm4:B({hy:52,t:-10,h:6,L1:[60,40],f2:[-28,0],h1:[22,20],h2:[-20,8]}),
+  cn1:B({hy:30,t:-30,h:14,f1:[22,0],f2:[-24,0],h1:[22,12],h2:[-30,-34]}),
+  cn2:B({hy:22,t:-50,h:22,f1:[60,4],f2:[-4,0],h1:[22,16],h2:[-26,-30]}),
+  au0:B({hy:46,t:20,h:-6,f1:[30,0],f2:[-30,0],h1:[30,30],h2:[20,36]}),
+  au1:B({hy:46,f1:[44,10],f2:[-44,10],h1:[8,46],h2:[-8,46]}),
+  esq:B({hy:30,t:-22,h:12,f1:[32,0],f2:[-32,0],h1:[16,30],h2:[22,22]}),
+  cesq:B({hy:24,t:-30,h:14,f1:[34,0],f2:[-30,0],h1:[14,26],h2:[20,18]}),
 });
 // weapon guards follow the reference sheet: arms forward on the hilt, blade up-forward; dagger held out front
 Object.assign(P,{
@@ -744,6 +754,11 @@ const MOVES={
   // Gladiator: wind up and pound the ground (shockwave hits anyone standing close)
   gslam:{aura:1,seq:[['upc0',140,0,30],['ax4',160,40,40],['dk7',200,0,45,0,{fx:'slam'}],['stance',220,0,20]],
     hits:[{t0:300,t1:420,limb:'h1',dmg:14,kb:300,kind:'knock',r:18,cine:1}]},
+  // Dancer (capoeira): meia lua de frente, sweep, cartwheel kick, back flip
+  cmeia:{seq:[['cm1',80,0,34],['cm2',90,30,52],['cm3',90,10,55],['cm4',110,0,34],['stG',130,0,22]],hits:[{t0:90,t1:270,limb:'f1',dmg:10,kb:240,kind:'heavy',r:13}],trail:'f1',chain:{kick:'shk',punch:'cneg'},from:230},
+  cneg:{seq:[['cn1',90,0,34],['cn2',170,60,50],['cn1',90,0,34],['stG',140,0,20]],hits:[{t0:90,t1:260,limb:'f1',dmg:9,kb:120,kind:'knock',low:1,r:14}],trail:'f1',chain:{kick:'cau'},from:220},
+  cau:{rotc:[90,640,0,-360],seq:[['au0',90,0,34],['au1',550,250,40],['stG',160,0,25]],hits:[{t0:230,t1:360,limb:'f1',dmg:7,kb:150,kind:'light',r:15},{t0:380,t1:540,limb:'f2',dmg:9,kb:320,kind:'heavy',r:15}],trail:'f1'},
+  cmac:{air:1,launch:[600,-70],rotc:[0,600,0,360],seq:[['bf2',150,0,40],['bf3',150,0,32],['bf4',150,0,32],['bf5',9e9,0,30]],hits:[{t0:0,t1:190,limb:'f1',dmg:9,kb:180,kind:'launch',r:15}],landFx:1},
   // Dragon: running flying side kick
   dflyk:{aura:1,seq:[['dk1',90,0,30],['dk2',110,760,45,0,{fx:'dash'}],['dk4',220,820,55,0,{vy:320,fx:'dash'}],['dk6',90,120,30],['dk7',140,0,30,0,{fx:'land'}],['stance',150,0,20]],
     hits:[{t0:200,t1:420,limb:'f1',dmg:26,kb:640,kind:'heavy',r:15,cine:1}]},
@@ -909,8 +924,8 @@ class Fighter{
         else if(take(I,'special')){let mv,cost=BAR;
           if(this.meter>=100&&!fwd&&!back&&!I.down&&!I.up){mv=(this.ch&&this.ch.special)||'special';cost=100}else mv=I.up?'adr':I.down?'slide':fwd?'dashk':back?'bflip':'multi';
           if(this.meter>=cost-.01){this.meter=Math.max(0,this.meter-cost);this.startMove(mv);if(cost===100)superFlash(this);else cineStart(this,mv)}}
-        else if(take(I,'punch'))this.startMove(this.punchMove(fwd,back));
-        else if(take(I,'kick'))this.startMove(this.crouch?'sw':(fwd?'sk':back?'bk':'fs'));
+        else if(take(I,'punch')){const M=this.ch&&this.ch.moves;this.startMove(M?(this.crouch?M.cp:fwd?M.fp:back?M.bp:M.p):this.punchMove(fwd,back))}
+        else if(take(I,'kick')){const M=this.ch&&this.ch.moves;this.startMove(M?(this.crouch?M.ck:fwd?M.fk:back?M.bk:M.k):this.crouch?'sw':(fwd?'sk':back?'bk':'fs'))}
         else if(!this.blocking&&!this.crouch&&take(I,'up')){this.state='air';this.vy=610;this.vx=(fwd?240:back?-210:0)*this.face;this.airAtk=false;AU.whoosh(false)}
         else if(!this.crouch&&!this.blocking)this.vx=(fwd?185:back?-140:0)*this.face*this.spd}
     }else if(S==='air'){
@@ -969,7 +984,7 @@ class Fighter{
   target(){const S=this.state,base=this.base();
     if(S==='stand'){
       if(game.phase==='fight'||game.mode==='demo'){
-        if(this.blocking){const B_={staff:['blS','cblS'],sword:['blK','cblK'],dagger:['blD','cblD']}[this.weapon];return[B_?P[B_[this.crouch?1:0]]:(this.crouch?P.cblock:P.block),16]}
+        if(this.blocking){const B_=(this.ch&&this.ch.block)||{staff:['blS','cblS'],sword:['blK','cblK'],dagger:['blD','cblD']}[this.weapon];return[B_?P[B_[this.crouch?1:0]]:(this.crouch?P.cblock:P.block),16]}
         if(this.crouch)return[this.poseOf('crouch'),14];
         if(Math.abs(this.vx)>1)return[this.nunHand(walkPose(this.ph,Math.sin(this.bt*6),base)),13]}
       if(base===P.stG){const u=(Math.sin(this.bt*3.1)+1)/2,p={};for(const k in P.stG)p[k]=typeof P.stG[k]==='number'?P.stG[k]+(P.stG2[k]-P.stG[k])*u:P.stG[k];return[p,9]}
@@ -980,7 +995,7 @@ class Fighter{
       if(rc){const u=clamp((mv.t-rc[0])/(rc[1]-rc[0]),0,1),e=u*.72+.28*u*u*(3-2*u);p={...pp,rot:rc[2]+(rc[3]-rc[2])*e,_rc:1}}
       return[p,(mv.seg[3]||30)*.92]}
     if(S==='hit')return[P[this.hitPose],26];
-    if(S==='bstun'){const B_={staff:'blS',sword:'blK',dagger:'blD'}[this.weapon];return[B_?P[B_]:P.block,26]}
+    if(S==='bstun'){const B_=(this.ch&&this.ch.block&&this.ch.block[0])||{staff:'blS',sword:'blK',dagger:'blD'}[this.weapon];return[B_?P[B_]:P.block,26]}
     if(S==='juggle')return[P.fall,10];
     if(S==='down'||S==='ko')return[P.down,12];
     if(S==='getup')return[P.getup,10];
