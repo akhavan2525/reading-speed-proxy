@@ -1513,7 +1513,7 @@ let props=[],pickups=[],projs=[];
 const PROPDEF={box:{w:62,h:52,m:1.3},box2:{w:52,h:44,m:1},box3:{w:46,h:40,m:.9},sign:{w:44,h:70,m:.7},bin:{w:42,h:60,m:1.1},can:{w:14,h:20,m:.3},
   chair:{w:46,h:100,m:.6},table:{w:84,h:92,m:1.1},cup:{w:12,h:12,m:.2},barrel:{w:46,h:58,m:1.4},bucket:{w:30,h:30,m:.5},stool:{w:34,h:40,m:.6},crate:{w:54,h:54,m:1.5},plant:{w:40,h:82,m:.8},sacks:{w:58,h:54,m:1.6}};
 function mkProp(type,x,y=0,extra={}){const d=PROPDEF[type];return{type:type.replace(/\d$/,''),kind:type,x,y,w:d.w,h:d.h,m:d.m,vx:0,vy:0,rot:0,vr:0,cd:0,...extra}}
-const cafeSet=x=>[mkProp('chair',x-74),mkProp('table',x),mkProp('cup',x-8,96),mkProp('chair',x+74,0,{flip:1})];
+const cafeSet=x=>[mkProp('chair',x-74,0,{flip:1}),mkProp('table',x),mkProp('cup',x-8,96),mkProp('chair',x+74)];  // chairs face the table
 function battleProps(theme){if(theme==='shop')return[mkProp('box',-725),mkProp('box2',-722,52),mkProp('box3',-655),mkProp('sign',-360),mkProp('bin',610),mkProp('can',262),mkProp('can',280),mkProp('can',271,20)];
   if(theme==='cafe')return[mkProp('plant',-780),mkProp('sacks',720),...cafeSet(-450),...cafeSet(450),mkProp('cup',-80)];
   if(['bazaar','zurkhaneh','beach','roof'].includes(theme))return[mkProp('box',-640),mkProp('barrel',-560),mkProp('can',300),mkProp('box3',620)];
