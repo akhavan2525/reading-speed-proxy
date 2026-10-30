@@ -625,7 +625,7 @@ function stageColor(s,theme,x0,x1){const P_=PAL[theme],X0=x0-1400,X1=x1+1400,L=m
       s.tint(Array.from({length:24},(_,i)=>[x+Math.cos(i/24*TAU)*90,y+Math.sin(i/24*TAU)*90]),'#fff0a8',.12)}}
   if(theme==='desk')for(let i=0;i<(X1-X0)/90;i++){const x=X0+L()*(X1-X0),y=-20-L()*480;s.line(x,y,x+60+L()*120,y+(L()-.5)*6,.6,.3,1)}}
 // hand-drawn wall panels per stage; each covers the wall from the floor line to the ceiling
-const WALLIMG={shop:[['walls/shop1.webp',1.552],['walls/shop2.webp',1.556]]},WIMG={};  // [file, width/height]
+const WALLIMG={shop:[['walls/shop1.webp',1.552],['walls/shop2.webp',1.556],['walls/shop3.webp',1.586]]},WIMG={};  // [file, width/height]
 function wallImg(src){let im=WIMG[src];if(!im){im=WIMG[src]=new Image();im.src=src}return im}
 function wallPanel(s,theme,i,x){const[src,ar]=WALLIMG[theme][i],w=(CEIL-FL)*ar;wallImg(src);
   (s.imgs||(s.imgs=[])).push({src,x,w});(s.occ||(s.occ=[])).push([x+20,FL,x+w-20,CEIL]);return x+w}
