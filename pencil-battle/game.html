@@ -20,6 +20,10 @@ html,body{margin:0;height:100%;background:var(--bg);overflow:hidden;touch-action
 canvas{position:fixed;inset:0;display:block;width:100%;height:100%;background:var(--paper)}
 .overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:16px;z-index:10}
 .overlay.hidden{display:none}
+#loader{position:fixed;inset:0;z-index:60;background:var(--paper);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;transition:opacity .45s}#loader.done{opacity:0;pointer-events:none}
+#loader .lt{font-weight:900;font-size:clamp(30px,7vw,54px);transform:rotate(-2deg)}#loader .lt span{color:var(--red)}#loader .lp{font-weight:700;font-size:16px;opacity:.7}
+#loader .lbar{width:min(70vw,360px);height:24px;border:3px solid var(--ink);border-radius:12px 9px 13px 8px/9px 13px 8px 12px;overflow:hidden;transform:rotate(-1deg);box-shadow:4px 4px 0 rgba(29,28,26,.85)}
+#loader .lbar i{display:block;height:100%;width:0;background:repeating-linear-gradient(-55deg,var(--ink) 0 3px,transparent 3px 7px)}
 .card{background:rgba(243,239,230,.95);border:3px solid var(--ink);border-radius:18px 22px 16px 24px/22px 16px 24px 18px;box-shadow:7px 7px 0 rgba(29,28,26,.9);padding:20px 20px 16px;max-width:460px;width:100%;transform:rotate(-1deg);text-align:center;max-height:calc(100% - 16px);overflow:auto}
 .card h1{font-weight:900;font-size:clamp(32px,8vw,46px);margin:0;line-height:1.15}
 .card h1 span{color:var(--red)}
@@ -98,6 +102,7 @@ kbd{font-family:inherit;border:1.5px solid var(--ink);border-radius:5px;padding:
 </head>
 <body>
 <canvas id="c"></canvas>
+<div id="loader"><div class="lt">جنگجوهای <span>کاغذی</span></div><div class="lbar"><i id="lfill"></i></div><div class="lp" id="lpct">۰٪</div></div>
 
 <div id="menu" class="overlay">
   <div class="sheet">
@@ -632,7 +637,6 @@ const WALLBG={cafe:['walls/cafe-plain.webp',1.5]};
 function drawPlainWall(){const b=WALLBG[game.theme];if(!b)return;const im=wallImg(b[0]);if(!im.complete||!im.naturalWidth)return;const h=CEIL-FL,w=h*b[1],hw=W/2/cam.z+60;
   for(let i=Math.floor((cam.x-hw)/w);i*w<cam.x+hw;i++){ctx.save();ctx.translate(i*w+(i&1?w:0),CEIL);ctx.scale(i&1?-1:1,-1);ctx.drawImage(im,0,0,w+1,h);ctx.restore()}}
 function wallImg(src){let im=WIMG[src];if(!im){im=WIMG[src]=new Image();im.src=src}return im}
-addEventListener('load',()=>setTimeout(()=>{for(const t in WALLBG)wallImg(WALLBG[t][0]);for(const t in WALLIMG)for(const[src]of WALLIMG[t])wallImg(src);for(const t in PROPIMG)for(const n of new Set(Object.values(PROPIMG[t]))){const src='props/'+t+'-'+n+'.webp';if(!PIMG[src]){PIMG[src]=new Image();PIMG[src].src=src}}},300));
 function wallPanel(s,theme,i,x){const[src,ar]=WALLIMG[theme][i],w=(CEIL-FL)*ar;wallImg(src);
   (s.imgs||(s.imgs=[])).push({src,x,w});(s.occ||(s.occ=[])).push([x+20,FL,x+w-20,CEIL]);return x+w}
 function drawWallImgs(list){const hw=W/2/cam.z+60;for(const p of list){if(p.x>cam.x+hw||p.x+p.w<cam.x-hw)continue;const im=wallImg(p.src);if(!im.complete||!im.naturalWidth)continue;
@@ -2294,6 +2298,17 @@ document.addEventListener('contextmenu',e=>e.preventDefault());
 
 // ================= boot =================
 resize();makeGrain();startDemo();
+// loading screen: the stage drawings, character cards and the font load behind a filling pencil bar, then the game shows
+(function bootLoad(){const box=$('loader');if(!box)return;const ims=[];
+  for(const t in WALLBG)ims.push(wallImg(WALLBG[t][0]));for(const t in WALLIMG)for(const[src]of WALLIMG[t])ims.push(wallImg(src));
+  for(const t in PROPIMG)for(const n of new Set(Object.values(PROPIMG[t]))){const src='props/'+t+'-'+n+'.webp';if(!PIMG[src]){PIMG[src]=new Image();PIMG[src].src=src}ims.push(PIMG[src])}
+  for(const c of CHARS)if(c.faceImg)ims.push(c.faceImg);
+  let font=0;(document.fonts?document.fonts.ready:Promise.resolve()).then(()=>font=1,()=>font=1);
+  const t0=performance.now();let shown=0;
+  const tick=()=>{const p=(ims.filter(i=>i.complete).length+font)/(ims.length+1);shown+=(p-shown)*.2;if(p>=1&&shown>.97)shown=1;
+    $('lfill').style.width=(shown*100).toFixed(1)+'%';$('lpct').textContent=fa(Math.round(shown*100))+'٪';
+    if(shown>=1||performance.now()-t0>12000){$('lfill').style.width='100%';box.classList.add('done');setTimeout(()=>box.remove(),500);return}
+    requestAnimationFrame(tick)};tick()})();
 let last=performance.now();
 function loop(t){const dt=clamp((t-last)/1000,0,.05);last=t;update(dt);if(net.on&&net.role==='host'&&game.phase!=='over')netHostTick();render();if(sel.prev.length&&!$('select').classList.contains('hidden'))drawPreviews(dt,sel.prev);if(shop.prev.length&&!$('shop').classList.contains('hidden'))drawPreviews(dt,shop.prev);requestAnimationFrame(loop)}
 requestAnimationFrame(loop);
