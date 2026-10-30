@@ -210,7 +210,7 @@ class Sketch{
   // inside a module, closed shapes pick up the module's colours in turn (a function palette picks by size)
   auto(pts,area){const P_=this.pal;if(!P_||area<(P_.min||260))return;const col=typeof P_==='function'?P_(area,this.pi++):P_[this.pi++%P_.length];if(col)this.tint(pts,col,this.pa||.55)}
   P(kind,w,a){const k=kind+'|'+w+'|'+a;let p=this.b.get(k);if(!p){p=new Path2D();this.b.set(k,p)}return p}
-  line(x1,y1,x2,y2,w=1.1,a=.8,passes=2){x1+=this.ox;x2+=this.ox;const r=this.r;
+  line(x1,y1,x2,y2,w=1.1,a=.8,passes=2){x1+=this.ox;x2+=this.ox;const r=this.r;const b=this.bb;if(b){b[0]=Math.min(b[0],x1,x2);b[1]=Math.min(b[1],y1,y2);b[2]=Math.max(b[2],x1,x2);b[3]=Math.max(b[3],y1,y2)}
     for(let i=0;i<passes;i++){const ww=Math.round(w*(.75+r()*.5)*4)/4,aa=Math.round(Math.min(1,a*(.7+r()*.4))*10)/10;pencilLine(this.P('s',ww,aa),r,x1,y1,x2,y2)}}
   poly(pts,closed=true,w,a,p){for(let i=0;i<pts.length-(closed?0:1);i++){const A=pts[i],B=pts[(i+1)%pts.length];this.line(A[0],A[1],B[0],B[1],w,a,p)}}
   rect(x,y,w,h,lw,a,p){const q=[[x,y],[x+w,y],[x+w,y+h],[x,y+h]];this.auto(q,Math.abs(w*h));this.poly(q,true,lw,a,p)}
@@ -245,7 +245,7 @@ function drawSketch(ctx,items,grain){let gr=!grain;
     else if(it.t==='fpaper'){ctx.globalAlpha=1;ctx.fillStyle=PAPER;ctx.fill(it.p)}
     else if(it.t==='fred'){ctx.fillStyle='#c8231d';ctx.fill(it.p)}
     else if(it.t[0]==='w'||it.t[0]==='c'){ctx.fillStyle=it.t.slice(1);ctx.globalAlpha=it.a*.7;ctx.fill(it.p)}
-    else{if(!gr){gr=1;pencilGrain(ctx)}ctx.lineWidth=it.w;ctx.strokeStyle='#2a2826';ctx.stroke(it.p)}}
+    else{if(!gr){gr=1;pencilGrain(ctx)}if(grain){ctx.globalAlpha=Math.min(1,it.a*1.35);ctx.lineWidth=it.w*1.3}else ctx.lineWidth=it.w;ctx.strokeStyle='#1f1d1b';ctx.stroke(it.p)}}
   ctx.globalAlpha=1}
 
 // ================= backgrounds: shop / cafe / dojo, built from modules =================
@@ -263,8 +263,11 @@ const JOKES={
  roof:['از لبه دور باش!','منبع آب، دست نزن','بالای شهر، پایین زمین','شب‌ها اینجا لاک‌پشت میاد'],
  desk:['روی میز، دعوا ممنوع!','رئیس آخر در کمین است','مداد تراش فقط برای مداد','این برگه رو خط نزن!','آدمک‌ها: اینجا کلاس درسه!'],
  alley:['اینجا امنه (به‌جز برای تو)','کوچه بن‌بسته، آدمک‌بسته!','خنجر دارم ولی دلم نمیاد','ممنوع: سلفی با غول','هر کی اینجا رد شد، رد داد']};
+// jokes are written only on bare wall: a slot that would cover a prop, a sign or another joke is moved aside or skipped
 function wallJokes(s,theme,x0,x1,L){const list=JOKES[theme];if(!list)return;let i=Math.floor(L()*list.length);
-  for(let x=x0+260+L()*140;x<x1-200;x+=420+L()*340){const t=list[i++%list.length],sz=19+L()*7|0,y=300+L()*170|0,w=t.length*sz*.5;
+  for(let x=x0+260+L()*140;x<x1-200;x+=420+L()*340){const t=list[i%list.length],sz=19+L()*7|0,w=t.length*sz*.5;let y=300+L()*170|0,px=null;
+    for(const yy of[y,y-90,y+80,y-170]){px=freeX(s,x,w/2+30,yy-14,yy+sz+8,160);if(px!=null){y=yy;break}}
+    if(px==null||y<FL+40||y>CEIL-150)continue;i++;x=px;(s.occ||(s.occ=[])).push([x-w/2-30,y-14,x+w/2+30,y+sz+8]);
     TXT(s,{x,y,t,s:sz,w:700,r:(L()-.5)*.1});const dy=y-5;s.line(x-w/2,dy,x+w/2,dy+(L()-.5)*5,.9,.7,1);
     if(L()<.6){s.line(x+w/2+10,y+sz*.4,x+w/2+26,y+sz*.4,.8,.7,1);s.line(x+w/2+20,y+sz*.4+6,x+w/2+26,y+sz*.4,.8,.7,1);s.line(x+w/2+20,y+sz*.4-6,x+w/2+26,y+sz*.4,.8,.7,1)}}}
 function shopItems(s,L,x0,x1,y){let x=x0;const pal=s.pal;s.pal=null;  // too many tiny items to colour cheaply
@@ -284,7 +287,7 @@ function lampDome(s,lx){s.line(lx,CEIL,lx,590,.8,.8,1);s.tint([[lx-24,560],[lx+2
 function lantern(s,lx){s.line(lx,CEIL-58,lx,586,.8,.8,1);s.tint(Array.from({length:16},(_,i)=>[lx+Math.cos(i/16*TAU)*22,556+Math.sin(i/16*TAU)*28]),curTheme==='bazaar'?'#e6a23c':'#e8463a',.6);s.tint(Array.from({length:16},(_,i)=>[lx+Math.cos(i/16*TAU)*60,520+Math.sin(i/16*TAU)*70]),'#ffe27a',.16);s.fill(Array.from({length:16},(_,i)=>[lx+Math.cos(i/16*TAU)*22,556+Math.sin(i/16*TAU)*28]),1,'paper');
   s.ell(lx,556,22,28,1.2,.9,2);for(const k of[-.55,0,.55])s.arc(lx,556,22*Math.abs(k)+2,28,-Math.PI/2,Math.PI/2*(k<0?-1:1)*-1,.6,.5);
   s.rect(lx-9,582,18,6,1,.85,1);s.rect(lx-9,524,18,6,1,.85,1);s.line(lx,524,lx,505,.8,.8,1);s.line(lx-2,505,lx+2,490,.6,.7,1);s.hatch(lx+4,532,16,46,70,4,.5,.25)}
-function banner(s,x,text,hw=290){s.line(x-hw+40,CEIL,x-hw+40,595,.8,.7,1);s.line(x+hw-40,CEIL,x+hw-40,595,.8,.7,1);
+function banner(s,x,text,hw=290){const fx=freeX(s,x,hw,505,600);if(fx!=null)x=fx;(s.occ||(s.occ=[])).push([x-hw,505,x+hw,CEIL]);s.line(x-hw+40,CEIL,x-hw+40,595,.8,.7,1);s.line(x+hw-40,CEIL,x+hw-40,595,.8,.7,1);
   s.fill([[x-hw,525],[x+hw,525],[x+hw,595],[x-hw,595]],1,'paper');s.tint([[x-hw,525],[x+hw,525],[x+hw,595],[x-hw,595]],PAL[curTheme].ban,.32);s.tint([[x-hw,525],[x+hw,525],[x+hw,533],[x-hw,533]],PAL[curTheme].ban,.8);s.tint([[x-hw,587],[x+hw,587],[x+hw,595],[x-hw,595]],PAL[curTheme].ban,.8);s.rect(x-hw,525,hw*2,70,1.6,.9,2);s.rect(x-hw+10,533,hw*2-20,54,.8,.5,1);
   TXT(s,{x,y:542,t:text,s:38,w:900})}
 function post(s,x){s.fill([[x-10,FL],[x+10,FL],[x+10,CEIL-50],[x-10,CEIL-50]],1,'paper');s.line(x-10,FL,x-10,CEIL-50,1.4,.9,2);s.line(x+10,FL,x+10,CEIL-50,1.4,.9,2);s.hatch(x+1,FL,9,CEIL-50-FL,70,6,.5,.25);s.rect(x-14,FL,28,10,1,.8,1)}
@@ -591,7 +594,10 @@ const BOSSLOOK=[
   {id:'b5',special:'chainw',sname:'گردباد زنجیر!',look:{eyes:1,shades:1,suit:'#1f1f1f',tee:'#d4d4d4',studs:1,bat:1,chain:1},face:'chars/boss5-face.png'},
   {id:'b6',special:'erase',sname:'پاک‌کن بزرگ!',look:{eyes:1,eraser:'#f2a6b4',band6:'#8fc4ea'},face:'chars/boss6-face.png'}];
 for(const c of CHARS)if(c.img){const im=new Image();im.src=c.img;c.faceImg=im}
-function place(s,theme,name,X,L){const m=MODS[theme][name];s.ox=X-m.a;s.pal=(MCOL[theme]||{})[name]||null;s.pi=0;m.f(s,L);s.pal=null;s.ox=0;return X+(m.b-m.a)}
+function place(s,theme,name,X,L){const m=MODS[theme][name];s.ox=X-m.a;s.pal=(MCOL[theme]||{})[name]||null;s.pi=0;s.bb=[1e9,1e9,-1e9,-1e9];m.f(s,L);(s.occ||(s.occ=[])).push(s.bb);s.bb=null;s.pal=null;s.ox=0;return X+(m.b-m.a)}
+const hitOcc=(s,x0,y0,x1,y1)=>(s.occ||[]).some(b=>x0<b[2]+12&&x1>b[0]-12&&y0<b[3]+10&&y1>b[1]-10);
+// slide a box sideways to the nearest spot where it covers nothing already drawn
+function freeX(s,x,hw,y0,y1,reach=700){for(let d=0;d<=reach;d+=30)for(const sg of d?[1,-1]:[1]){const c=x+sg*d;if(!hitOcc(s,c-hw,y0,c+hw,y1))return c}return null}
 function structure(s,theme,x0,x1){const L=mulberry32(77);s.ox=0;curTheme=theme;stageColor(s,theme,x0,x1);
   s.line(x0-500,FL,x1+500,FL,1.6,.9,3);s.line(x0-500,CEIL,x1+500,CEIL,1.4,.8,2);s.line(x0-500,CEIL-16,x1+500,CEIL-16,.8,.45,1);
   const hs=theme==='dojo'||theme==='temple'?[100,86,66,40,8,-34,-88,-156,-240,-345,-470]:[97,80,57,26,-14,-66,-132,-215,-320,-450];
@@ -631,7 +637,7 @@ function layoutStory(s,theme,len,bossX){const L=mulberry32(len*7+theme.length*99
   let x=-280,last='';while(x<len+300){let n;do n=names[L()*names.length|0];while(n===last);last=n;x=place(s,theme,n,x,L)+30+L()*90}
   const bns=[[380,THEME_TITLE[theme]],[bossX,'قلمرو رئیس']];for(const[bx,t]of bns)banner(s,bx,t);
   wallJokes(s,theme,-200,len+200,L);
-  for(let lx=-100;lx<len+200;lx+=470+L()*230){if(bns.some(b=>Math.abs(b[0]-lx)<330))continue;LAMP[theme](s,lx)}}
+  for(let lx=-100;lx<len+200;lx+=470+L()*230){if(bns.some(b=>Math.abs(b[0]-lx)<330)||hitOcc(s,lx-40,560,lx+40,CEIL-20))continue;LAMP[theme](s,lx)}}
 let BG=[],bgKey='';
 function buildBG(theme,mode,len,bossX){const key=theme+mode+len;if(key===bgKey)return;bgKey=key;
   BG=[0,1].map(v=>{BG_TEXT=[];const s=new Sketch(1000+v*7919);if(mode==='story')layoutStory(s,theme,len,bossX);else layoutBattle(s,theme);return{items:s.build(),text:BG_TEXT}})}
