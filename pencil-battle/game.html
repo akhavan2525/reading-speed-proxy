@@ -1141,17 +1141,25 @@ const VLINES={
  cv15_1:["یه سؤال، ما دقیقاً سر چی داریم دعوا می‌کنیم؟",'h',3.6],cv15_2:["چون تو دشمن منی!",'b',2.0],cv15_3:["خب کی گفته؟",'h',1.5],cv15_4:["سازنده بازی!",'b',1.7],cv15_5:["خدا نگم چیکارش کنه!!",'h',2.4],
   'a-r1':["راند اول!",'a',1.7],'a-r2':["راند دوم!",'a',1.7],'a-final':["راند آخر!",'a',1.6],'a-fight':['مبارزه!','a',1.5],'a-ko':['ناک‌اوت!','a',1.6]};
 // one voice at a time: a line only cuts in over a lower-priority one (pri 0 chatter, 1 normal, 2 story beats, 3 cutscene)
-const VO={a:{},cur:null,pri:-1,end:0,cd:{},
+// one voice at a time. The subtitle appears and the line's end is counted only once the audio really starts,
+// so a slow download can't put the caption ahead of the voice or let the next line cut this one short
+const VO={a:{},cur:null,pri:-1,end:0,cd:{},seq:0,
+  get(k){let a=this.a[k];if(!a){a=this.a[k]=new Audio();a.preload='auto';a.src='sfx/v-'+k+'.mp3';try{a.load()}catch(e){}}return a},
+  pre(k){if(k&&VLINES[k]&&!AU.mute&&game.mode!=='demo')this.get(k)},
   say(k,o={}){const L=VLINES[k];if(!L||game.mode==='demo')return 0;const pri=o.pri??1,t=nowS();
     if(o.delay){setTimeout(()=>{if(game.mode!=='demo'&&game.phase!=='over')this.say(k,{...o,delay:0})},o.delay*1000);return L[2]}
     if(o.chance!=null&&Math.random()>o.chance)return 0;if(t<(this.cd[k]||0))return 0;
     if(t<this.end&&pri<=this.pri&&pri<3)return 0;
-    this.cd[k]=t+(o.cd||0);this.stop();this.pri=pri;this.k=k;this.end=t+L[2];
-    if(L[1]!=='a')game.sub={text:L[0],who:L[1],t:0,dur:L[2]+.5};
-    if(!AU.mute)try{let a=this.a[k];if(!a)a=this.a[k]=new Audio('sfx/v-'+k+'.mp3');a.currentTime=0;a.volume=1;a.play().catch(()=>{});this.cur=a;
-      if(MUS.a){MUS.a.volume=.15;clearTimeout(this.t);this.t=setTimeout(()=>{if(MUS.a)MUS.a.volume=.45},L[2]*1000+300)}}catch(e){}
-    return L[2]},
-  stop(){if(this.cur){try{this.cur.pause()}catch(e){}this.cur=null}this.end=0;this.pri=-1}};
+    this.cd[k]=t+(o.cd||0);this.stop();this.pri=pri;this.k=k;const id=this.seq,dur=L[2];
+    const start=()=>{if(this.seq!==id)return;this.end=nowS()+dur;if(L[1]!=='a')game.sub={text:L[0],who:L[1],t:0,dur:dur+.5};
+      if(MUS.a&&!AU.mute){MUS.a.volume=.15;clearTimeout(this.t);this.t=setTimeout(()=>{if(MUS.a)MUS.a.volume=.45},dur*1000+300)}};
+    if(AU.mute){start();return dur}
+    this.end=t+dur+2.5;  // still loading: hold the floor
+    try{const a=this.get(k);this.cur=a;a.currentTime=0;a.volume=1;a.addEventListener('playing',start,{once:true});
+      const pr=a.play();if(pr&&pr.catch)pr.catch(()=>start());
+      setTimeout(()=>{if(this.seq===id&&this.end>nowS()+dur+.1){a.removeEventListener('playing',start);try{a.pause()}catch(e){}this.end=0;this.pri=-1}},2500)}catch(e){start()}
+    return dur},
+  stop(){this.seq++;if(this.cur){try{this.cur.pause()}catch(e){}this.cur=null}this.end=0;this.pri=-1}};
 const speak=(k,pri=2)=>VO.say(k,{pri});
 const CONVO=[["cv1_1", "cv1_2", "cv1_3"], ["cv2_1", "cv2_2", "cv2_3", "cv2_4"], ["cv3_1", "cv3_2", "cv3_3", "cv3_4"], ["cv4_1", "cv4_2", "cv4_3", "cv4_4"], ["cv5_1", "cv5_2", "cv5_3"], ["cv6_1", "cv6_2", "cv6_3", "cv6_4"], ["cv7_1", "cv7_2", "cv7_3"], ["cv8_1", "cv8_2", "cv8_3", "cv8_4"], ["cv9_1", "cv9_2", "cv9_3", "cv9_4", "cv9_5"], ["cv10_1", "cv10_2", "cv10_3", "cv10_4"], ["cv11_1", "cv11_2", "cv11_3", "cv11_4"], ["cv12_1", "cv12_2", "cv12_3", "cv12_4"], ["cv13_1", "cv13_2", "cv13_3", "cv13_4", "cv13_5"], ["cv14_1", "cv14_2", "cv14_3", "cv14_4"], ["cv15_1", "cv15_2", "cv15_3", "cv15_4", "cv15_5"]];
 const POOLS={taunt:Object.keys(VLINES).filter(k=>/^tz\d+$/.test(k)),convo:CONVO.map((_,i)=>String(i))};
@@ -1160,7 +1168,10 @@ for(const k in VLINES){const m=/^(hit|hurt|protest|low|wow|lost|idle|blow)\d+([h
 POOLS.hurth.push('hurt');POOLS.lowh.push('low');POOLS.losth.push('lose');POOLS.loste.push('e-ko');
 const poolBag={};
 function pick(pool){const all=POOLS[pool]||[];if(!all.length)return null;let bag=poolBag[pool];if(!bag||!bag.length){bag=poolBag[pool]=all.slice().sort(()=>Math.random()-.5);if(bag[0]===VO.lastOf?.[pool]&&bag.length>1)bag.push(bag.shift())}
-  const k=bag.shift();(VO.lastOf||(VO.lastOf={}))[pool]=k;return k}
+  const k=bag.shift();(VO.lastOf||(VO.lastOf={}))[pool]=k;if(bag.length)preNext(pool,bag[0]);return k}
+function preNext(pool,k){if(pool==='convo')for(const l of CONVO[+k]||[])VO.pre(l);else VO.pre(k)}
+// at the start of a round/stage, fetch the next line of every pool (a few files, not all of them)
+function primeVoices(){for(const pool in POOLS){const all=POOLS[pool];if(!all.length)continue;let bag=poolBag[pool];if(!bag||!bag.length){bag=poolBag[pool]=all.slice().sort(()=>Math.random()-.5)}preNext(pool,bag[0])}}
 function sayPool(pool,o){const k=pick(pool);return k?VO.say(k,o):0}
 // fight chatter: the speaker's own voice (hero h, rival/henchman e, stage boss b), then a quiet gap so lines stay rare
 const vWho=f=>f===P1?'h':f.ch&&f.ch.bossOf!=null?'b':'e';
@@ -1638,12 +1649,12 @@ function startDemo(){game.mode='demo';const th=['shop','cafe','dojo','temple','a
   const c1=PLAYABLE[Math.random()*PLAYABLE.length|0],c2=PLAYABLE[Math.random()*PLAYABLE.length|0];
   P1=new Fighter({team:0,c:COLORS.black,ch:c1,weapon:c1.weapon,x:-170,face:1});P2=new Fighter({team:1,c:COLORS.red,ch:c2,weapon:c2.weapon,x:170,face:-1});
   fighters=[P1,P2];P1.ai=new AI(P1,'medium');P2.ai=new AI(P2,'medium');ctrl=[P1.ai,P2.ai];props=battleProps(th);pickups=[];startRound()}
-function startRound(){game.cine=null;game.endLim=0;game.introLim=0;game.soul=null;game.dark=0;P1.reset(-170,1);P2.reset(170,-1);fx=[];speed=null;projs=[];game.timer=60;game.endT=0;game.winner=null;game.slow=0;game.fin=null;cam.x=0;
+function startRound(){primeVoices();VO.pre(game.round===3?'a-final':'a-r'+game.round);VO.pre('a-fight');game.cine=null;game.endLim=0;game.introLim=0;game.soul=null;game.dark=0;P1.reset(-170,1);P2.reset(170,-1);fx=[];speed=null;projs=[];game.timer=60;game.endT=0;game.winner=null;game.slow=0;game.fin=null;cam.x=0;
   if(game.mode==='demo'){game.phase='fight';game.msgs=[];return}
   game.phase='intro';game.introT=0;game.introLim=0;say(game.round===3?'راند آخر':game.round===2?'راند دوم':'راند اول',1.1);VO.say(game.round===3?'a-final':'a-r'+game.round,{pri:2});
   if(game.round>1&&game.mode==='battle'&&!net.on&&Math.random()<.4){startGag(game.lastLoser||P1,'head',.3);game.introLim=3.05}
   if(game.round===1&&game.mode==='battle'){const k=pick('taunt');if(k){game.introLim=1.75+VLINES[k][2]+.15;VO.say(k,{pri:2,delay:1.7})}}}
-function startStory(i,keepMeter){const st=STORY[i];game.cine=null;game.endLim=0;game.soul=null;game.dark=0;story.idleT=0;game.sub=null;game.mode='story';story.stage=i;story.len=st.len;story.waveIdx=0;story.lock=null;story.spawnQ=[];story.boss=null;story.result=null;story.arrowT=0;
+function startStory(i,keepMeter){const st=STORY[i];primeVoices();VO.pre('st'+(i+1));game.cine=null;game.endLim=0;game.soul=null;game.dark=0;story.idleT=0;game.sub=null;game.mode='story';story.stage=i;story.len=st.len;story.waveIdx=0;story.lock=null;story.spawnQ=[];story.boss=null;story.result=null;story.arrowT=0;
   setTheme(st.theme,'story',st.len,st.boss.x);const m=P1&&keepMeter?P1.meter:0;
   const ew=SAVE.equip.weapon&&SHOP.find(i=>i.id===SAVE.equip.weapon),U=SAVE.up;
   P1=new Fighter({team:0,c:COLORS.black,ch:{id:'hero',name:'قهرمان',weapon:'none',special:'special',sname:'طوفان!',look:{}},weapon:ew?ew.base:st.weapon,x:150,face:1,hp:100+15*U.hp,dmg:1+.1*U.pow});P1.spd*=1+.06*U.spd;
@@ -1669,7 +1680,7 @@ function startBossCine(b){buzz([60,40,60,40,90]);const st=STORY[story.stage];P1.
   for(const f of fighters){f.vx=0}game.cine={t:0,lt:0,boss:b,focus:b,lines:CONVO[+pick('convo')],i:0,next:.7,name:st.boss.name};game.msgs=[];AU.ko();shake(10)}
 // boss scene: lines alternate between boss and hero; the spotlight and close-up follow whoever is talking
 function cineUpdate(dt){const c=game.cine;c.t+=dt;
-  if(!c.skip&&c.t>=c.next){if(c.i<c.lines.length){const k=c.lines[c.i++],sp=VLINES[k][1]==='b'?c.boss:P1;if(sp!==c.focus)c.lt=c.t;c.focus=sp;VO.say(k,{pri:3});c.next=c.t+VLINES[k][2]+.25}else c.done=1}
+  if(!c.skip&&c.t>=c.next&&nowS()>=VO.end+.25){if(c.i<c.lines.length){const k=c.lines[c.i++],sp=VLINES[k][1]==='b'?c.boss:P1;if(sp!==c.focus)c.lt=c.t;c.focus=sp;VO.say(k,{pri:3});c.next=c.t+.3}else c.done=1}
   if(c.done||c.skip){if(c.skip)VO.stop();game.cine=null;c.boss.state='stand';P1.state='stand';say(c.name+'!',1.4,1.2,'#cf241d');AU.sup()}}
 function koEvent(att,def,byFin){if(def===P1||att===P1)buzz([90,50,140]);
   if(game.mode==='story'){
