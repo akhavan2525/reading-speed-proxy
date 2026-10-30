@@ -536,7 +536,7 @@ const THEME_LIST={shop:['shelf','plant','window','counter','fridge','door'],cafe
   temple:['torii','lant','sakura','hall','swords','bamboo'],alley:['brick','dumpster','escape','posters','fence','crates','door'],desk:['notebook','pencils','ruler','books','mug','sticky','sharpener'],bazaar:['arch','carpets','spices','lanternsB','pots'],zurkhaneh:['dome','gowd','meels','drum','plaques'],beach:['sea','palm','umbrella','castle','sign'],roof:['water','antenna','skyline','ac','laundry']};
 const THEME_TITLE={shop:'سوپرمارکت مداد',cafe:'کافه مداد',dojo:'باشگاه رزمی',temple:'معبد مداد',alley:'کوچه‌ی مداد',desk:'میز تحریر',bazaar:'بازار سنتی',zurkhaneh:'زورخانه',beach:'ساحل',roof:'پشت‌بام شبانه'};
 // stage colours: wall, floor, ceiling and title banner, plus each module's colours (used in turn by its shapes)
-const PAL={shop:{wall:'#f2dc9b',floor:'#b9cfd8',ban:'#e85d3a'},cafe:{wall:'#e3b98a',floor:'#a8723e',ban:'#7a4a2a'},dojo:{wall:'#efd9a6',floor:'#cfae6a',ban:'#c0392b'},
+const PAL={shop:{wall:'#f8e6bd',wa:1.3,floor:'#b9cfd8',ban:'#e85d3a'},cafe:{wall:'#e3b98a',floor:'#a8723e',ban:'#7a4a2a'},dojo:{wall:'#efd9a6',floor:'#cfae6a',ban:'#c0392b'},
   temple:{wall:'#f0cdb4',floor:'#b9a58a',ban:'#c0392b'},alley:{wall:'#bfae9b',floor:'#8f969c',ban:'#4f6f8f'},desk:{wall:'#dbe9f5',floor:'#c58a4e',ban:'#f2c21b'},
   bazaar:{wall:'#efc685',floor:'#cfa46a',ban:'#2f6fa0'},zurkhaneh:{wall:'#e7d6b0',floor:'#c49a62',ban:'#2f8f6f'},beach:{wall:'#9fd3f3',floor:'#f0d79a',ban:'#e8463a',sky:1},
   roof:{wall:'#1c2440',floor:'#7b838e',ban:'#f2c21b',sky:1,night:1}};
@@ -609,8 +609,8 @@ function structure(s,theme,x0,x1){const L=mulberry32(77);s.ox=0;curTheme=theme;s
 function cloud(s,x,y,w){const pts=[];for(let i=0;i<=24;i++){const a=i/24*TAU,r=1+.18*Math.sin(a*5);pts.push([x+Math.cos(a)*w*r,y+Math.sin(a)*w*.34*r])}s.tint(pts,'#ffffff',.8);s.poly(pts,true,.8,.45,1)}
 function stageColor(s,theme,x0,x1){const P_=PAL[theme],X0=x0-1400,X1=x1+1400,L=mulberry32(theme.length*31+7),band=(y0,y1,col,a)=>s.wash([[X0,y0],[X1,y0],[X1,y1],[X0,y1]],col,a);
   band(-700,FL,P_.floor,P_.night?.55:.42);band(FL-34,FL,P_.floor,.35);
-  band(FL,P_.sky?CEIL+900:CEIL,P_.wall,P_.night?1.15:P_.sky?.6:.4);if(!P_.sky)band(CEIL,CEIL+900,P_.wall,.62);
-  if(['shop','cafe','dojo','temple'].includes(theme)){band(FL,FL+58,P_.ban,.16);s.line(X0,FL+58,X1,FL+58,.8,.45,1)}
+  band(FL,P_.sky?CEIL+900:CEIL,P_.wall,P_.wa||(P_.night?1.15:P_.sky?.6:.4));if(!P_.sky)band(CEIL,CEIL+900,P_.wall,.62);
+  if(['shop','cafe','dojo','temple'].includes(theme)&&!WALLIMG[theme]){band(FL,FL+58,P_.ban,.16);s.line(X0,FL+58,X1,FL+58,.8,.45,1)}
   if(theme==='bazaar'||theme==='zurkhaneh'){const c=theme==='bazaar'?['#2f6fa0','#e6b84c']:['#2f8f6f','#e6c88a'];band(FL+26,FL+64,c[1],.35);
     for(let x=X0,i=0;x<X1;x+=38,i++){const d=[[x,FL+45],[x+19,FL+62],[x+38,FL+45],[x+19,FL+28]];s.tint(d,c[i%2],.6);if(Math.abs(x-(x0+x1)/2)<x1-x0+600)s.poly(d,true,.6,.4,1)}}
   if(theme==='alley')for(let x=x0+300;x<x1;x+=700+L()*600){const y=FL+90+L()*120,pts=[];for(let i=0;i<14;i++){const a=i/14*TAU,r=(1+.3*Math.sin(a*3+x))*(50+L()*20);pts.push([x+Math.cos(a)*r*1.6,y+Math.sin(a)*r*.6])}
@@ -624,7 +624,15 @@ function stageColor(s,theme,x0,x1){const P_=PAL[theme],X0=x0-1400,X1=x1+1400,L=m
     for(let x=x0+500;x<x1+300;x+=2600){const y=CEIL-40,c=Array.from({length:24},(_,i)=>[x+Math.cos(i/24*TAU)*38,y+Math.sin(i/24*TAU)*38]);s.tint(c,'#fff0a8',.95);s.poly(c,true,1.1,.7,1);
       s.tint(Array.from({length:24},(_,i)=>[x+Math.cos(i/24*TAU)*90,y+Math.sin(i/24*TAU)*90]),'#fff0a8',.12)}}
   if(theme==='desk')for(let i=0;i<(X1-X0)/90;i++){const x=X0+L()*(X1-X0),y=-20-L()*480;s.line(x,y,x+60+L()*120,y+(L()-.5)*6,.6,.3,1)}}
+// hand-drawn wall panels per stage; each covers the wall from the floor line to the ceiling
+const WALLIMG={shop:[['walls/shop1.webp',1.63],['walls/shop2.webp',1.574],['walls/shop3.webp',1.584]]},WIMG={};  // [file, width/height]
+function wallImg(src){let im=WIMG[src];if(!im){im=WIMG[src]=new Image();im.src=src}return im}
+function wallPanel(s,theme,i,x){const[src,ar]=WALLIMG[theme][i],w=(CEIL-FL)*ar;wallImg(src);
+  (s.imgs||(s.imgs=[])).push({src,x,w});(s.occ||(s.occ=[])).push([x+20,FL,x+w-20,CEIL]);return x+w}
+function drawWallImgs(list){const hw=W/2/cam.z+60;for(const p of list){if(p.x>cam.x+hw||p.x+p.w<cam.x-hw)continue;const im=wallImg(p.src);if(!im.complete||!im.naturalWidth)continue;
+  ctx.save();ctx.translate(p.x,CEIL);ctx.scale(1,-1);ctx.drawImage(im,0,0,p.w,CEIL-FL);ctx.restore()}}
 function layoutBattle(s,theme){const L=mulberry32(5);structure(s,theme,-950,950);
+  if(WALLIMG[theme]){let x=-1330;for(const i of[2,0,1])x=wallPanel(s,theme,i,x)-24;return}
   if(theme==='shop'){for(const n of THEME_LIST.shop)place(s,'shop',n,MODS.shop[n].a,L);lampCone(s,-390);lampCone(s,330);banner(s,0,THEME_TITLE.shop)}
   if(theme==='cafe'){place(s,'cafe','window',-940,L);place(s,'cafe','tables',-600,L);place(s,'cafe','counter',-340,L);place(s,'cafe','pics',150,L);place(s,'cafe','sacks',340,L);place(s,'cafe','door',668,L);
     for(const x of[-770,330,560])lampDome(s,x);banner(s,-108,THEME_TITLE.cafe,260)}
@@ -634,13 +642,16 @@ function layoutBattle(s,theme){const L=mulberry32(5);structure(s,theme,-950,950)
     for(const lx of[-700,-380,400,720])LAMP[theme](s,lx);banner(s,0,THEME_TITLE[theme])}
   wallJokes(s,theme,-940,940,L)}
 function layoutStory(s,theme,len,bossX){const L=mulberry32(len*7+theme.length*99),names=THEME_LIST[theme];structure(s,theme,-300,len+300);
-  let x=-280,last='';while(x<len+300){let n;do n=names[L()*names.length|0];while(n===last);last=n;x=place(s,theme,n,x,L)+30+L()*90}
+  const keep=[[380,330],[bossX,330]];   // wall left bare for the stage title and the boss sign
+  if(WALLIMG[theme]){const n=WALLIMG[theme].length;let x=-280,k=0,prev=-1;while(x<len+300){const free=keep.find(([c,h])=>x+850>c-h&&x<c+h);if(free){x=free[0]+free[1]+20;continue}
+      let i;do i=L()*n|0;while(i===prev&&n>1);prev=i;x=wallPanel(s,theme,i,x)-30+L()*50}}
+  else{let x=-280,last='';while(x<len+300){let n;do n=names[L()*names.length|0];while(n===last);last=n;x=place(s,theme,n,x,L)+30+L()*90}}
   const bns=[[380,THEME_TITLE[theme]],[bossX,'قلمرو رئیس']];for(const[bx,t]of bns)banner(s,bx,t);
   wallJokes(s,theme,-200,len+200,L);
   for(let lx=-100;lx<len+200;lx+=470+L()*230){if(bns.some(b=>Math.abs(b[0]-lx)<330)||hitOcc(s,lx-40,560,lx+40,CEIL-20))continue;LAMP[theme](s,lx)}}
 let BG=[],bgKey='';
 function buildBG(theme,mode,len,bossX){const key=theme+mode+len;if(key===bgKey)return;bgKey=key;
-  BG=[0,1].map(v=>{BG_TEXT=[];const s=new Sketch(1000+v*7919);if(mode==='story')layoutStory(s,theme,len,bossX);else layoutBattle(s,theme);return{items:s.build(),text:BG_TEXT}})}
+  BG=[0,1].map(v=>{BG_TEXT=[];const s=new Sketch(1000+v*7919);if(mode==='story')layoutStory(s,theme,len,bossX);else layoutBattle(s,theme);return{items:s.build(),text:BG_TEXT,imgs:s.imgs||[]}})}
 
 // ================= skeleton & poses =================
 const SEG={T:46,N:8,HR:13,UA:26,FA:25,TH:33,SH:33};
@@ -2125,7 +2136,7 @@ function render(){
   const boil=Math.abs(Math.floor(game.rt*7))%2;
   ctx.setTransform(DPR,0,0,DPR,0,0);ctx.fillStyle=PAPER;ctx.fillRect(0,0,W,H);
   const sx=(Math.random()-.5)*game.shake*2,sy=(Math.random()-.5)*game.shake*2;
-  worldTf(sx,sy);drawSketch(ctx,BG[boil].items,1);drawFloorDyn(boil);drawBGText(boil);
+  worldTf(sx,sy);drawSketch(ctx,BG[boil].items,1);drawWallImgs(BG[boil].imgs);drawFloorDyn(boil);drawBGText(boil);
   if(game.superT>0||game.fin||game.dark>0){ctx.setTransform(DPR,0,0,DPR,0,0);ctx.fillStyle=game.fin?'rgba(40,8,6,.62)':game.dark>0?`rgba(14,10,8,${Math.min(.58,game.dark*1.5)})`:`rgba(20,18,16,${Math.min(.45,game.superT*1.2)})`;ctx.fillRect(0,0,W,H);worldTf(sx,sy)}
   drawProps(boil);drawPickups();
   if(game.cine){const c=game.cine,k=Math.min(1,c.t*2.5),f=c.focus,[fx_,fy_]=toScreen(f.x,f.y+105*f.sc),R0=150*f.sc*cam.z;ctx.setTransform(DPR,0,0,DPR,0,0);

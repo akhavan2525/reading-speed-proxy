@@ -14,6 +14,7 @@ const TYPES = {
   '.webmanifest': 'application/manifest+json; charset=utf-8',
   '.mp3': 'audio/mpeg',
   '.png': 'image/png',
+  '.webp': 'image/webp',
   '.svg': 'image/svg+xml',
   '.apk': 'application/vnd.android.package-archive',
 };
