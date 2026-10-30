@@ -1139,7 +1139,7 @@ const VLINES={
  cv13_1:["قبل مبارزه می‌شه یه خواهشی کنم؟",'h',3.2],cv13_2:["بگو!",'b',0.8],cv13_3:["اگه بردی، به بقیه نگو خیلی راحت بود!",'h',3.3],cv13_4:["چرا؟",'b',1.0],cv13_5:["مامانم فکر می‌کنه من خیلی خفنم!",'h',2.7],
  cv14_1:["از من بترس!",'b',1.5],cv14_2:["داداش من از پیامک بانک بیشتر می‌ترسم!",'h',3.1],cv14_3:["من نابودت می‌کنم!",'b',2.0],cv14_4:["خب اونم همین کارو ماهی یه بار می‌کنه!",'h',3.7],
  cv15_1:["یه سؤال، ما دقیقاً سر چی داریم دعوا می‌کنیم؟",'h',3.6],cv15_2:["چون تو دشمن منی!",'b',2.0],cv15_3:["خب کی گفته؟",'h',1.5],cv15_4:["سازنده بازی!",'b',1.7],cv15_5:["خدا نگم چیکارش کنه!!",'h',2.4],
-  'a-r1':['راند یک!','a',1.6],'a-r2':['راند دو!','a',1.6],'a-final':['راند آخر!','a',1.8],'a-fight':['مبارزه!','a',1.5],'a-ko':['ناک‌اوت!','a',1.6]};
+  'a-r1':["راند اول!",'a',1.7],'a-r2':["راند دوم!",'a',1.7],'a-final':["راند آخر!",'a',1.6],'a-fight':['مبارزه!','a',1.5],'a-ko':['ناک‌اوت!','a',1.6]};
 // one voice at a time: a line only cuts in over a lower-priority one (pri 0 chatter, 1 normal, 2 story beats, 3 cutscene)
 const VO={a:{},cur:null,pri:-1,end:0,cd:{},
   say(k,o={}){const L=VLINES[k];if(!L||game.mode==='demo')return 0;const pri=o.pri??1,t=nowS();
@@ -1640,7 +1640,7 @@ function startDemo(){game.mode='demo';const th=['shop','cafe','dojo','temple','a
   fighters=[P1,P2];P1.ai=new AI(P1,'medium');P2.ai=new AI(P2,'medium');ctrl=[P1.ai,P2.ai];props=battleProps(th);pickups=[];startRound()}
 function startRound(){game.cine=null;game.endLim=0;game.introLim=0;game.soul=null;game.dark=0;P1.reset(-170,1);P2.reset(170,-1);fx=[];speed=null;projs=[];game.timer=60;game.endT=0;game.winner=null;game.slow=0;game.fin=null;cam.x=0;
   if(game.mode==='demo'){game.phase='fight';game.msgs=[];return}
-  game.phase='intro';game.introT=0;game.introLim=0;say(game.round===3?'راند آخر':'راند '+fa(game.round),1.1);VO.say(game.round===3?'a-final':'a-r'+game.round,{pri:2});
+  game.phase='intro';game.introT=0;game.introLim=0;say(game.round===3?'راند آخر':game.round===2?'راند دوم':'راند اول',1.1);VO.say(game.round===3?'a-final':'a-r'+game.round,{pri:2});
   if(game.round>1&&game.mode==='battle'&&!net.on&&Math.random()<.4){startGag(game.lastLoser||P1,'head',.3);game.introLim=3.05}
   if(game.round===1&&game.mode==='battle'){const k=pick('taunt');if(k){game.introLim=1.75+VLINES[k][2]+.15;VO.say(k,{pri:2,delay:1.7})}}}
 function startStory(i,keepMeter){const st=STORY[i];game.cine=null;game.endLim=0;game.soul=null;game.dark=0;story.idleT=0;game.sub=null;game.mode='story';story.stage=i;story.len=st.len;story.waveIdx=0;story.lock=null;story.spawnQ=[];story.boss=null;story.result=null;story.arrowT=0;
