@@ -628,6 +628,7 @@ function stageColor(s,theme,x0,x1){const P_=PAL[theme],X0=x0-1400,X1=x1+1400,L=m
 // hand-drawn wall panels per stage; each covers the wall from the floor line to the ceiling
 const WALLIMG={shop:[['walls/shop1.webp',1.552],['walls/shop2.webp',1.556],['walls/shop3.webp',1.586]],cafe:[['walls/cafe1.webp',1.5],['walls/cafe2.webp',1.5],['walls/cafe3.webp',1.5]]},WIMG={};  // [file, width/height]
 function wallImg(src){let im=WIMG[src];if(!im){im=WIMG[src]=new Image();im.src=src}return im}
+addEventListener('load',()=>setTimeout(()=>{for(const t in WALLIMG)for(const[src]of WALLIMG[t])wallImg(src);for(const t in PROPIMG)for(const n of new Set(Object.values(PROPIMG[t]))){const src='props/'+t+'-'+n+'.webp';if(!PIMG[src]){PIMG[src]=new Image();PIMG[src].src=src}}},300));
 function wallPanel(s,theme,i,x){const[src,ar]=WALLIMG[theme][i],w=(CEIL-FL)*ar;wallImg(src);
   (s.imgs||(s.imgs=[])).push({src,x,w});(s.occ||(s.occ=[])).push([x+20,FL,x+w-20,CEIL]);return x+w}
 function drawWallImgs(list){const hw=W/2/cam.z+60;for(const p of list){if(p.x>cam.x+hw||p.x+p.w<cam.x-hw)continue;const im=wallImg(p.src);if(!im.complete||!im.naturalWidth)continue;
@@ -1165,7 +1166,7 @@ const VO={a:{},cur:null,pri:-1,end:0,cd:{},seq:0,
   get(k){let a=this.a[k];if(!a){a=this.a[k]=new Audio();a.preload='auto';a.src='sfx/v-'+k+'.mp3';try{a.load()}catch(e){}}return a},
   pre(k){if(k&&VLINES[k]&&!AU.mute&&game.mode!=='demo')this.get(k)},
   say(k,o={}){const L=VLINES[k];if(!L||game.mode==='demo')return 0;const pri=o.pri??1,t=nowS();
-    if(o.delay){setTimeout(()=>{if(game.mode!=='demo'&&game.phase!=='over')this.say(k,{...o,delay:0})},o.delay*1000);return L[2]}
+    if(o.delay){setTimeout(()=>{if(game.mode!=='demo'&&game.phase!=='over'&&!(o.intro&&game.phase!=='intro'))this.say(k,{...o,delay:0})},o.delay*1000);return L[2]}
     if(o.chance!=null&&Math.random()>o.chance)return 0;if(t<(this.cd[k]||0))return 0;
     if(t<this.end&&pri<=this.pri&&pri<3)return 0;
     this.cd[k]=t+(o.cd||0);this.stop();this.pri=pri;this.k=k;const id=this.seq,dur=L[2];
@@ -1671,7 +1672,7 @@ function startRound(){primeVoices();VO.pre(game.round===3?'a-final':'a-r'+game.r
   if(game.mode==='demo'){game.phase='fight';game.msgs=[];return}
   game.phase='intro';game.introT=0;game.introLim=0;say(game.round===3?'راند آخر':game.round===2?'راند دوم':'راند اول',1.1);VO.say(game.round===3?'a-final':'a-r'+game.round,{pri:2});
   if(game.round>1&&game.mode==='battle'&&!net.on&&Math.random()<.4){startGag(game.lastLoser||P1,'head',.3);game.introLim=3.05}
-  if(game.round===1&&game.mode==='battle'){const k=pick('taunt');if(k){game.introLim=1.75+VLINES[k][2]+.15;VO.say(k,{pri:2,delay:1.7})}}}
+  if(game.round===1&&game.mode==='battle'){const k=pick('taunt');if(k){game.introLim=1.5+VLINES[k][2];VO.say(k,{pri:3,delay:1.45,intro:1})}}}
 function startStory(i,keepMeter){const st=STORY[i];primeVoices();VO.pre('st'+(i+1));game.cine=null;game.endLim=0;game.soul=null;game.dark=0;story.idleT=0;game.sub=null;game.mode='story';story.stage=i;story.len=st.len;story.waveIdx=0;story.lock=null;story.spawnQ=[];story.boss=null;story.result=null;story.arrowT=0;
   setTheme(st.theme,'story',st.len,st.boss.x);const m=P1&&keepMeter?P1.meter:0;
   const ew=SAVE.equip.weapon&&SHOP.find(i=>i.id===SAVE.equip.weapon),U=SAVE.up;
@@ -1734,7 +1735,11 @@ function update(rdt){
     const B=story.boss;if(game.mode==='story'&&B&&!B.lowSaid&&B.hp>0&&B.hp<B.maxHp*.3){B.lowSaid=true;VO.say('blow',{pri:1})}}
   for(const c of ctrl)if(c&&!c.me.gone)c.update(rdt);ctrl=ctrl.filter(c=>!c.me.gone);
   const m=game.msgs[0];if(m){m.t+=rdt;if(m.t>m.dur)game.msgs.shift()}
-  if(game.phase==='intro'){game.introT+=rdt;const lim=game.mode==='story'?1.5:(game.introLim||1.7);if(game.introT>lim){game.phase='fight';if(game.mode==='battle'){say('مبارزه!',.8,1.25,'#cf241d');AU.sup();VO.say('a-fight',{pri:2})}}}
+  if(game.phase==='intro'){game.introT+=rdt;const lim=game.mode==='story'?1.5:(game.introLim||1.7);
+    // punch or kick skips the battle intro (taunt, head gag)
+    const skip=game.mode==='battle'&&!net.on&&game.introT>.7&&game.introT<lim&&(nowS()-human.buf.punch<.1||nowS()-human.buf.kick<.1);
+    if(skip){if(VO.k&&/^tz/.test(VO.k))VO.stop();game.sub=null;for(const f of fighters)if(f.state==='gag'){f.state='stand';f.gag=null}}
+    if(game.introT>lim||skip){game.phase='fight';if(game.mode==='battle'){say('مبارزه!',.8,1.25,'#cf241d');AU.sup();VO.say('a-fight',{pri:3})}}}
   if(game.superT>0)game.superT-=rdt;
   game.shake*=Math.exp(-rdt*12);game.dark=Math.max(0,(game.dark||0)-rdt);if(game.soul)game.soul.t+=rdt;game.zp*=Math.exp(-rdt*4);game.flashT=Math.max(0,game.flashT-rdt);
   updFx(rdt);
@@ -2160,8 +2165,7 @@ function render(){
   if(game.cine){const b=H*.1*Math.min(1,game.cine.t*3);ctx.fillStyle='#0d0b0a';ctx.fillRect(0,0,W,b);ctx.fillRect(0,H-b,W,b);
     ctx.font=`900 ${clamp(H*.04,16,28)}px Vazirmatn, Tahoma`;ctx.fillStyle='#ff4a32';ctx.textAlign='center';ctx.textBaseline='middle';ctx.direction='rtl';ctx.fillText(game.cine.name,W/2,b/2);
     ctx.font=`700 ${clamp(H*.022,11,15)}px Vazirmatn, Tahoma`;ctx.fillStyle='rgba(243,239,230,.55)';ctx.fillText(isTouch?'برای رد شدن مشت بزن':'برای رد شدن J بزن',W/2,H-b/2)
-    const c=game.cine,fi=c.boss.ch&&c.boss.ch.faceImg,k=Math.min(1,(c.t-Math.max(.45,c.lt))*3);  // boss close-up art slides in while the boss talks
-    if(fi&&fi.complete&&fi.naturalWidth&&c.focus===c.boss&&k>0){const h=H*.36,w=h*fi.naturalWidth/fi.naturalHeight;ctx.save();ctx.globalAlpha=k;ctx.drawImage(fi,W-w-10+(1-k)*80,b+6,w,h);ctx.restore()}}
+}
   else if(game.fin){const b=H*.11;ctx.fillStyle='#0d0b0a';ctx.fillRect(0,0,W,b);ctx.fillRect(0,H-b,W,b);
     ctx.font=`900 ${clamp(H*.035,14,24)}px Vazirmatn, Tahoma`;ctx.fillStyle='#ff4a32';ctx.textAlign='center';ctx.textBaseline='middle';ctx.direction='rtl';ctx.fillText('— فینیشر —',W/2,b/2)}
   else{drawHUD(boil);drawFinPrompt();drawFinHint()}
