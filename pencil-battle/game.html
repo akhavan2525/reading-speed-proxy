@@ -1010,6 +1010,7 @@ const VLINES={
   st6:['روی میز تحریر؟ اینجا دیگه کجاست؟!','h',3.3],b6:['اینجا آخرِ خطه! با شمشیرِ نور خط‌خطیت می‌کنم!','b',4.5],
   st7:['بازار شلوغه... حواسم به جیبم باشه!','h',3.5],st8:['زورخونه؟ امیدوارم میل‌ها سمت من نیان!','h',4.2],st9:['ساحل! آفتاب، دریا... و یه عالمه کتک!','h',5.6],st10:['پشت‌بوم، شب، آخرین مبارزه. بزن بریم!','h',4.1],
   b7:['توی این بازار، فقط مشت من خریدار داره!','b',3.6],b8:['یا علی! بیا تو گود، ببینم چند مَردی!','b',4.4],b9:['بیا برقصیم! فقط... پاهام یه کم سنگینه!','b',5.1],b10:['اینجا پشت‌بوم منه! لاکم سفته، چوبم سفت‌تر!','b',4.7],
+  tz1:['وصیت‌نامه‌تو با مداد بنویس، پاک‌کردنش راحت باشه!','e',4.5],tz2:['تو رو بزنم یا خودت می‌افتی؟','e',3.3],tz3:['الان یه کاری کنم از سایه خودتم کتک بخوری!','e',3.9],tz4:['بدو برو مامانتو صدا کن، اینجا بزرگ‌تر می‌خواد!','e',3.7],tz5:['هوی قهرمان پوشکی! آماده‌ای؟','e',3.2],tz6:['الان ازت سالاد شیرازی درست می‌کنم!','e',3.6],tz7:['با اون قیافه اومدی دعوا یا خواستگاری؟','e',4.3],tz8:['آماده باش، قراره افقی بشی!','e',2.8],tz9:['بیا اینجا، قندعسل!','e',2.5],tz10:['چیه؟ شاخ شدی شُل‌مغز؟','e',3.2],tz11:['بزن کنار، باقالی!','e',3.0],tz12:['الان صورتت رو می‌فرستم مرخصی!','e',2.4],tz13:['هوی دوغِ بدون گاز!','e',2.8],tz14:['یه جوری بزنمت که خاطرات بچگیت لود بشه!','e',4.4],tz15:['قیافت شبیه بولبرینگ کولره!','e',3.4],
   'a-r1':['راند یک!','a',1.6],'a-r2':['راند دو!','a',1.6],'a-final':['راند آخر!','a',1.8],'a-fight':['مبارزه!','a',1.5],'a-ko':['ناک‌اوت!','a',1.6]};
 // one voice at a time: a line only cuts in over a lower-priority one (pri 0 chatter, 1 normal, 2 story beats, 3 cutscene)
 const VO={a:{},cur:null,pri:-1,end:0,cd:{},
@@ -1024,6 +1025,11 @@ const VO={a:{},cur:null,pri:-1,end:0,cd:{},
     return L[2]},
   stop(){if(this.cur){try{this.cur.pause()}catch(e){}this.cur=null}this.end=0;this.pri=-1}};
 const speak=(k,pri=2)=>VO.say(k,{pri});
+const POOLS={taunt:Object.keys(VLINES).filter(k=>/^tz\d+$/.test(k))};
+const poolBag={};
+function pick(pool){const all=POOLS[pool]||[];if(!all.length)return null;let bag=poolBag[pool];if(!bag||!bag.length){bag=poolBag[pool]=all.slice().sort(()=>Math.random()-.5);if(bag[0]===VO.lastOf?.[pool]&&bag.length>1)bag.push(bag.shift())}
+  const k=bag.shift();(VO.lastOf||(VO.lastOf={}))[pool]=k;return k}
+function sayPool(pool,o){const k=pick(pool);return k?VO.say(k,o):0}
 
 // ================= audio =================
 const AU={c:null,mute:false,nb:null,
@@ -1477,7 +1483,8 @@ function startDemo(){game.mode='demo';const th=['shop','cafe','dojo','temple','a
   fighters=[P1,P2];P1.ai=new AI(P1,'medium');P2.ai=new AI(P2,'medium');ctrl=[P1.ai,P2.ai];props=battleProps(th);pickups=[];startRound()}
 function startRound(){game.cine=null;P1.reset(-170,1);P2.reset(170,-1);fx=[];speed=null;projs=[];game.timer=60;game.endT=0;game.winner=null;game.slow=0;game.fin=null;cam.x=0;
   if(game.mode==='demo'){game.phase='fight';game.msgs=[];return}
-  game.phase='intro';game.introT=0;say(game.round===3?'راند آخر':'راند '+fa(game.round),1.1);VO.say(game.round===3?'a-final':'a-r'+game.round,{pri:2})}
+  game.phase='intro';game.introT=0;game.introLim=0;say(game.round===3?'راند آخر':'راند '+fa(game.round),1.1);VO.say(game.round===3?'a-final':'a-r'+game.round,{pri:2});
+  if(game.round===1&&game.mode==='battle'){const k=pick('taunt');if(k){game.introLim=1.75+VLINES[k][2]+.15;VO.say(k,{pri:2,delay:1.7})}}}
 function startStory(i,keepMeter){const st=STORY[i];game.cine=null;game.sub=null;game.mode='story';story.stage=i;story.len=st.len;story.waveIdx=0;story.lock=null;story.spawnQ=[];story.boss=null;story.result=null;story.arrowT=0;
   setTheme(st.theme,'story',st.len,st.boss.x);const m=P1&&keepMeter?P1.meter:0;
   const ew=SAVE.equip.weapon&&SHOP.find(i=>i.id===SAVE.equip.weapon),U=SAVE.up;
@@ -1489,7 +1496,7 @@ function spawnEnemy(st,side,boss){const L=story.lock,x=boss?Math.min(L[1]-80,P1.
   const bc=CHARS.find(c=>c.id===BOSSCH[story.stage])||CHARS[0],e=boss?new Fighter({team:1,c:COLORS.boss,ch:{...bc,bossOf:story.stage},weapon:bc.weapon,hp:st.boss.hp,sc:1.22,boss:true,dmg:1.25*LV[game.diff].dmg,kbRes:.6,name:st.boss.name,x,face:-side,aura:'#ff6a1e'})
     :new Fighter({team:1,c:[COLORS.red,COLORS.red2,COLORS.red3][Math.random()*3|0],weapon:(r=>r<st.wch?st.weapon:r<st.wch+.25?'staff':'none')(Math.random()),hp:st.ehp,dmg:st.edmg*LV[game.diff].dmg,x,face:-side,spd:.9+Math.random()*.2});
   if(!boss&&Math.random()<.45)e.cos={hat:['cap','party','cowboy','chef','viking'][Math.random()*5|0],face:Math.random()<.25?'sun':null};
-  e.ai=new AI(e,boss?'boss':st.ai);e.inp=mkInput();fighters.push(e);ctrl.push(e.ai);if(boss){story.boss=e;startBossCine(e)}else VO.say('e-spawn',{pri:0,cd:16,chance:.5});return e}
+  e.ai=new AI(e,boss?'boss':st.ai);e.inp=mkInput();fighters.push(e);ctrl.push(e.ai);if(boss){story.boss=e;startBossCine(e)}else if(Math.random()<.5)VO.say('e-spawn',{pri:0,cd:16,chance:.5});else{if(nowS()>(VO.tzT||0)){VO.tzT=nowS()+14;sayPool('taunt',{pri:0,chance:.6})}}return e}
 function storyUpdate(dt){const st=STORY[story.stage];story.arrowT=Math.max(0,story.arrowT-dt);
   for(const q of story.spawnQ)q.t-=dt;const due=story.spawnQ.filter(q=>q.t<=0);story.spawnQ=story.spawnQ.filter(q=>q.t>0);for(const q of due)spawnEnemy(st,q.side,q.boss);
   if(!story.lock){const w=st.waves[story.waveIdx];
@@ -1535,7 +1542,7 @@ function update(rdt){
     const B=story.boss;if(game.mode==='story'&&B&&!B.lowSaid&&B.hp>0&&B.hp<B.maxHp*.3){B.lowSaid=true;VO.say('blow',{pri:1})}}
   for(const c of ctrl)if(c&&!c.me.gone)c.update(rdt);ctrl=ctrl.filter(c=>!c.me.gone);
   const m=game.msgs[0];if(m){m.t+=rdt;if(m.t>m.dur)game.msgs.shift()}
-  if(game.phase==='intro'){game.introT+=rdt;const lim=game.mode==='story'?1.5:1.7;if(game.introT>lim){game.phase='fight';if(game.mode==='battle'){say('مبارزه!',.8,1.25,'#cf241d');AU.sup();VO.say('a-fight',{pri:2})}}}
+  if(game.phase==='intro'){game.introT+=rdt;const lim=game.mode==='story'?1.5:(game.introLim||1.7);if(game.introT>lim){game.phase='fight';if(game.mode==='battle'){say('مبارزه!',.8,1.25,'#cf241d');AU.sup();VO.say('a-fight',{pri:2})}}}
   if(game.superT>0)game.superT-=rdt;
   game.shake*=Math.exp(-rdt*12);game.zp*=Math.exp(-rdt*4);game.flashT=Math.max(0,game.flashT-rdt);
   updFx(rdt);
@@ -1925,7 +1932,7 @@ $('stNext').onclick=()=>stepStage(1);$('stPrev').onclick=()=>stepStage(-1);$('st
 updStage();
 seg('diff',v=>game.diff=v);
 const begin=()=>{AU.init();game.paused=false;sel.online=false;if(game.modeSel!=='story'){openSelect();return}story.kills=0;startStory(0);show(null);VO.say('intro',{pri:2,delay:.5})};
-const startFight=()=>{game.paused=false;startBattle();show(null);VO.say('intro',{pri:2,delay:3.4})};
+const startFight=()=>{game.paused=false;startBattle();show(null);VO.say('intro',{pri:1,delay:(game.introLim||1.7)+1.7})};
 $('start').onclick=begin;
 // ===== character select (Tekken-style): pick yourself, then the opponent =====
 const sel={step:0,pick:[0,1],prev:[]};
