@@ -536,7 +536,7 @@ const THEME_LIST={shop:['shelf','plant','window','counter','fridge','door'],cafe
   temple:['torii','lant','sakura','hall','swords','bamboo'],alley:['brick','dumpster','escape','posters','fence','crates','door'],desk:['notebook','pencils','ruler','books','mug','sticky','sharpener'],bazaar:['arch','carpets','spices','lanternsB','pots'],zurkhaneh:['dome','gowd','meels','drum','plaques'],beach:['sea','palm','umbrella','castle','sign'],roof:['water','antenna','skyline','ac','laundry']};
 const THEME_TITLE={shop:'سوپرمارکت مداد',cafe:'کافه مداد',dojo:'باشگاه رزمی',temple:'معبد مداد',alley:'کوچه‌ی مداد',desk:'میز تحریر',bazaar:'بازار سنتی',zurkhaneh:'زورخانه',beach:'ساحل',roof:'پشت‌بام شبانه'};
 // stage colours: wall, floor, ceiling and title banner, plus each module's colours (used in turn by its shapes)
-const PAL={shop:{wall:'#f8e6bd',wa:1.3,floor:'#e9dcc0',ban:'#e85d3a'},cafe:{wall:'#e3b98a',floor:'#a8723e',ban:'#7a4a2a'},dojo:{wall:'#efd9a6',floor:'#cfae6a',ban:'#c0392b'},
+const PAL={shop:{wall:'#f3e9d4',wa:1.3,floor:'#e9dcc0',ban:'#e85d3a'},cafe:{wall:'#e3b98a',floor:'#a8723e',ban:'#7a4a2a'},dojo:{wall:'#efd9a6',floor:'#cfae6a',ban:'#c0392b'},
   temple:{wall:'#f0cdb4',floor:'#b9a58a',ban:'#c0392b'},alley:{wall:'#bfae9b',floor:'#8f969c',ban:'#4f6f8f'},desk:{wall:'#dbe9f5',floor:'#c58a4e',ban:'#f2c21b'},
   bazaar:{wall:'#efc685',floor:'#cfa46a',ban:'#2f6fa0'},zurkhaneh:{wall:'#e7d6b0',floor:'#c49a62',ban:'#2f8f6f'},beach:{wall:'#9fd3f3',floor:'#f0d79a',ban:'#e8463a',sky:1},
   roof:{wall:'#1c2440',floor:'#7b838e',ban:'#f2c21b',sky:1,night:1}};
@@ -625,14 +625,14 @@ function stageColor(s,theme,x0,x1){const P_=PAL[theme],X0=x0-1400,X1=x1+1400,L=m
       s.tint(Array.from({length:24},(_,i)=>[x+Math.cos(i/24*TAU)*90,y+Math.sin(i/24*TAU)*90]),'#fff0a8',.12)}}
   if(theme==='desk')for(let i=0;i<(X1-X0)/90;i++){const x=X0+L()*(X1-X0),y=-20-L()*480;s.line(x,y,x+60+L()*120,y+(L()-.5)*6,.6,.3,1)}}
 // hand-drawn wall panels per stage; each covers the wall from the floor line to the ceiling
-const WALLIMG={shop:[['walls/shop1.webp',1.63],['walls/shop2.webp',1.574],['walls/shop3.webp',1.584]]},WIMG={};  // [file, width/height]
+const WALLIMG={shop:[['walls/shop1.webp',1.552],['walls/shop2.webp',1.556]]},WIMG={};  // [file, width/height]
 function wallImg(src){let im=WIMG[src];if(!im){im=WIMG[src]=new Image();im.src=src}return im}
 function wallPanel(s,theme,i,x){const[src,ar]=WALLIMG[theme][i],w=(CEIL-FL)*ar;wallImg(src);
   (s.imgs||(s.imgs=[])).push({src,x,w});(s.occ||(s.occ=[])).push([x+20,FL,x+w-20,CEIL]);return x+w}
 function drawWallImgs(list){const hw=W/2/cam.z+60;for(const p of list){if(p.x>cam.x+hw||p.x+p.w<cam.x-hw)continue;const im=wallImg(p.src);if(!im.complete||!im.naturalWidth)continue;
   ctx.save();ctx.translate(p.x,CEIL);ctx.scale(1,-1);ctx.drawImage(im,0,0,p.w,CEIL-FL);ctx.restore()}}
 function layoutBattle(s,theme){const L=mulberry32(5);structure(s,theme,-950,950);
-  if(WALLIMG[theme]){let x=-1330;for(const i of[2,0,1])x=wallPanel(s,theme,i,x)-24;return}
+  if(WALLIMG[theme]){const n=WALLIMG[theme].length;let x=-1300;for(const i of n>2?[2,0,1]:[1,0,1])x=wallPanel(s,theme,i,x)-24;return}
   if(theme==='shop'){for(const n of THEME_LIST.shop)place(s,'shop',n,MODS.shop[n].a,L);lampCone(s,-390);lampCone(s,330);banner(s,0,THEME_TITLE.shop)}
   if(theme==='cafe'){place(s,'cafe','window',-940,L);place(s,'cafe','tables',-600,L);place(s,'cafe','counter',-340,L);place(s,'cafe','pics',150,L);place(s,'cafe','sacks',340,L);place(s,'cafe','door',668,L);
     for(const x of[-770,330,560])lampDome(s,x);banner(s,-108,THEME_TITLE.cafe,260)}
