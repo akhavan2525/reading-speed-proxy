@@ -1219,7 +1219,7 @@ const VO={a:{},cur:null,pri:-1,end:0,cd:{},seq:0,
     if(o.chance!=null&&Math.random()>o.chance)return 0;if(t<(this.cd[k]||0))return 0;
     if(t<this.end&&pri<=this.pri&&pri<3)return 0;
     this.cd[k]=t+(o.cd||0);this.stop();this.pri=pri;this.k=k;const id=this.seq,dur=L[2];
-    const start=()=>{if(this.seq!==id)return;this.end=nowS()+dur;if(L[1]!=='a')game.sub={text:L[0],who:L[1],t:0,dur:dur+.5};
+    const start=()=>{if(this.seq!==id)return;this.end=nowS()+dur;if(L[1]!=='a')game.sub={text:L[0],who:o.who||L[1],t:0,dur:dur+.5};
       if(MUS.a&&!AU.mute){MUS.a.volume=.15;clearTimeout(this.t);this.t=setTimeout(()=>{if(MUS.a)MUS.a.volume=.45},dur*1000+300)}};
     if(AU.mute){start();return dur}
     this.end=t+dur+2.5;  // still loading: hold the floor
@@ -1233,19 +1233,22 @@ const CONVO=[["cv1_1", "cv1_2", "cv1_3"], ["cv2_1", "cv2_2", "cv2_3", "cv2_4"], 
 const POOLS={taunt:Object.keys(VLINES).filter(k=>/^tz\d+$/.test(k)),convo:CONVO.map((_,i)=>String(i))};
 // situation pools per speaker: hith, hurte, lostb, ... (the older single lines join their pool)
 for(const k in VLINES){const m=/^(hit|hurt|protest|low|wow|lost|idle|blow)\d+([heb])$/.exec(k);if(m)(POOLS[m[1]+m[2]]||(POOLS[m[1]+m[2]]=[])).push(k)}
+// battle: every roster character has its own lines and voice (hit3_dragon -> pool hit_dragon)
+for(const k in VLINES){const m=/^(tz|hit|hurt|protest|low|wow|lost)\d+_([a-z]+)$/.exec(k);if(m)(POOLS[m[1]+'_'+m[2]]||(POOLS[m[1]+'_'+m[2]]=[])).push(k)}
 POOLS.hurth.push('hurt');POOLS.lowh.push('low');POOLS.losth.push('lose');POOLS.loste.push('e-ko');
 const poolBag={};
 function pick(pool){const all=POOLS[pool]||[];if(!all.length)return null;let bag=poolBag[pool];if(!bag||!bag.length){bag=poolBag[pool]=all.slice().sort(()=>Math.random()-.5);if(bag[0]===VO.lastOf?.[pool]&&bag.length>1)bag.push(bag.shift())}
   const k=bag.shift();(VO.lastOf||(VO.lastOf={}))[pool]=k;if(bag.length)preNext(pool,bag[0]);return k}
 function preNext(pool,k){if(pool==='convo')for(const l of CONVO[+k]||[])VO.pre(l);else VO.pre(k)}
 // at the start of a round/stage, fetch the next line of every pool (a few files, not all of them)
-function primeVoices(){for(const pool in POOLS){const all=POOLS[pool];if(!all.length)continue;let bag=poolBag[pool];if(!bag||!bag.length){bag=poolBag[pool]=all.slice().sort(()=>Math.random()-.5)}preNext(pool,bag[0])}}
+function primeVoices(){const ids=new Set((fighters||[]).map(f=>f.ch&&f.ch.id));for(const pool in POOLS){const all=POOLS[pool];if(!all.length)continue;const m=/_([a-z]+)$/.exec(pool);if(m&&!ids.has(m[1]))continue;let bag=poolBag[pool];if(!bag||!bag.length){bag=poolBag[pool]=all.slice().sort(()=>Math.random()-.5)}preNext(pool,bag[0])}}
 function sayPool(pool,o){const k=pick(pool);return k?VO.say(k,o):0}
 // fight chatter: the speaker's own voice (hero h, rival/henchman e, stage boss b), then a quiet gap so lines stay rare
 const vWho=f=>f===P1?'h':f.ch&&f.ch.bossOf!=null?'b':'e';
-function chat(f,kind,o={}){if(!f||game.cine||game.mode==='demo')return 0;const pool=kind+vWho(f),t=nowS();if(!POOLS[pool])return 0;
+const charPool=(f,kind)=>{const id=f&&f.ch&&f.ch.id;return game.mode==='battle'&&id&&POOLS[kind+'_'+id]?kind+'_'+id:null};
+function chat(f,kind,o={}){if(!f||game.cine||game.mode==='demo')return 0;const cp=charPool(f,kind),pool=cp||kind+vWho(f),t=nowS();if(!POOLS[pool])return 0;if(cp)o={...o,who:f===P1?'h':'e'};
   if(!o.force&&t<(VO.chatT||0))return 0;if(o.chance!=null&&Math.random()>o.chance)return 0;
-  const d=VO.say(pick(pool),{pri:o.pri??0,delay:o.delay});if(d)VO.chatT=t+(o.delay||0)+d+(o.gap??4.5);return d}
+  const d=VO.say(pick(pool),{pri:o.pri??0,delay:o.delay,who:o.who});if(d)VO.chatT=t+(o.delay||0)+d+(o.gap??4.5);return d}
 function voHit(att,def,h,heavy){const t=game.rt;def.tk=t-(def.tkT||-9)<1.1?(def.tk||0)+1:1;def.tkT=t;
   if(def.tk===3)return chat(def,'protest',{chance:.45});
   if(h.cine||h.kind==='launch'||h.kind==='knock')return chat(def,'wow',{chance:.4});
@@ -1722,7 +1725,7 @@ function startRound(){primeVoices();VO.pre(game.round===3?'a-final':'a-r'+game.r
   if(game.mode==='demo'){game.phase='fight';game.msgs=[];return}
   game.phase='intro';game.introT=0;game.introLim=0;say(game.round===3?'راند آخر':game.round===2?'راند دوم':'راند اول',1.1);VO.say(game.round===3?'a-final':'a-r'+game.round,{pri:2});
   if(game.round>1&&game.mode==='battle'&&!net.on&&Math.random()<.4){startGag(game.lastLoser||P1,'head',.3);game.introLim=3.05}
-  if(game.round===1&&game.mode==='battle'){const k=pick('taunt');if(k){game.introLim=1.5+VLINES[k][2];VO.say(k,{pri:3,delay:1.45,intro:1})}}}
+  if(game.round===1&&game.mode==='battle'){const tp=charPool(P2,'tz')||'taunt',k=pick(tp);if(k){game.introLim=1.5+VLINES[k][2];VO.say(k,{pri:3,delay:1.45,intro:1,who:'e'})}}}
 function startStory(i,keepMeter){const st=STORY[i];primeVoices();VO.pre('st'+(i+1));game.cine=null;game.endLim=0;game.soul=null;game.dark=0;story.idleT=0;game.sub=null;game.mode='story';story.stage=i;story.len=st.len;story.waveIdx=0;story.lock=null;story.spawnQ=[];story.boss=null;story.result=null;story.arrowT=0;
   setTheme(st.theme,'story',st.len,st.boss.x);const m=P1&&keepMeter?P1.meter:0;
   const ew=SAVE.equip.weapon&&SHOP.find(i=>i.id===SAVE.equip.weapon),U=SAVE.up;
