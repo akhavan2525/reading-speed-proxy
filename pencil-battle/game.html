@@ -939,7 +939,8 @@ function skel(p,x,y,f,sc,wpn,grounded){
   const [k1,f1]=lim(hip,p.l1t,SEG.TH,p.l1s,SEG.SH),[k2,f2]=lim(hip,p.l2t,SEG.TH,p.l2s,SEG.SH);
   const t1=dirv(p.l1s+p.fo1,f),t2=dirv(p.l2s+p.fo2,f);
   const o={hip,chest,neck,head,sh,e1,h1,e2,h2,k1,f1,k2,f2,t1:[f1[0]+t1[0]*8,f1[1]+t1[1]*8],t2:[f2[0]+t2[0]*8,f2[1]+t2[1]*8]};
-  if(wpn==='staff'||wpn==='sword'){const sw_=wpn==='sword',d=dirv(p.wa,f),gl=sw_?13:30,g=[h1[0]-d[0]*gl,h1[1]-d[1]*gl],A=armIK((g[0]-sh[0])*f,g[1]-sh[1]),r=lim(sh,A[0],SEG.UA,A[1],SEG.FA);
+  // staff: both hands on the pole. sword: one hand on the hilt, the free hand held back like a fencer
+  if(wpn==='staff'||wpn==='sword'){const sw_=wpn==='sword',d=dirv(p.wa,f),gl=sw_?13:30,g=sw_?[sh[0]-f*32,sh[1]+12]:[h1[0]-d[0]*gl,h1[1]-d[1]*gl],A=armIK((g[0]-sh[0])*f,g[1]-sh[1]),r=lim(sh,A[0],SEG.UA,A[1],SEG.FA);
     o.e2=r[0];o.h2=r[1];o.wt=[h1[0]+d[0]*(sw_?74:95),h1[1]+d[1]*(sw_?74:95)];o.wbt=[h1[0]-d[0]*(sw_?13:48),h1[1]-d[1]*(sw_?13:48)]}
   if(wpn==='dagger'){const d1=dirv(p.wa,f),d2=dirv(p.wc,f);o.wt=[h1[0]+d1[0]*37,h1[1]+d1[1]*37];o.wbt=[h1[0]-d1[0]*5,h1[1]-d1[1]*5];o.wt2=[o.h2[0]+d2[0]*37,o.h2[1]+d2[1]*37];o.wbt2=[o.h2[0]-d2[0]*5,o.h2[1]-d2[1]*5]}
   if(p.rot){const th=p.rot*D2R*f,c=Math.cos(th),sn=Math.sin(th),px=hip[0],py=hip[1]+22;
@@ -1828,7 +1829,7 @@ function drawProjs(){for(const p of projs){ctx.save();ctx.translate(p.x,p.y);ctx
   ctx.globalAlpha=.3;ctx.strokeStyle='#c8231d';ctx.lineWidth=1.6;ctx.beginPath();ctx.arc(0,0,15,0,TAU*.7);ctx.stroke();ctx.globalAlpha=1;
   ctx.translate(-9,0);spr('dag1',[0,0],[38,0],12,-p.dir);ctx.restore()}}
 function drawFighter(f){
-  const s=f.sk,c=f.c,sc=f.sc,fl=f.flash>0,fc=fl?c.flash:c.front,rc=fl?c.flash:c.rear,bs=f.boss&&!(f.ch&&f.ch.bossOf!=null),Wd=9.5*sc*(bs&&!(f.ch&&f.ch.look&&f.ch.look.thin)?1.3:1),two=f.weapon==='staff'||f.weapon==='sword',dff=f.dff;
+  const s=f.sk,c=f.c,sc=f.sc,fl=f.flash>0,fc=fl?c.flash:c.front,rc=fl?c.flash:c.rear,bs=f.boss&&!(f.ch&&f.ch.bossOf!=null),Wd=9.5*sc*(bs&&!(f.ch&&f.ch.look&&f.ch.look.thin)?1.3:1),two=f.weapon==='staff',dff=f.dff;
   ctx.save();ctx.globalAlpha=f.alpha;ctx.lineCap='round';ctx.lineJoin='round';
   const shd=Math.max(.25,1-f.y/260);ctx.fillStyle='rgba(30,25,20,.16)';ctx.beginPath();ctx.ellipse(s.hip[0],0,38*shd*sc,5*shd*sc,0,0,TAU);ctx.fill();
   const hl=(pts,w)=>{ctx.save();ctx.translate(-1.3,1.3);strokePoly(pts,w*.28,'rgba(255,255,255,.16)');ctx.restore()};
@@ -1863,7 +1864,7 @@ function drawFighter(f){
   if(lk.shorts)for(const L of[L2,L1])cloth([L[0],lerp2(L[0],L[1],lk.shortsTrim?.62:.78)],Wd*(lk.shortsTrim?1.4:1.9),shade(lk.shorts,L===(sw?L1:L2)));
   if(lk.skirt)drawSkirt(f,lk.skirt);if(lk.chador)drawChadorBody(f,lk);if(lk.shortsTrim)for(const L of[L2,L1]){const m=lerp2(L[0],L[1],.6),dx=L[1][0]-L[0][0],dy=L[1][1]-L[0][1],l=Math.hypot(dx,dy)||1,n=[-dy/l*Wd*.75,dx/l*Wd*.75];ctx.save();ctx.lineCap='butt';strokePoly([[m[0]-n[0],m[1]-n[1]],[m[0]+n[0],m[1]+n[1]]],3.2*sc,lk.shortsTrim);ctx.restore()}if(lk.tassets)drawTassets(f,lk);if(lk.sash)drawBelt(f,lk.sash);if(lk.apron)drawApron(f,lk);if(lk.robe)drawRobe(f,lk.robe);if(lk.cuffs)for(const L of[L1,L2])strokePoly([lerp2(L[1],L[2],.72),lerp2(L[1],L[2],.93)],Wd*1.35,lk.cuffs);
   if(f.weapon==='staff'){f.wskin?drawSkin(f):lk.bo?drawBo(f):drawStaff(f);arm(A2,rc);fist(s.h2,rc)}
-  if(f.weapon==='sword'){f.wskin?drawSkin(f):drawSword(f);arm(A2,rc);fist(s.h2,rc)}
+  if(f.weapon==='sword'){f.wskin?drawSkin(f):drawSword(f)}
   arm(A1,fc);hl(A1,Wd*.9);if(lk.cuffs)for(const A of[A1,A2])strokePoly([lerp2(A[1],A[2],.68),lerp2(A[1],A[2],.9)],Wd*1.3,lk.cuffs);fist(s.h1,fc);
   if(lk.pads)fillPts(padPts(f),lk.pads,1.4*sc);if(lk.trim)fillPts(padPts(f),lk.suit,1.4*sc);if(lk.studs)drawStuds(f);
   if(lk.twin)drawTwin(f);if(lk.bat)drawBat(f);if(lk.meel&&!(f.state==='move'&&f.move.name==='kabadeh')){drawClub(f,s.h1,s.e1);drawClub(f,s.h2,s.e2)}if(lk.cane)drawCane(f);if(f.state==='move'&&f.move.name==='kabadeh')drawKabadeh(f);if(lk.gourd)drawGourd(f);if(lk.slipper&&!f.kOut[0])drawSlipper(s.h1,Math.atan2(s.h1[1]-s.e1[1],s.h1[0]-s.e1[0]),f.sc);if(lk.chain)drawChain(f);
