@@ -238,7 +238,7 @@ function pencilGrain(ctx){const D=Math.min(3,Math.max(1,Math.round(DPR)));if(!GR
     GRAIN=ctx.createPattern(c,'repeat');GRAIN.d=D}
   // drawn in screen pixels (fast, no resampling) but shifted with the camera so it stays on the paper
   ctx.save();ctx.setTransform(1,0,0,1,0,0);try{GRAIN.setTransform(new DOMMatrix([1,0,0,1,Math.round(-cam.x*cam.z*DPR)%(160*D),0]))}catch(e){}
-  ctx.globalAlpha=WALLIMG[game.theme]?.22:PAL[game.theme]&&PAL[game.theme].night?.14:.62;ctx.fillStyle=GRAIN;ctx.fillRect(0,0,ctx.canvas.width,Math.min(ctx.canvas.height,(groundY()+500*cam.z)*DPR));ctx.restore()}
+  ctx.globalAlpha=WALLIMG[game.theme]?.08:PAL[game.theme]&&PAL[game.theme].night?.14:.62;ctx.fillStyle=GRAIN;ctx.fillRect(0,0,ctx.canvas.width,Math.min(ctx.canvas.height,(groundY()+500*cam.z)*DPR));ctx.restore()}
 function drawSketch(ctx,items,grain){let gr=!grain;
   for(const it of items){ctx.globalAlpha=it.a;
     if(it.t==='fink'){ctx.fillStyle=INK;ctx.fill(it.p)}
@@ -609,8 +609,8 @@ function structure(s,theme,x0,x1){const L=mulberry32(77);s.ox=0;curTheme=theme;s
 function cloud(s,x,y,w){const pts=[];for(let i=0;i<=24;i++){const a=i/24*TAU,r=1+.18*Math.sin(a*5);pts.push([x+Math.cos(a)*w*r,y+Math.sin(a)*w*.34*r])}s.tint(pts,'#ffffff',.8);s.poly(pts,true,.8,.45,1)}
 function stageColor(s,theme,x0,x1){const P_=PAL[theme],X0=x0-1400,X1=x1+1400,L=mulberry32(theme.length*31+7),band=(y0,y1,col,a)=>s.wash([[X0,y0],[X1,y0],[X1,y1],[X0,y1]],col,a);
   band(-700,FL,P_.floor,P_.night?.55:.42);band(FL-34,FL,P_.floor,.35);
-  band(FL,P_.sky?CEIL+900:CEIL,P_.wall,P_.wa||(P_.night?1.15:P_.sky?.6:.4));if(!P_.sky)band(CEIL,CEIL+900,P_.wall,.62);
-  if(P_.trim){const ty=FL+(CEIL-FL)*.25;band(FL,ty,P_.trim,1.4);s.line(X0,ty,X1,ty,1.2,.7,1)}
+  if(!WALLBG[theme])band(FL,P_.sky?CEIL+900:CEIL,P_.wall,P_.wa||(P_.night?1.15:P_.sky?.6:.4));if(!P_.sky)band(CEIL,CEIL+900,P_.wall,.62);
+  if(P_.trim&&!WALLBG[theme]){const ty=FL+(CEIL-FL)*.25;band(FL,ty,P_.trim,1.4);s.line(X0,ty,X1,ty,1.2,.7,1)}
   if(['shop','cafe','dojo','temple'].includes(theme)&&!WALLIMG[theme]){band(FL,FL+58,P_.ban,.16);s.line(X0,FL+58,X1,FL+58,.8,.45,1)}
   if(theme==='bazaar'||theme==='zurkhaneh'){const c=theme==='bazaar'?['#2f6fa0','#e6b84c']:['#2f8f6f','#e6c88a'];band(FL+26,FL+64,c[1],.35);
     for(let x=X0,i=0;x<X1;x+=38,i++){const d=[[x,FL+45],[x+19,FL+62],[x+38,FL+45],[x+19,FL+28]];s.tint(d,c[i%2],.6);if(Math.abs(x-(x0+x1)/2)<x1-x0+600)s.poly(d,true,.6,.4,1)}}
@@ -627,8 +627,12 @@ function stageColor(s,theme,x0,x1){const P_=PAL[theme],X0=x0-1400,X1=x1+1400,L=m
   if(theme==='desk')for(let i=0;i<(X1-X0)/90;i++){const x=X0+L()*(X1-X0),y=-20-L()*480;s.line(x,y,x+60+L()*120,y+(L()-.5)*6,.6,.3,1)}}
 // hand-drawn wall panels per stage; each covers the wall from the floor line to the ceiling
 const WALLIMG={shop:[['walls/shop1.webp',1.552],['walls/shop2.webp',1.556],['walls/shop3.webp',1.586]],cafe:[['walls/cafe1.webp',1.5],['walls/cafe2.webp',1.5],['walls/cafe3.webp',1.5]]},WIMG={};  // [file, width/height]
+// plain wall drawing tiled behind everything (mirrored every other tile, so the joins are seamless)
+const WALLBG={cafe:['walls/cafe-plain.webp',1.5]};
+function drawPlainWall(){const b=WALLBG[game.theme];if(!b)return;const im=wallImg(b[0]);if(!im.complete||!im.naturalWidth)return;const h=CEIL-FL,w=h*b[1],hw=W/2/cam.z+60;
+  for(let i=Math.floor((cam.x-hw)/w);i*w<cam.x+hw;i++){ctx.save();ctx.translate(i*w+(i&1?w:0),CEIL);ctx.scale(i&1?-1:1,-1);ctx.drawImage(im,0,0,w+1,h);ctx.restore()}}
 function wallImg(src){let im=WIMG[src];if(!im){im=WIMG[src]=new Image();im.src=src}return im}
-addEventListener('load',()=>setTimeout(()=>{for(const t in WALLIMG)for(const[src]of WALLIMG[t])wallImg(src);for(const t in PROPIMG)for(const n of new Set(Object.values(PROPIMG[t]))){const src='props/'+t+'-'+n+'.webp';if(!PIMG[src]){PIMG[src]=new Image();PIMG[src].src=src}}},300));
+addEventListener('load',()=>setTimeout(()=>{for(const t in WALLBG)wallImg(WALLBG[t][0]);for(const t in WALLIMG)for(const[src]of WALLIMG[t])wallImg(src);for(const t in PROPIMG)for(const n of new Set(Object.values(PROPIMG[t]))){const src='props/'+t+'-'+n+'.webp';if(!PIMG[src]){PIMG[src]=new Image();PIMG[src].src=src}}},300));
 function wallPanel(s,theme,i,x){const[src,ar]=WALLIMG[theme][i],w=(CEIL-FL)*ar;wallImg(src);
   (s.imgs||(s.imgs=[])).push({src,x,w});(s.occ||(s.occ=[])).push([x+20,FL,x+w-20,CEIL]);return x+w}
 function drawWallImgs(list){const hw=W/2/cam.z+60;for(const p of list){if(p.x>cam.x+hw||p.x+p.w<cam.x-hw)continue;const im=wallImg(p.src);if(!im.complete||!im.naturalWidth)continue;
@@ -2150,7 +2154,7 @@ function render(){
   const boil=Math.abs(Math.floor(game.rt*7))%2;
   ctx.setTransform(DPR,0,0,DPR,0,0);ctx.fillStyle=PAPER;ctx.fillRect(0,0,W,H);
   const sx=(Math.random()-.5)*game.shake*2,sy=(Math.random()-.5)*game.shake*2;
-  worldTf(sx,sy);drawSketch(ctx,BG[boil].items,1);drawWallImgs(BG[boil].imgs);drawFloorDyn(boil);drawBGText(boil);
+  worldTf(sx,sy);drawPlainWall();drawSketch(ctx,BG[boil].items,1);drawWallImgs(BG[boil].imgs);drawFloorDyn(boil);drawBGText(boil);
   if(game.superT>0||game.fin||game.dark>0){ctx.setTransform(DPR,0,0,DPR,0,0);ctx.fillStyle=game.fin?'rgba(40,8,6,.62)':game.dark>0?`rgba(14,10,8,${Math.min(.58,game.dark*1.5)})`:`rgba(20,18,16,${Math.min(.45,game.superT*1.2)})`;ctx.fillRect(0,0,W,H);worldTf(sx,sy)}
   drawProps(boil);drawPickups();
   if(game.cine){const c=game.cine,k=Math.min(1,c.t*2.5),f=c.focus,[fx_,fy_]=toScreen(f.x,f.y+105*f.sc),R0=150*f.sc*cam.z;ctx.setTransform(DPR,0,0,DPR,0,0);
