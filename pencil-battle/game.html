@@ -2079,6 +2079,30 @@ function drawIce(f){if(!(f.frozen>0))return;const s=f.sk,sc=f.sc,cx=s.hip[0],top
   else{ctx.fillStyle='rgba(170,230,255,.42)';ctx.strokeStyle='rgba(60,160,210,.9)';ctx.lineWidth=2;ctx.beginPath();const pts=[[-w,0],[-w*1.05,h*.55],[-w*.6,h],[-w*.1,h*.85],[w*.3,h*1.05],[w*.9,h*.7],[w,0]];pts.forEach((q,i)=>i?ctx.lineTo(cx+q[0],q[1]):ctx.moveTo(cx+q[0],q[1]));ctx.closePath();ctx.fill();ctx.stroke();
     ctx.strokeStyle='rgba(255,255,255,.7)';ctx.beginPath();ctx.moveTo(cx-w*.5,h*.2);ctx.lineTo(cx-w*.3,h*.7);ctx.moveTo(cx+w*.2,h*.3);ctx.lineTo(cx+w*.5,h*.8);ctx.stroke()}
   ctx.restore()}
+// ---- weather: picked at random for each battle / stage: clear day, night, rain, thunderstorm or snow.
+// Snow slowly settles on the ground and on the props; storms flash and rumble.
+const WX={type:'clear',t:0,drops:[],snow:0,flash:0,next:5};
+function rollWeather(){const r=Math.random();WX.type=r<.45?'clear':r<.6?'night':r<.75?'rain':r<.87?'storm':'snow';WX.t=0;WX.snow=0;WX.flash=0;WX.next=3+Math.random()*5;WX.drops=[]}
+function updWeather(dt){if(game.mode==='demo'||WX.type==='clear'||WX.type==='night')return;WX.t+=dt;
+  const rain=WX.type==='rain'||WX.type==='storm',n=rain?(WX.type==='storm'?190:140):170;
+  while(WX.drops.length<n)WX.drops.push({x:Math.random()*W,y:Math.random()*H-H,v:rain?(700+Math.random()*400):(40+Math.random()*50),s:Math.random(),ph:Math.random()*TAU});
+  const gy=groundY();for(const d of WX.drops){d.y+=d.v*dt;if(rain)d.x-=d.v*.12*dt;else d.x+=Math.sin(WX.t*1.3+d.ph)*20*dt;
+    if(d.y>gy+(H-gy)*d.s){if(rain&&Math.random()<.3)fx.push({k:'ink',x:cam.x+(d.x-W/2)/cam.z,y:1,vx:(Math.random()-.5)*60,vy:60+Math.random()*60,t:0,life:.18,col:'rgba(160,190,220,.8)',len:3});d.y=-10-Math.random()*60;d.x=Math.random()*(W+80)}}
+  if(WX.type==='snow')WX.snow=Math.min(1,WX.snow+dt/40);
+  if(WX.type==='storm'){WX.flash=Math.max(0,WX.flash-dt*3);WX.next-=dt;if(WX.next<=0){WX.next=4+Math.random()*7;WX.flash=1;WX.bolt=Math.random()*W;setTimeout(()=>{AU.thud();shake(6)},250+Math.random()*500)}}}
+function drawWeatherWorld(){if(WX.type!=='snow'||WX.snow<=0)return;const a=WX.snow,hw=W/2/cam.z+80;ctx.save();
+  ctx.fillStyle=`rgba(250,252,255,${.55*a})`;ctx.fillRect(cam.x-hw,-900,hw*2,900);
+  ctx.fillStyle=`rgba(255,255,255,${.9*a})`;for(let x=Math.floor((cam.x-hw)/90)*90;x<cam.x+hw;x+=90){const r=(Math.sin(x*12.9898)*43758.5453)%1;ctx.beginPath();ctx.ellipse(x+Math.abs(r)*60,2,26+Math.abs(r)*30,4+8*a,0,0,TAU);ctx.fill()}
+  for(const p of props){if(p.y>2||Math.abs(p.rot)>.2)continue;ctx.beginPath();ctx.ellipse(p.x,p.y+p.h-1,p.w*.55,3+10*a,0,0,Math.PI);ctx.fill()}
+  ctx.restore()}
+function drawWeatherScreen(){if(game.mode==='demo')return;const T=WX.type;if(T==='clear')return;ctx.save();
+  if(T==='night'||T==='storm'||T==='rain'){ctx.fillStyle=T==='night'?'rgba(8,14,52,.58)':T==='storm'?'rgba(14,18,36,.5)':'rgba(28,38,62,.3)';ctx.fillRect(0,0,W,H);
+    if(T==='night'){const g=ctx.createRadialGradient(W/2,groundY()-60,30,W/2,groundY()-60,Math.max(W,H)*.6);g.addColorStop(0,'rgba(255,230,160,.12)');g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.fillRect(0,0,W,H)}}
+  if(T==='rain'||T==='storm'){ctx.strokeStyle='rgba(170,195,225,.55)';ctx.lineWidth=1.3;ctx.beginPath();for(const d of WX.drops){ctx.moveTo(d.x,d.y);ctx.lineTo(d.x-d.v*.012,d.y-d.v*.035)}ctx.stroke()}
+  if(T==='snow'){ctx.fillStyle='rgba(255,255,255,.92)';for(const d of WX.drops){ctx.beginPath();ctx.arc(d.x,d.y,2+d.s*3,0,TAU);ctx.fill()}}
+  if(T==='storm'&&WX.flash>0){if(WX.flash>.8){ctx.strokeStyle='rgba(235,245,255,.95)';ctx.lineWidth=3;ctx.beginPath();let x=WX.bolt,y=0;ctx.moveTo(x,y);while(y<groundY()*.7){x+=(Math.random()-.5)*50;y+=30+Math.random()*30;ctx.lineTo(x,y)}ctx.stroke()}
+    ctx.fillStyle=`rgba(235,240,255,${WX.flash*.45})`;ctx.fillRect(0,0,W,H)}
+  ctx.restore()}
 function smokePuff(x,sc=1){shake(5);for(let k=0;k<14;k++){const a=Math.random()*TAU;fx.push({k:'smoke',x:x+Math.cos(a)*20*sc,y:(20+Math.random()*110)*sc,vx:Math.cos(a)*(60+Math.random()*120),vy:20+Math.random()*60,r:(20+Math.random()*22)*sc,t:0,life:.8+Math.random()*.5,col:Math.random()<.5?'#bdbab4':'#8f8b85'})}}
 function fireBurst(p,big,ac='#ff4fa0'){const n=big?34:12;for(let k=0;k<n;k++){const a=Math.random()*TAU,v=(big?260:150)+Math.random()*(big?520:260);fx.push({k:'ink',x:p[0],y:p[1],vx:Math.cos(a)*v,vy:Math.sin(a)*v+120,t:0,life:.35+Math.random()*.4,col:['#fff4b0','#ffd23a','#ff9a1e',ac][k%4],len:big?9:6})}
   fx.push({k:'ring',x:p[0],y:p[1]-10,t:0,life:.3,col:'#ffd23a',s:big?1.6:1});if(big){spark(p,1,false,true);game.flashT=Math.max(game.flashT,.07)}}
@@ -2176,13 +2200,13 @@ function startDemo(){game.mode='demo';const th=['shop','cafe','dojo','temple','a
   const c1=PLAYABLE[Math.random()*PLAYABLE.length|0],c2=PLAYABLE[Math.random()*PLAYABLE.length|0];
   P1=new Fighter({team:0,c:COLORS.black,ch:c1,weapon:c1.weapon,x:-170,face:1});P2=new Fighter({team:1,c:COLORS.red,ch:c2,weapon:c2.weapon,x:170,face:-1});
   fighters=[P1,P2];P1.ai=new AI(P1,'medium');P2.ai=new AI(P2,'medium');ctrl=[P1.ai,P2.ai];props=battleProps(th);pickups=[];startRound()}
-function startRound(){primeVoices();VO.pre(game.round===3?'a-final':'a-r'+game.round);VO.pre('a-fight');game.cine=null;game.endLim=0;game.introLim=0;game.soul=null;game.dark=0;P1.reset(-170,1);P2.reset(170,-1);fx=[];speed=null;projs=[];game.timer=60;game.endT=0;game.winner=null;game.slow=0;game.fin=null;cam.x=0;
+function startRound(){if(game.round===1)rollWeather();primeVoices();VO.pre(game.round===3?'a-final':'a-r'+game.round);VO.pre('a-fight');game.cine=null;game.endLim=0;game.introLim=0;game.soul=null;game.dark=0;P1.reset(-170,1);P2.reset(170,-1);fx=[];speed=null;projs=[];game.timer=60;game.endT=0;game.winner=null;game.slow=0;game.fin=null;cam.x=0;
   if(game.mode==='demo'){game.phase='fight';game.msgs=[];return}
   game.phase='intro';game.introT=0;game.introLim=0;say(game.round===3?'راند آخر':game.round===2?'راند دوم':'راند اول',1.1);VO.say(game.round===3?'a-final':'a-r'+game.round,{pri:2});
   if(game.round>1&&game.mode==='battle'&&!net.on&&Math.random()<.4){startGag(game.lastLoser||P1,'head',.3);game.introLim=3.05}
   if(game.round===1&&game.mode==='battle')for(const f of[P1,P2]){if(f.ch&&f.ch.intro&&MOVES[f.ch.intro])f.startMove(f.ch.intro);if(f.ch&&f.ch.introSoul)game.soul={f,t:.5,fin:0}}
   if(game.round===1&&game.mode==='battle'){const tp=charPool(P2,'tz')||'taunt',k=pick(tp);if(k){game.introLim=1.5+VLINES[k][2];VO.say(k,{pri:3,delay:1.45,intro:1,who:'e'})}}}
-function startStory(i,keepMeter){const st=STORY[i];primeVoices();VO.pre('st'+(i+1));game.cine=null;game.endLim=0;game.soul=null;game.dark=0;story.idleT=0;game.sub=null;game.mode='story';story.stage=i;story.len=st.len;story.waveIdx=0;story.lock=null;story.spawnQ=[];story.boss=null;story.result=null;story.arrowT=0;
+function startStory(i,keepMeter){rollWeather();const st=STORY[i];primeVoices();VO.pre('st'+(i+1));game.cine=null;game.endLim=0;game.soul=null;game.dark=0;story.idleT=0;game.sub=null;game.mode='story';story.stage=i;story.len=st.len;story.waveIdx=0;story.lock=null;story.spawnQ=[];story.boss=null;story.result=null;story.arrowT=0;
   setTheme(st.theme,'story',st.len,st.boss.x);const m=P1&&keepMeter?P1.meter:0;
   const ew=SAVE.equip.weapon&&SHOP.find(i=>i.id===SAVE.equip.weapon),U=SAVE.up;
   P1=new Fighter({team:0,c:COLORS.black,ch:{id:'hero',name:'قهرمان',weapon:'none',special:'special',sname:'طوفان!',look:{},intro:i===0?'siaintro':null,proj:'bomb',keep:{bp:'siasmoke',bk:'siabomb'}},weapon:ew?ew.base:st.weapon,x:150,face:1,hp:100+15*U.hp,dmg:1+.1*U.pow});P1.spd*=1+.06*U.spd;
@@ -2250,7 +2274,7 @@ function update(rdt){
     if(skip){if(VO.k&&/^tz/.test(VO.k))VO.stop();game.sub=null;for(const f of fighters)if(f.state==='gag'){f.state='stand';f.gag=null}}
     if(game.introT>lim||skip){game.phase='fight';if(game.mode==='battle'){say('مبارزه!',.8,1.25,'#cf241d');AU.sup();VO.say('a-fight',{pri:3})}}}
   if(game.superT>0)game.superT-=rdt;
-  game.shake*=Math.exp(-rdt*12);game.dark=Math.max(0,(game.dark||0)-rdt);if(game.soul)game.soul.t+=rdt;game.zp*=Math.exp(-rdt*4);game.flashT=Math.max(0,game.flashT-rdt);
+  game.shake*=Math.exp(-rdt*12);updWeather(rdt);game.dark=Math.max(0,(game.dark||0)-rdt);if(game.soul)game.soul.t+=rdt;game.zp*=Math.exp(-rdt*4);game.flashT=Math.max(0,game.flashT-rdt);
   updFx(rdt);
   if(game.hitstop>0){game.hitstop-=rdt;updCam(rdt);return}
   let ts=1;if(game.slow>0){game.slow-=rdt;ts=.28}else if(game.fin)ts=.62;
@@ -2713,9 +2737,9 @@ function render(){
     const g=ctx.createRadialGradient(fx_,fy_,R0*.45,fx_,fy_,R0*1.25);g.addColorStop(0,'rgba(12,8,6,0)');g.addColorStop(.55,`rgba(12,8,6,${.6*k})`);g.addColorStop(1,`rgba(12,8,6,${.9*k})`);ctx.fillStyle=g;ctx.fillRect(0,0,W,H);worldTf(sx,sy)}
   const order=[...fighters].sort((a,b)=>(a.state==='ko'?-1:0)-(b.state==='ko'?-1:0)||(a.state==='move'?1:0)-(b.state==='move'?1:0));
   for(const f of order)drawTrail(f);for(const f of order)drawFighterFx(f);drawProjs();
-  drawFx();drawSoul();
+  drawFx();drawSoul();drawWeatherWorld();
   ctx.setTransform(DPR,0,0,DPR,0,0);
-  drawSpeed();drawWords();drawOverheads();
+  drawWeatherScreen();drawSpeed();drawWords();drawOverheads();
   if(game.flashT>0){ctx.fillStyle=`rgba(255,250,240,${game.flashT*7})`;ctx.fillRect(0,0,W,H)}
   if(grain){ctx.globalAlpha=.55;ctx.fillStyle=grain;ctx.fillRect(0,0,W,H);ctx.globalAlpha=1}
   if(!vign){vign=ctx.createRadialGradient(W/2,H/2,Math.min(W,H)*.35,W/2,H/2,Math.hypot(W,H)*.62);vign.addColorStop(0,'rgba(0,0,0,0)');vign.addColorStop(1,'rgba(70,55,35,.22)')}
