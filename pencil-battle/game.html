@@ -1870,8 +1870,8 @@ class Fighter{
       if(ev.fx==='gas'){const h=this.sk.head;for(let k=0;k<16;k++)fx.push({k:'ink',x:h[0]+this.face*10,y:h[1]-6,vx:this.face*(90+Math.random()*220),vy:(Math.random()-.5)*120,t:0,life:.7+Math.random()*.4,col:Math.random()<.6?'#8fbf6a':'#b6d48f',len:7+Math.random()*7});dust(h[0]+this.face*40,h[1]-40,.5)}
       if(ev.fx==='med'){if(this.hp>0){const a=Math.min(3,this.maxHp-this.hp);this.hp+=a;this.ghost=Math.max(this.ghost,this.hp)}fx.push({k:'ring',x:this.x,y:this.y+20,t:0,life:.4,col:'#7fe0ff',s:this.sc*.9});if(this===P1)buzz(8)}
       if(ev.fx==='vanish'){this.alpha=.12;dust(this.x,0,1);for(let k=0;k<10;k++)fx.push({k:'ink',x:this.x,y:30+Math.random()*90,vx:(Math.random()-.5)*260,vy:Math.random()*200,t:0,life:.4,col:'#6fd3ff',len:5})}
-      if(ev.fx==='smokeOut'){smokePuff(this.x,this.sc);this.alpha=0;this.inv=Math.max(this.inv,.5);AU.whoosh(true)}
-      if(ev.fx==='smokeBehind'){const op=this.nearest();if(op){const[lo,hi]=bounds(this);this.x=clamp(op.x-op.face*78,lo,hi);this.face=op.x>this.x?1:-1;this.dff=this.df=this.face}smokePuff(this.x,this.sc);this.alpha=1;AU.whoosh(false)}
+      if(ev.fx==='smokeOut'){smokePuff(this.x,this.sc*(this.ch&&this.ch.mon?.5:1),this.ch&&this.ch.mon?5:14);this.alpha=0;this.inv=Math.max(this.inv,.5);AU.whoosh(true)}
+      if(ev.fx==='smokeBehind'){const op=this.nearest();if(op){const[lo,hi]=bounds(this);this.x=clamp(op.x-op.face*78,lo,hi);this.face=op.x>this.x?1:-1;this.dff=this.df=this.face}smokePuff(this.x,this.sc*(this.ch&&this.ch.mon?.5:1),this.ch&&this.ch.mon?5:14);this.alpha=1;AU.whoosh(false)}
       if(ev.fx==='smokeIn'){smokePuff(this.x,this.sc);this.alpha=1}
       if(ev.fx==='bomb'){const h=this.sk.h1;fx.push({k:'bomb',o:this,x:h[0],y:h[1],vx:this.face*620,vy:260,t:0,life:1.4,rot:0});AU.whoosh(false)}
       if(ev.fx==='proj')throwProj(this);
@@ -2135,7 +2135,7 @@ setTimeout(()=>{wxLabel();const b=document.getElementById('wxBtn');if(b)b.onclic
 // ---- night ghosts: drift around, now and then swoop at the nearest fighter (either side); any attack that touches one dispels it
 let GH=[];const GHI=Array.from({length:10},(_,i)=>Object.assign(new Image(),{src:'fx/ghost'+i+'.webp'}));  // 8-frame strips cut from the user's ghost video
 function updGhosts(dt){if(WX.type!=='night'||game.mode==='demo'||game.phase!=='fight'){if(game.phase!=='fight')GH=[];return}
-  WX.gT=(WX.gT??4)-dt;const cap=game.theme==='forest'?(game.mode==='story'?4:3):game.mode==='story'?3:2;
+  WX.gT=(WX.gT??4)-dt;const cap=game.theme==='forest'?2:game.mode==='story'?3:2;
   if(WX.gT<=0&&GH.length<cap){WX.gT=6+Math.random()*6;const hw=W/2/cam.z;GH.push({x:cam.x+(Math.random()<.5?-1:1)*hw*.9,y:150,t:0,st:'drift',cd:2+Math.random()*2,i:Math.random()*10|0,a:0,face:1,hp:3,fl:0,kx:0});AU.whoosh(true)}
   for(const g of GH){g.t+=dt;g.a=Math.min(1,g.a+dt*1.5);g.fl=Math.max(0,g.fl-dt);if(g.kx){g.x+=g.kx*dt;g.kx*=Math.pow(.02,dt);if(Math.abs(g.kx)<20)g.kx=0}
     if(g.st==='drift'){g.cd-=dt;const hw=W/2/cam.z;g.x+=Math.sin(g.t*.9+g.i)*60*dt;g.y+=(140+Math.sin(g.t*1.7+g.i)*45-g.y)*Math.min(1,dt*3);g.x=clamp(g.x,cam.x-hw,cam.x+hw);
@@ -2149,7 +2149,7 @@ function updGhosts(dt){if(WX.type!=='night'||game.mode==='demo'||game.phase!=='f
   GH=GH.filter(g=>!g.dead)}
 function hurtGhost(g,f,n,p){g.hp-=n;g.fl=.18;g.kx=(Math.sign(g.x-f.x)||f.face||1)*380;g.st='drift';g.cd=Math.max(g.cd,1.4);spark(p,1);AU.hit(true);shake(4);
   if(g.hp>0){fx.push({k:'word',x:g.x,y:g.y+50,t:0,life:.5,txt:['جیغ!','هـــو!','آخ!'][g.hp%3],rot:0});return}
-  g.dead=1;smokePuff(g.x,.9);for(let k=0;k<18;k++){const a=Math.random()*TAU,v=150+Math.random()*350;fx.push({k:'ink',x:g.x,y:g.y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,t:0,life:.5,col:Math.random()<.5?'#dff4ff':'#9fd8ff',len:7})}
+  g.dead=1;smokePuff(g.x,.5,5);for(let k=0;k<18;k++){const a=Math.random()*TAU,v=150+Math.random()*350;fx.push({k:'ink',x:g.x,y:g.y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,t:0,life:.5,col:Math.random()<.5?'#dff4ff':'#9fd8ff',len:7})}
   fx.push({k:'ring',x:g.x,y:g.y,t:0,life:.35,col:'#bfe8ff',s:1.6});fx.push({k:'word',x:g.x,y:g.y+40,t:0,life:.8,txt:'پوف!',rot:0});
   if(f===P1&&game.mode==='story'){story.kills++;addCoins(2)}}
 function drawGhostsWX(){for(const g of GH){const im=GHI[g.i],bob=Math.sin(g.t*4)*4;ctx.save();ctx.globalAlpha=g.a*(g.st==='dash'?1:.9);ctx.translate(g.x,g.y+bob);if(QL<1){ctx.shadowColor='rgba(200,230,255,.8)';ctx.shadowBlur=QL?0:14}
@@ -2199,7 +2199,7 @@ function drawWeatherScreen(){if(game.mode==='demo')return;const T=WX.type;if(T==
   if((T==='storm'||T==='night')&&WX.flash>0){if(WX.flash>.55){ctx.save();ctx.globalCompositeOperation='lighter';const hh=groundY()*.85;if(!fxFrame('bolt',1+Math.floor(WX.t*20)%7,WX.bolt-hh*.3,0,hh*.58,hh)){ctx.strokeStyle='rgba(235,245,255,.95)';ctx.lineWidth=3;ctx.beginPath();let x=WX.bolt,y=0;ctx.moveTo(x,y);while(y<groundY()*.7){x+=(Math.random()-.5)*50;y+=30+Math.random()*30;ctx.lineTo(x,y)}ctx.stroke()}ctx.restore()}
     ctx.fillStyle=`rgba(235,240,255,${WX.flash*.45})`;ctx.fillRect(0,0,W,H)}
   ctx.restore()}
-function smokePuff(x,sc=1){shake(5);for(let k=0;k<14;k++){const a=Math.random()*TAU;fx.push({k:'smoke',x:x+Math.cos(a)*20*sc,y:(20+Math.random()*110)*sc,vx:Math.cos(a)*(60+Math.random()*120),vy:20+Math.random()*60,r:(20+Math.random()*22)*sc,t:0,life:.8+Math.random()*.5,col:Math.random()<.5?'#bdbab4':'#8f8b85'})}}
+function smokePuff(x,sc=1,n=14){shake(5);for(let k=0;k<n;k++){const a=Math.random()*TAU;fx.push({k:'smoke',x:x+Math.cos(a)*20*sc,y:(20+Math.random()*110)*sc,vx:Math.cos(a)*(60+Math.random()*120),vy:20+Math.random()*60,r:(20+Math.random()*22)*sc,t:0,life:.8+Math.random()*.5,col:Math.random()<.5?'#bdbab4':'#8f8b85'})}}
 function fireBurst(p,big,ac='#ff4fa0'){const n=big?34:12;for(let k=0;k<n;k++){const a=Math.random()*TAU,v=(big?260:150)+Math.random()*(big?520:260);fx.push({k:'ink',x:p[0],y:p[1],vx:Math.cos(a)*v,vy:Math.sin(a)*v+120,t:0,life:.35+Math.random()*.4,col:['#fff4b0','#ffd23a','#ff9a1e',ac][k%4],len:big?9:6})}
   fx.push({k:'ring',x:p[0],y:p[1]-10,t:0,life:.3,col:'#ffd23a',s:big?1.6:1});if(big){spark(p,1,false,true);game.flashT=Math.max(game.flashT,.07)}}
 function spark(p,big,small,red){fx.push({k:'spark',x:p[0],y:p[1],t:0,life:red?.38:small?.14:big?.3:.18,R:red?78:small?16:big?50:28,seed:Math.random()*1e6|0,small,red})}
@@ -2281,7 +2281,7 @@ const STORY=[
   {theme:'zurkhaneh',weapon:'none',name:'زورخانه',len:4500,waves:[{x:760,n:4},{x:1700,n:5},{x:2750,n:6}],boss:{x:4000,hp:650,weapon:'none',name:'پهلوونِ زورخانه'},ehp:86,edmg:1,ai:'g3',wch:.35,maxEng:3,loot:['staff','nun'],crates:[[480,1],[1300,0],[1400,1],[2200,1],[3100,0],[3200,1]]},
   {theme:'beach',weapon:'none',name:'ساحل',len:4500,waves:[{x:760,n:5},{x:1700,n:5},{x:2750,n:6}],boss:{x:4000,hp:680,weapon:'none',name:'رقصنده‌ی ساحل'},ehp:88,edmg:1,ai:'g3',wch:.35,maxEng:3,loot:['sword','dagger'],crates:[[480,1],[1300,0],[1400,1],[2200,0],[3100,1],[3200,1]]},
   {theme:'roof',weapon:'none',name:'پشت‌بام شبانه',len:4600,waves:[{x:760,n:5},{x:1750,n:6},{x:2800,n:6}],boss:{x:4100,hp:740,weapon:'none',name:'لاکیِ پشت‌بام'},ehp:92,edmg:1.05,ai:'g3',wch:.4,maxEng:3,loot:['nun','sword','staff','dagger'],crates:[[480,1],[1300,1],[1400,0],[2200,1],[3100,0],[3200,1]]},
-  {theme:'forest',wx:'night',mons:1,weapon:'none',name:'جنگل ارواح',len:4700,waves:[{x:760,n:5},{x:1750,n:6},{x:2800,n:7}],boss:{x:4200,hp:820,weapon:'none',name:'شاهِ اجنه'},ehp:80,edmg:1,ai:'g3',wch:0,maxEng:3,loot:['sword','staff'],crates:[[480,1],[1300,0],[1400,1],[2200,1],[3100,0],[3200,1]]},
+  {theme:'forest',wx:'night',mons:1,weapon:'none',name:'جنگل ارواح',len:4700,waves:[{x:760,n:3},{x:1750,n:4},{x:2800,n:4}],boss:{x:4200,hp:820,weapon:'none',name:'شاهِ اجنه'},ehp:80,edmg:1,ai:'g3',wch:0,maxEng:2,loot:['sword','staff'],crates:[[480,1],[1300,0],[1400,1],[2200,1],[3100,0],[3200,1]]},
 ];
 const story={stage:0,len:3500,waveIdx:0,lock:null,spawnQ:[],boss:null,result:null,kills:0,arrowT:0};
 let QL=0;try{QL=+localStorage.getItem('pf-q')||0}catch(e){}  // 0 full, 1 lighter, 2 lightest
@@ -2316,7 +2316,7 @@ function startStory(i,keepMeter){game.forceWx=STORY[i].wx||null;rollWeather();co
   if(!ew&&st.weapon==='nun')queueMsg('نانچیکو گرفتی!',1.3,.8,'#cf241d');if(st.weapon==='staff')queueMsg('چوب رزمی گرفتی!',1.3,.8,'#cf241d');if(st.weapon==='sword')queueMsg('کاتانا گرفتی!',1.3,.8,'#cf241d');if(st.weapon==='dagger')queueMsg('دو خنجر گرفتی!',1.3,.8,'#cf241d');queueMsg('برو جلو →',1,.7);VO.say('st'+(i+1),{pri:1,delay:i===0&&!keepMeter?3.1:1})}
 function spawnMon(st,side){const z=Math.random()<.6,ch=z?MONS.zombie:MONS.jinn,L=story.lock||[P1.x-600,P1.x+600],x=clamp(P1.x+side*(z?230+Math.random()*170:300+Math.random()*150),L[0]+40,L[1]-40);
   const e=new Fighter({team:1,c:COLORS[ch.mon],ch,weapon:'none',hp:st.ehp,dmg:st.edmg*LV[game.diff].dmg,x,face:-side,spd:.9+Math.random()*.2});e.face=P1.x>x?1:-1;e.ammo=0;
-  if(z){e.startMove('zrise');AU.groan();for(let k=0;k<16;k++)fx.push({k:'ink',x:x+(Math.random()-.5)*50,y:4,vx:(Math.random()-.5)*260,vy:120+Math.random()*260,t:0,life:.5,col:Math.random()<.5?'#5a4632':'#3b4434',len:6})}else{smokePuff(x,.8);AU.cackle()}
+  if(z){e.startMove('zrise');AU.groan();for(let k=0;k<16;k++)fx.push({k:'ink',x:x+(Math.random()-.5)*50,y:4,vx:(Math.random()-.5)*260,vy:120+Math.random()*260,t:0,life:.5,col:Math.random()<.5?'#5a4632':'#3b4434',len:6})}else{smokePuff(x,.5,5);AU.cackle()}
   e.ai=new AI(e,st.ai);e.inp=mkInput();fighters.push(e);ctrl.push(e.ai);return e}
 function spawnEnemy(st,side,boss){if(st.mons&&!boss)return spawnMon(st,side);const L=story.lock,x=boss?Math.min(L[1]-80,P1.x+430):side>0?L[1]+70:L[0]-70;
   const bc=st.mons?MONS.king:CHARS.find(c=>c.id===BOSSCH[story.stage])||CHARS[0],e=boss?new Fighter({team:1,c:st.mons?COLORS.jinnk:COLORS.boss,ch:{...bc,bossOf:story.stage},weapon:bc.weapon,hp:st.boss.hp,sc:1.22,boss:true,dmg:1.25*LV[game.diff].dmg,kbRes:.6,name:st.boss.name,x,face:-side,aura:'#ff6a1e'})
@@ -2324,7 +2324,7 @@ function spawnEnemy(st,side,boss){if(st.mons&&!boss)return spawnMon(st,side);con
   if(!boss&&Math.random()<.45)e.cos={hat:['cap','party','cowboy','chef','viking'][Math.random()*5|0],face:Math.random()<.25?'sun':null};
   e.ai=new AI(e,boss?'boss':st.ai);e.inp=mkInput();fighters.push(e);ctrl.push(e.ai);if(boss){story.boss=e;startBossCine(e)}else if(Math.random()<.5)VO.say('e-spawn',{pri:0,cd:16,chance:.5});else{if(nowS()>(VO.tzT||0)){VO.tzT=nowS()+14;sayPool('taunt',{pri:0,chance:.6})}}return e}
 function storyUpdate(dt){const st=STORY[story.stage];story.arrowT=Math.max(0,story.arrowT-dt);
-  if(st.mons&&story.boss&&story.boss.state!=='ko'&&!story.boss.ko&&game.phase==='fight'&&!game.cine){story.sumT=(story.sumT??7)-dt;if(story.sumT<=0){story.sumT=9;if(fighters.filter(f=>f.team===1&&!f.boss&&!f.gone&&f.state!=='ko').length<2){spawnMon(st,Math.random()<.5?1:-1);say('شاه اجنه لشکر خواست!',1.2,.7,'#9b4dff')}}}
+  if(st.mons&&story.boss&&story.boss.state!=='ko'&&!story.boss.ko&&game.phase==='fight'&&!game.cine){story.sumT=(story.sumT??7)-dt;if(story.sumT<=0){story.sumT=9;if(fighters.filter(f=>f.team===1&&!f.boss&&!f.gone&&f.state!=='ko').length<1){spawnMon(st,Math.random()<.5?1:-1);say('شاه اجنه لشکر خواست!',1.2,.7,'#9b4dff')}}}
   if(!story.lock&&!story.spawnQ.length&&!story.boss){story.idleT+=dt;if(story.idleT>7){story.idleT=-14;if(P1.state==='stand'&&Math.random()<.3)startGag(P1,'head',0);else chat(P1,'idle',{force:1})}}   // nobody to hit: the hero gets bored
   else{story.idleT=0;if(/^idle/.test(VO.k||'')&&VO.end>nowS()){VO.stop();game.sub=null}}
   for(const q of story.spawnQ)q.t-=dt;const due=story.spawnQ.filter(q=>q.t<=0);story.spawnQ=story.spawnQ.filter(q=>q.t>0);for(const q of due)spawnEnemy(st,q.side,q.boss);
@@ -2344,7 +2344,7 @@ function koEvent(att,def,byFin){if(def===P1||att===P1)buzz([90,50,140]);
   if(game.mode==='story'){
     if(def===P1){if(game.phase!=='fight')return;game.phase='roundEnd';game.endT=0;game.slow=1.2;AU.ko();say('ناک‌اوت!',2,1.3,'#cf241d');game.soul={f:P1,t:0,fin:1};story.result='lose';game.endLim=.6+chat(P1,'lost',{pri:2,delay:.6,force:1})+.5;return}
     if(def.boss){game.endLim=.5+chat(def,'lost',{pri:2,delay:.5,force:1})+.5;game.phase='roundEnd';game.endT=0;game.slow=1.6;game.winner=P1;AU.ko();say(byFin?'نابود شد!':'رئیس افتاد!',2.2,1.3,'#cf241d');story.result='win';return}
-    if(def.ch&&def.ch.mon==='jinn')smokePuff(def.x,.8);story.kills++;if(att===P1)addCoins(2);chat(def,'lost',{chance:.35});const alive=fighters.filter(f=>f.team===1&&f!==def&&f.state!=='ko'&&!f.ko);if(!alive.length&&!story.spawnQ.length){game.slow=.5;AU.ko()}return}
+    if(def.ch&&def.ch.mon==='jinn')smokePuff(def.x,.5,5);story.kills++;if(att===P1)addCoins(2);chat(def,'lost',{chance:.35});const alive=fighters.filter(f=>f.team===1&&f!==def&&f.state!=='ko'&&!f.ko);if(!alive.length&&!story.spawnQ.length){game.slow=.5;AU.ko()}return}
   if(game.phase!=='fight')return;game.phase='roundEnd';game.winner=att;game.slow=byFin?1.8:1.4;game.endT=0;AU.ko();
   if(!net.on&&game.mode==='battle'){const fin=(def===P1?game.wins[1]:game.wins[0])+1>=2;if(fin)game.dark=1.4;if(fin||Math.random()<.55)game.soul={f:def,t:0,fin}}
   if(game.mode==='battle'){say(byFin?'نابود شد!':'ناک‌اوت!',2,1.3,'#cf241d');VO.say('a-ko',{pri:2});game.endLim=1.6+chat(def,'lost',{pri:2,delay:1.6,force:1})+.4}}
