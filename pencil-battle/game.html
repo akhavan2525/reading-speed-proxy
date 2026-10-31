@@ -570,7 +570,7 @@ const CHARS=[
   {id:'gladiator',name:'گلادیاتور',style:'مشت‌های میخ‌دار',weapon:'none',stats:[5,2,4],spd:.85,dmg:1.2,hp:120,kb:.8,sc:1.1,special:'gslam',sname:'زمین‌لرزه!',look:{gloves:'#6e4f3c',spikes:1,helm:'#6e4f3c',skirt:'#6e4f3c',pads:'#6e4f3c'},img:'chars/c8.png'},
   {id:'ninja',name:'آذرخش',style:'نینجای شمشیر نور',weapon:'sword',stats:[3,5,2],spd:1.2,dmg:.95,hp:90,special:'ydash',sname:'یورش آذرخش!',stance:'yStance',moves:{p:'ksw',fp:'ymanji',bp:'ygas',cp:'ymed',k:'fs',fk:'ypoison',bk:'ytele',ck:'sw'},look:{band:'visor',bandCol:'#2f7fd6',cuffs:'#2f7fd6',glow:'#6fd3ff'},img:'chars/c9.png'},
   {id:'pahlevan',name:'پهلوون',style:'زورخانه‌ای، دو میل',weapon:'none',stance:'pStance',stats:[5,1,5],spd:.8,dmg:1.25,hp:125,kb:.75,sc:1.15,special:'kabadeh',sname:'فرفره‌ی کباده!',moves:{p:'mswing',fp:'lunge',bp:'mspin',cp:'upc',k:'fs',fk:'sk',bk:'bk',ck:'sw'},look:{mustache:1,shorts:'#c0392b',shortsTrim:'#e8b53a',belt:'#c0392b',meel:1}},
-  {id:'mozhgan',name:'مژگان',style:'تکواندو و کیف دستی',weapon:'none',stats:[3,5,2],spd:1.15,dmg:.95,hp:92,special:'mzbag',sname:'کیف‌کوبی!',stance:'mzSt',win:'mzWin',moves:{p:'mzpalm',fp:'mzknee',bp:'mzflash',cp:'cau',k:'mzrh',fk:'mzpush',bk:'bk',ck:'sw'},look:{top:'#ee5d9f',top2:'#5b2a86',pants:'#5b2a86',stripe:'#ee5d9f',shoes:'#ee5d9f',belt:'#f3efe6',bangles:'#f2b51e',pony:'#1d1c1a'},img:'chars/c10.png'},
+  {id:'mozhgan',name:'مژگان',style:'تکواندو و کیف دستی',weapon:'none',stats:[3,5,2],spd:1.15,dmg:.95,hp:92,special:'mzbag',sname:'کیف‌کوبی!',stance:'mzSt',win:'mzWin',moves:{p:'mzpalm',fp:'mzknee',bp:'mzflash',cp:'mzserpent',k:'mzrh',fk:'mzcomet',bk:'mzvault',ck:'mzcyclone'},look:{top:'#ee5d9f',top2:'#5b2a86',pants:'#5b2a86',stripe:'#ee5d9f',shoes:'#ee5d9f',belt:'#f3efe6',bangles:'#f2b51e',pony:'#1d1c1a'},img:'chars/c10.png'},
   {id:'turtle',name:'لاکی',style:'لاک‌پشت نینجا، چوب',weapon:'staff',stats:[3,4,4],spd:1.05,dmg:1,hp:110,kb:.9,special:'sspin',sname:'گردباد چوب!',bk:'shellsp',look:{shell:'#4f9a4c',band:'tails',bandCol:'#7e57c2',bo:1}}];
 const PLAYABLE=CHARS.filter(c=>!c.lock);
 // ===== shop: coins buy hats, face items and silly weapons (saved on this device) =====
@@ -745,6 +745,12 @@ const P={
   mzBag2:B({hy:54,hx:8,t:22,h:-10,f1:[36,0],f2:[-30,0],h1:[48,4],h2:[8,18]}),
   mzBag3:B({hy:52,hx:6,t:16,h:-6,f1:[34,0],f2:[-30,0],h1:[36,-24],h2:[6,20]}),
   mzWin:B({hy:60,t:-2,h:6,f1:[18,0],f2:[-20,0],h1:[14,46],h2:[22,28]}),
+  // Mozhgan legendary poses: handstand V and T (cyclone), vault tuck, superman glide, head-first dive
+  mzHand1:B({hy:60,L1:[38,38],L2:[-38,-38],A1:[178,178],A2:[-178,-178]}),
+  mzHand2:B({hy:60,L1:[88,88],L2:[-88,-88],A1:[178,178],A2:[-178,-178]}),
+  mzVault:B({hy:60,t:40,h:-10,f1:[20,24],f2:[-10,28],h1:[30,-30],h2:[24,-30]}),
+  mzSup:B({hy:60,rot:80,f1:[-4,0],f2:[4,0],A1:[178,178],A2:[176,176]}),
+  mzDive:B({hy:60,rot:150,f1:[6,0],f2:[-6,0],A1:[178,178],A2:[176,176]}),
   // Bruce Lee (dragon): ready stance, dragon knuckle, one-inch punch, dragon hammer, front kick, dragon's tail, victory pose
   blSt:B({hy:55,t:8,h:-4,f1:[28,0],f2:[-26,0],h1:[30,8],h2:[14,22]}),
   blKn0:B({hy:58,hx:2,t:-6,h:4,f1:[26,0],f2:[-26,0],h1:[20,46],h2:[10,16]}),
@@ -1106,9 +1112,15 @@ const MOVES={
   // taekwondo set from Mozhgan's move sheet: fast roundhouse -> double roundhouse -> axe kick, push kick, bangle flash
   mzrh:{seq:[['hw1',55,20,46],['hw2',100,80,66],['hw1',55,0,46],['stance',110,0,22]],hits:[{t0:55,t1:155,limb:'f1',dmg:7,kb:220,kind:'light',r:14}],trail:'f1',chain:{kick:'mzrh2'},from:130},
   mzrh2:{seq:[['hw1',45,20,48],['hw2',80,70,68],['hw1',40,0,50],['hw2',90,80,68],['hw1',55,0,46],['stance',110,0,22]],hits:[{t0:45,t1:125,limb:'f1',dmg:6,kb:120,kind:'light',r:14},{t0:165,t1:255,limb:'f1',dmg:8,kb:300,kind:'heavy',r:14}],trail:'f1',chain:{kick:'mzax'},from:230},
-  mzax:{seq:[['hw1',70,10,44],['hwax',110,40,62],['blFk',90,40,60],['fs2',70,0,40],['stance',120,0,22]],hits:[{t0:150,t1:260,limb:'f1',dmg:13,kb:200,kind:'knock',r:16}],trail:'f1'},
+  mzax:{seq:[['hw1',70,10,44],['hwax',110,40,62],['blFk',90,40,60],['fs2',70,0,40],['stance',120,0,22]],hits:[{t0:150,t1:260,limb:'f1',dmg:13,kb:200,kind:'knock',r:16}],trail:'f1',chain:{kick:'mzsky'},from:250},
   mzpush:{seq:[['fs2',70,20,40],['blFk',120,120,64],['fs2',70,0,40],['stance',120,0,22]],hits:[{t0:70,t1:190,limb:'f1',dmg:9,kb:620,kind:'heavy',r:15}],trail:'f1'},
   mzflash:{seq:[['blHam0',110,90,40,0,{fx:'ringH'}],['mzSt',150,0,30],['stance',120,0,22]],hits:[{t0:60,t1:200,limb:'h1',dmg:4,kb:60,kind:'light',r:62,stun:.9}]},
+  // Mozhgan's legendary moves, part of her normal set: down+punch serpent, fwd+kick comet, back+kick vault, down+kick cyclone, 4th kick of the string skybreaker
+  mzsky:{air:1,launch:[780,300],rotc:[40,380,0,-360],seq:[['dk1',70,0,40,0,{fx:'dash'}],['bf3',170,0,32],['bf4',140,0,32],['hwfk',190,0,58,0,{fx:'dash'}],['as4',9e9,0,60,0,{vy:-1300}]],hits:[{t0:380,t1:570,limb:'f1',dmg:10,kb:420,kind:'knock',r:18,cine:1},{t0:570,t1:9e9,limb:'f1',dmg:6,kb:260,kind:'knock',r:18}],slam:1},
+  mzcyclone:{rotk:[[0,0],[230,180],[860,180],[1060,360]],seq:[['crouch',70,300,40],['au0',80,320,34],['mzHand1',110,0,40],['mzHand2',75,160,50,0],['mzHand2',75,160,50,0],['mzHand2',75,160,50,0],['mzHand2',75,160,50,0],['mzHand2',75,160,50,0],['mzHand2',75,160,50,0],['mzHand2',75,160,50,0],['mzHand2',75,160,50,0],['mzHand1',90,0,40],['crouch',100,0,34,0,{fx:'land'}],['stance',140,0,22]],hits:[{t0:260,t1:335,limb:'f1',dmg:3,kb:150,kind:'heavy',r:26},{t0:335,t1:410,limb:'f2',dmg:3,kb:150,kind:'heavy',r:26},{t0:410,t1:485,limb:'f1',dmg:3,kb:150,kind:'heavy',r:26},{t0:485,t1:560,limb:'f2',dmg:3,kb:150,kind:'heavy',r:26},{t0:560,t1:635,limb:'f1',dmg:3,kb:150,kind:'heavy',r:26},{t0:635,t1:710,limb:'f2',dmg:3,kb:150,kind:'heavy',r:26},{t0:710,t1:785,limb:'f1',dmg:3,kb:150,kind:'heavy',r:26},{t0:785,t1:860,limb:'f2',dmg:6,kb:520,kind:'launch',r:26,cine:1}]},
+  mzvault:{air:1,vaultBox:1,launch:[820,330],seq:[['fsk2',140,0,40],['mzVault',160,0,40],['hw1',100,0,40],['mzDive',9e9,0,40,0,{vy:-1500}]],hits:[{t0:400,t1:9e9,limb:'h1',dmg:11,kb:300,kind:'knock',r:22,cine:1}],slam:1},
+  mzcomet:{air:1,launch:[1000,260],seq:[['fsk2',180,0,40],['mzSup',260,0,45,0,{fx:'dash'}],['mzDive',9e9,0,40,0,{vy:-1700}]],hits:[{t0:180,t1:440,limb:'h1',dmg:6,kb:200,kind:'heavy',r:20},{t0:440,t1:9e9,limb:'h1',dmg:11,kb:300,kind:'knock',r:24,cine:1}],slam:1},
+  mzserpent:{air:1,launch:[600,480],rotc:[60,560,0,-720],seq:[['crouch',60,0,40],['kj2',220,0,34],['hwfk',9e9,0,58,0,{fx:'dash'}]],hits:[{t0:200,t1:420,limb:'f1',dmg:5,kb:150,kind:'heavy',r:20},{t0:420,t1:9e9,limb:'f1',dmg:9,kb:520,kind:'knock',r:20,cine:1}],landFx:1},
   mzbag:{aura:1,bag:1,seq:[['mzBag1',110,0,40],['mzBag2',100,90,62],['mzBag3',90,40,55],['mzBag1',90,0,45],['mzBag2',100,90,62],['spinA',70,0,40],['mzBag2',120,140,64,0,{fx:'dash'}],['stance',150,0,22]],
     hits:[{t0:110,t1:210,limb:'h1',dmg:8,kb:200,kind:'heavy',r:24},{t0:390,t1:490,limb:'h1',dmg:8,kb:200,kind:'heavy',r:24},{t0:560,t1:680,limb:'h1',dmg:14,kb:620,kind:'knock',r:26,cine:1}],trail:'h1'},
   kspin:{air:1,aura:1,launch:[700,130],rotc:[0,430,0,-360],seq:[['kj1',100,0,40],['kj2',330,0,34],['kj3',80,0,45],['kj4',100,0,55],['kj5',9e9,0,55]],
@@ -1676,7 +1688,7 @@ class Fighter{
   get airborne(){return this.y>0||this.vy>0}
   enemies(){return fighters.filter(o=>o.team!==this.team&&!o.gone)}
   nearest(){let b=null,bd=1e9;for(const o of this.enemies()){if(o.state==='ko')continue;const d=Math.abs(o.x-this.x);if(d<bd){bd=d;b=o}}return b}
-  startMove(name){const d=MOVES[name];this.move={d,name,t:0,hits:new Set(),props:new Set(),seg:d.seq[0],si:-1};this.state='move';this.trail=[];
+  startMove(name){const d=MOVES[name];if(d.vaultBox)props.push(mkProp('box2',this.x+this.face*95));this.move={d,name,t:0,hits:new Set(),props:new Set(),seg:d.seq[0],si:-1};this.state='move';this.trail=[];
     if(this.nc){const np=Math.atan2(Math.sin(this.nc.phi),Math.cos(this.nc.phi)),dl=np-this.nc.phi;this.nc.phi=np;this.nc.psi+=dl}
     if(d.air&&d.boost)this.vx=d.boost*this.face;
     if(d.launch&&!this.airborne){this.vy=d.launch[0];this.vx=d.launch[1]*this.face;this.y=.5;dust(this.x,0,.7)}}
@@ -1702,7 +1714,9 @@ class Fighter{
       if(fight){this.crouch=!!I.down;this.blocking=!!I.block;
         if(take(I,'fin')&&op&&canFinish(this,op))startFinisher(this,op);
         else if(take(I,'special')){let mv,cost=BAR;
-          if(this.meter>=100&&!fwd&&!back&&!I.down&&!I.up){mv=(this.ch&&this.ch.special)||'special';cost=100}else mv=I.up?'adr':I.down?'slide':fwd?'dashk':back?'bflip':'multi';
+          // a character with legendary supers picks one by direction when the bar is full
+          const SU=this.ch&&this.ch.supers;
+          if(this.meter>=100&&(SU||(!fwd&&!back&&!I.down&&!I.up))){mv=SU?SU[I.up?'up':I.down?'down':fwd?'fwd':back?'back':'n']:(this.ch&&this.ch.special)||'special';cost=100}else mv=I.up?'adr':I.down?'slide':fwd?'dashk':back?'bflip':(this.ch&&this.ch.barSp)||'multi';
           if(this.meter>=cost-.01){this.meter=Math.max(0,this.meter-cost);this.startMove(mv);if(cost===100)superFlash(this);else cineStart(this,mv)}}
         else if(take(I,'punch')){const M=this.ch&&this.ch.moves;this.startMove(M?(this.crouch?M.cp:fwd?M.fp:back?M.bp:M.p):this.punchMove(fwd,back))}
         else if(take(I,'kick')){const M=this.ch&&this.ch.moves;if(back&&!this.crouch&&this.ch&&this.ch.bk&&this.weapon===this.ch.weapon){this.startMove(this.ch.bk)}else this.startMove(M?(this.crouch?M.ck:fwd?M.fk:back?M.bk:M.k):this.crouch?'sw':(fwd?'sk':back?'bk':'fs'))}
@@ -1785,6 +1799,7 @@ class Fighter{
     if(S==='air')return[P.air,12];
     if(S==='move'){const mv=this.move,pp=this.poseOf(mv.seg[0]),rc=mv.d.rotc;let p=pp;
       if(rc){const u=clamp((mv.t-rc[0])/(rc[1]-rc[0]),0,1),e=u*.72+.28*u*u*(3-2*u);p={...pp,rot:rc[2]+(rc[3]-rc[2])*e,_rc:1}}
+      const rk=mv.d.rotk;if(rk){let r=rk[rk.length-1][1];for(let i=1;i<rk.length;i++)if(mv.t<=rk[i][0]){const a=rk[i-1],b=rk[i],u=(mv.t-a[0])/(b[0]-a[0]);r=a[1]+(b[1]-a[1])*u;break}p={...p,rot:r,_rc:1}}
       return[p,(mv.seg[3]||30)*.92]}
     if(S==='hit')return[P[this.hitPose],26];
     if(S==='bstun'){const B_=(this.ch&&this.ch.block&&this.ch.block[0])||{staff:'blS',sword:'blK',dagger:'blD'}[this.weapon];return[B_?P[B_]:P.block,26]}
