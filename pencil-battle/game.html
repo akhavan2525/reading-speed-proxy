@@ -121,6 +121,7 @@ kbd{font-family:inherit;border:1.5px solid var(--ink);border-radius:5px;padding:
     <button id="shopBtn">🛒 فروشگاه</button>
     <button id="onlineBtn">🌐 آنلاین</button>
     <button id="wxBtn">🌦 هوا: تصادفی</button>
+    <button id="homeBtn">🏠 خونه‌ی سیاه</button>
     <a id="apkBtn" href="paper-fighters.apk" download style="display:none">📱 دانلود اپ اندروید</a>
     <div id="menuCoins">🪙 ۰</div>
     <button id="exitBtn" style="display:none">✕ خروج</button>
@@ -132,6 +133,11 @@ kbd{font-family:inherit;border:1.5px solid var(--ink);border-radius:5px;padding:
   <div id="selGrid" class="sgrid"></div>
   <div id="selInfo" class="sinfo"></div>
   <div class="row"><button class="btn" id="selBack">برگشت</button><button class="btn big" id="selGo" style="margin:0">انتخاب</button></div>
+</div></div>
+<div id="home" class="overlay hidden"><div class="hwrap">
+  <div class="hhead"><button class="btn" id="homeBack" style="margin:0;padding:4px 14px">برگشت</button><b id="homeTitle"></b><div class="coins" id="homeCoins">🪙 ۰</div></div>
+  <div id="hscene"><div id="hbubble"></div></div>
+  <div id="hpanel"></div>
 </div></div>
 <div id="shop" class="overlay hidden"><div class="card selc">
   <div class="shead"><h1 style="font-size:22px;margin:0">فروشگاه قهرمان</h1><div class="coins" id="shopCoins">🪙 ۰</div></div>
@@ -611,10 +617,10 @@ const SHOP=[
   {id:'broom',slot:'weapon',base:'staff',name:'جارو',price:120,word:'فیش!'},{id:'baguette',slot:'weapon',base:'staff',name:'نون باگت',price:140,word:'خِرت!'},
   {id:'fish',slot:'weapon',base:'sword',name:'ماهی',price:160,word:'شالاپ!'},{id:'umbrella',slot:'weapon',base:'sword',name:'چتر',price:180,word:'تاپ!'},
   {id:'pan',slot:'weapon',base:'sword',name:'ماهیتابه',price:200,word:'دَنگ!'},{id:'chicken',slot:'weapon',base:'sword',name:'مرغ پلاستیکی',price:250,word:'قُدقُد!'}];
-const SAVE={coins:0,owned:[],equip:{hat:null,face:null,weapon:null},up:{pow:0,spd:0,hp:0}};
-try{const d=JSON.parse(localStorage.getItem('pf-save')||'null');if(d){SAVE.coins=d.coins|0;SAVE.owned=Array.isArray(d.owned)?d.owned:[];Object.assign(SAVE.equip,d.equip||{});Object.assign(SAVE.up,d.up||{})}}catch(e){}
+const SAVE={coins:0,owned:[],equip:{hat:null,face:null,weapon:null},up:{pow:0,spd:0,hp:0},home:{st:0,it:{},food:'',seen:'',fed:0}};
+try{const d=JSON.parse(localStorage.getItem('pf-save')||'null');if(d){SAVE.coins=d.coins|0;SAVE.owned=Array.isArray(d.owned)?d.owned:[];Object.assign(SAVE.equip,d.equip||{});Object.assign(SAVE.up,d.up||{});Object.assign(SAVE.home,d.home||{})}}catch(e){}
 function saveGame(){try{localStorage.setItem('pf-save',JSON.stringify(SAVE))}catch(e){}updCoins()}
-function updCoins(){for(const id of['menuCoins','shopCoins']){const e=document.getElementById(id);if(e)e.textContent='🪙 '+fa(SAVE.coins)}}
+function updCoins(){for(const id of['menuCoins','shopCoins','homeCoins']){const e=document.getElementById(id);if(e)e.textContent='🪙 '+fa(SAVE.coins)}}
 function addCoins(n){if(!n||game.mode==='demo')return 0;SAVE.coins+=n;saveGame();const t=document.getElementById('coinToast');if(t){t.textContent='+'+fa(n)+' سکه 🪙';t.classList.remove('show');void t.offsetWidth;t.classList.add('show')}return n}
 // what the player wears/holds; silly weapons reuse a real weapon's moves (battle mode only)
 function applyEquip(f,weapons,eq=SAVE.equip){eq=eq||{};f.cos={hat:eq.hat||null,face:eq.face||null};const w=weapons&&eq.weapon&&SHOP.find(i=>i.id===eq.weapon);
@@ -2322,8 +2328,8 @@ function startRound(){if(game.round===1)rollWeather();primeVoices();VO.pre(game.
 function startStory(i,keepMeter){game.forceWx=STORY[i].wx||null;rollWeather();const st=STORY[i];primeVoices();VO.pre('st'+(i+1));game.cine=null;game.endLim=0;game.soul=null;game.dark=0;story.idleT=0;game.sub=null;game.mode='story';story.stage=i;story.sumT=7;story.len=st.len;story.waveIdx=0;story.lock=null;story.spawnQ=[];story.boss=null;story.result=null;story.arrowT=0;
   setTheme(st.theme,'story',st.len,st.boss.x);const m=P1&&keepMeter?P1.meter:0;
   const ew=SAVE.equip.weapon&&SHOP.find(i=>i.id===SAVE.equip.weapon),U=SAVE.up;
-  P1=new Fighter({team:0,c:COLORS.black,ch:{id:'hero',name:'قهرمان',weapon:'none',special:'special',sname:'طوفان!',look:{},intro:i===0?'siaintro':null,proj:'bomb',keep:{bp:'siasmoke',bk:'siabomb'}},weapon:ew?ew.base:st.weapon,x:150,face:1,hp:100+15*U.hp,dmg:1+.1*U.pow});P1.spd*=1+.06*U.spd;
-  if(ew){P1.wskin=ew.real?null:ew;P1.reset(P1.x,1)}P1.cos={hat:SAVE.equip.hat,face:SAVE.equip.face};P1.inp=human;P1.meter=m;P2=null;fighters=[P1];ctrl=[];props=storyProps(st);pickups=[];projs=[];fx=[];speed=null;game.fin=null;game.slow=0;
+  P1=new Fighter({team:0,c:COLORS.black,ch:{id:'hero',name:'قهرمان',weapon:'none',special:'special',sname:'طوفان!',look:{},intro:i===0?'siaintro':null,proj:'bomb',keep:{bp:'siasmoke',bk:'siabomb'}},weapon:ew?ew.base:st.weapon,x:150,face:1,hp:100+15*U.hp+homeHP(),dmg:1+.1*U.pow});P1.spd*=1+.06*U.spd;
+  if(ew){P1.wskin=ew.real?null:ew;P1.reset(P1.x,1)}P1.cos={hat:SAVE.equip.hat,face:SAVE.equip.face};P1.inp=human;P1.meter=m;if(SAVE.home.fed){P1.meter=Math.max(P1.meter,BAR);SAVE.home.fed=0;saveGame();queueMsg('غذای مامان: نوار ویژه پر!',1.3,.8,'#cf241d')}P2=null;fighters=[P1];ctrl=[];props=storyProps(st);pickups=[];projs=[];fx=[];speed=null;game.fin=null;game.slow=0;
   cam.x=150;game.phase='intro';game.introT=0;say('مرحله‌ی '+fa(i+1)+' · '+st.name,1.6,1);if(P1.ch.intro)P1.startMove(P1.ch.intro);
   if(!ew&&st.weapon==='nun')queueMsg('نانچیکو گرفتی!',1.3,.8,'#cf241d');if(st.weapon==='staff')queueMsg('چوب رزمی گرفتی!',1.3,.8,'#cf241d');if(st.weapon==='sword')queueMsg('کاتانا گرفتی!',1.3,.8,'#cf241d');if(st.weapon==='dagger')queueMsg('دو خنجر گرفتی!',1.3,.8,'#cf241d');queueMsg('برو جلو →',1,.7);VO.say('st'+(i+1),{pri:1,delay:i===0&&!keepMeter?3.1:1})}
 function spawnMon(st,side){const z=Math.random()<.6,ch=z?MONS.zombie:MONS.jinn,L=story.lock||[P1.x-600,P1.x+600],x=clamp(P1.x+side*(z?230+Math.random()*170:300+Math.random()*150),L[0]+40,L[1]-40);
@@ -2916,7 +2922,7 @@ let cineHid=false;
 // ================= UI wiring =================
 const $=id=>document.getElementById(id);
 const isTouch=matchMedia('(pointer:coarse)').matches||'ontouchstart' in window;
-function show(id){for(const o of['menu','pause','over','help','select','shop','lobby'])$(o).classList.toggle('hidden',o!==id);const playing=!id&&(game.mode==='battle'||game.mode==='story');$('topbtns').style.display=playing?'flex':'none';$('touch').style.display=playing&&isTouch?'block':'none'}
+function show(id){for(const o of['menu','pause','over','help','select','shop','lobby','home'])$(o).classList.toggle('hidden',o!==id);const playing=!id&&(game.mode==='battle'||game.mode==='story');$('topbtns').style.display=playing?'flex':'none';$('touch').style.display=playing&&isTouch?'block':'none'}
 function showOver(t,s,btn,act,col){game.phase='over';$('tomenu2').style.display=btn==='منو'?'none':'';$('overT').textContent=t;$('overT').style.color=col||'';$('overS').textContent=s;$('again').textContent=btn;game.overAct=act;show('over')}
 function seg(id,cb){$(id).addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;for(const x of $(id).children)x.classList.toggle('on',x===b);cb(b.dataset.v)})}
 seg('mode',v=>{game.modeSel=v;updStage()});
@@ -2952,6 +2958,35 @@ function renderSelect(){const g=$('selGrid');g.innerHTML='';sel.prev=[];
 $('selGo').onclick=()=>{if(sel.online){game.p1ch=sel.pick[0];openLobby();return}if(!sel.step){sel.step=1;if(sel.pick[1]===sel.pick[0])sel.pick[1]=(sel.pick[0]+1+(Math.random()*(PLAYABLE.length-1)|0))%PLAYABLE.length;renderSelect();return}
   game.p1ch=sel.pick[0];game.p2ch=sel.pick[1];startFight()};
 const shop={tab:'up',sel:null,prev:[]};
+// ---- Sia's home: the family was thrown out by the landlord; coins repair and replace their things step by step (broken -> repaired -> new)
+const HOME=[{name:'گوشه‌ی پارک',bg:'home/park.webp',cost:[40,90],items:[
+    {id:'shelter',name:'سرپناه',st:['کارتن‌های پاره','چادرِ وصله‌دار','چادرِ نو'],x:67,y:17,w:30,ln:[['مامان','یه چادرِ وصله‌دار... ولی سقفه، خدا رو شکر.'],['نازی','آخ جون! چادرمون مثلِ اردوی مدرسه شد!']]},
+    {id:'samovar',name:'سماور',st:['سماورِ داغون','سماورِ تعمیری','سماورِ نو'],x:43,y:13,w:8.5,ln:[['عزیز','سماوره سوت زد! سه ماهه صدای سوتشو نشنیده بودم!'],['عزیز','حالا شد! چای دیشلَمه، با نَبات!']]},
+    {id:'blanket',name:'پتو',st:['پتوی پاره','پتوی وصله‌دار','پتوی نو'],x:53,y:7,w:12,ln:[['نازی','پتومون دیگه سوراخ نداره، باد نمیاد تو!'],['مامان','چه نرمه! امشب همه راحت می‌خوابیم.']]},
+    {id:'lantern',name:'فانوس',st:['فانوسِ شکسته','فانوسِ تعمیری','فانوسِ نو'],x:86,y:14,w:5.5,ln:[['نازی','دیگه از تاریکی نمی‌ترسم!'],['مامان','روشن شد... مثلِ دلم.']]}]},
+  {name:'اتاق اجاره‌ای',bg:'home/room.webp',cost:[70,150],keep:[['samovar',30,12,5.5],['lantern',66,12,3.6],['blanket',18,9,10]],items:[
+    {id:'rug',name:'فرش',st:['فرشِ پاره','فرشِ وصله‌پینه‌ای','فرشِ نو'],x:50,y:2,w:46,sy:.42,ln:[['عزیز','فرشِ وصله‌پینه‌ای، از زمینِ سرد که بهتره.'],['عزیز','این فرشِ دستباف، منو یادِ جهیزیه‌ی خودم انداخت!']]},
+    {id:'fridge',name:'یخچال',st:['یخچالِ زنگ‌زده','یخچالِ تعمیری','یخچالِ نو'],x:85,y:13,w:12,ln:[['مامان','یخچاله نِق می‌زنه، ولی سرده!'],['نازی','بستنی! حالا می‌تونیم بستنی نگه داریم!']]}]}];
+const FOOD=['ناهار حاضره! قورمه‌سبزی، که جون بگیری.','آش رشته پختم، بخور زورت زیاد شه.','کتلت داغه، تا سرد نشده بیا!'];
+const homeHP=()=>2*Object.values(SAVE.home.it).reduce((a,b)=>a+(b|0),0);  // every repair or replacement: +2 hero HP in the story
+const today=()=>new Date().toISOString().slice(0,10);let homeSel=null,hbT=0;
+function homeSay(who,txt){const b=$('hbubble');b.innerHTML='<small>'+who+'</small>'+txt;b.classList.add('on');clearTimeout(hbT);hbT=setTimeout(()=>b.classList.remove('on'),3800)}
+function openHome(){const H=SAVE.home;homeSel=null;renderHome();show('home');
+  if(!H.seen)homeSay('مامان','سیاه جان... صاحبخونه بیرونمون کرد. ببین چی‌کار می‌تونی بکنی.');else if(H.seen!==today())homeSay('عزیز','کجا بودی مادر؟ دلمون آب شد!');H.seen=today();saveGame()}
+function renderHome(pop){const H=SAVE.home,L=HOME[Math.min(H.st,HOME.length-1)],sc=$('hscene');$('homeTitle').textContent='خونه‌ی سیاه · '+L.name;sc.style.backgroundImage=`url(${L.bg})`;
+  sc.querySelectorAll('img').forEach(e=>e.remove());
+  const add=(src,x,y,w,cls,on)=>{const im=document.createElement('img');im.src=src;im.style.left=x+'%';im.style.bottom=y+'%';im.style.width=w+'%';if(cls)im.className=cls;if(on)im.onclick=on;sc.appendChild(im);return im};
+  for(const k of L.keep||[])add('home/'+k[0]+'2.webp',k[1],k[2],k[3],'fixed');
+  for(const it of [...L.items].sort((a,b)=>b.y-a.y)){const v=H.it[it.id]|0;const im=add('home/'+it.id+v+'.webp',it.x,it.y,it.w,(homeSel===it.id?'sel ':'')+(it.sy?'flat':pop===it.id?'pop':''),()=>{homeSel=it.id;AU.block();renderHome()});if(it.sy){im.style.transformOrigin='50% 100%';im.style.transform=`translateX(-50%) scaleY(${it.sy})`}}
+  const P=$('hpanel');P.innerHTML='';const btn=(t,f,dis)=>{const b=document.createElement('button');b.className='btn';b.textContent=t;b.disabled=!!dis;b.onclick=f;P.appendChild(b);return b};
+  const it=L.items.find(i=>i.id===homeSel);
+  if(it){const v=H.it[it.id]|0,d=document.createElement('div');d.innerHTML=`<span class="nm">${it.st[v]}</span>`;P.appendChild(d);
+    if(v<2){const c=L.cost[v];btn((v?'نو کن':'تعمیر کن')+' · '+fa(c)+' 🪙',()=>homeBuy(it,c),SAVE.coins<c)}else{const d2=document.createElement('div');d2.textContent='✓ نو شد';P.appendChild(d2)}}
+  else{const d=document.createElement('div');d.textContent='روی یه وسیله بزن · هر تعمیر: +۲ جونِ قهرمان توی داستان';P.appendChild(d)}
+  const fed=H.food===today();btn(fed?'🍲 فردا دوباره بیا':'🍲 غذای مامان',()=>{H.food=today();H.fed=1;addCoins(15);homeSay('مامان',FOOD[Math.random()*FOOD.length|0]+' (+۱۵ سکه، نوار ویژه‌ی مرحله‌ی بعد پر)');AU.heal&&AU.heal();saveGame();renderHome()},fed);
+  if(L.items.every(i=>(H.it[i.id]|0)>=2)){if(H.st<HOME.length-1)btn('🚚 اسباب‌کشی به '+HOME[H.st+1].name,()=>{H.st++;homeSel=null;saveGame();renderHome();homeSay('نازی','خونه‌ی جدید! من پیشِ پنجره می‌خوابم!')});else{const d=document.createElement('div');d.textContent='به‌زودی: آپارتمان!';P.appendChild(d)}}
+  updCoins()}
+function homeBuy(it,c){const H=SAVE.home;if(SAVE.coins<c)return;SAVE.coins-=c;const v=(H.it[it.id]|0)+1;H.it[it.id]=v;saveGame();AU.sup&&AU.sup();renderHome(it.id);const l=it.ln[v-1];homeSay(l[0],l[1])}
 function openShop(){shop.sel=null;renderShop();show('shop')}
 function renderShop(){const g=$('shopGrid');g.innerHTML='';shop.prev=[];updCoins();for(const b of $('shopTabs').children)b.classList.toggle('on',b.dataset.v===shop.tab);
   const items=SHOP.filter(i=>i.slot===shop.tab);if(!shop.sel||!items.includes(shop.sel))shop.sel=items[0];
@@ -2973,7 +3008,7 @@ $('shopAct').onclick=()=>{const it=shop.sel;if(!it)return;
   else SAVE.equip[it.slot]=SAVE.equip[it.slot]===it.id?null:it.id;saveGame();renderShop()};
 $('shopTabs').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;shop.tab=b.dataset.v;shop.sel=null;renderShop()});
 $('shopBack').onclick=()=>show('menu');
-if(window.PFApp&&PFApp.exit){$('exitBtn').style.display='block';$('exitBtn').onclick=()=>{try{PFApp.exit()}catch(e){}}}$('shopBtn').onclick=()=>{AU.init();openShop()};updCoins();
+if(window.PFApp&&PFApp.exit){$('exitBtn').style.display='block';$('exitBtn').onclick=()=>{try{PFApp.exit()}catch(e){}}}$('shopBtn').onclick=()=>{AU.init();openShop()};$('homeBtn').onclick=()=>{AU.init();openHome()};$('homeBack').onclick=()=>{AU.block();show('menu')};updCoins();
 function lobbyMsg(t){const e=$('lbMsg');e.textContent=t;e.style.display=t?'block':'none'}
 function openLobby(){netClose();$('lbMain').classList.remove('hidden');$('lbWait').classList.add('hidden');$('lbCode').value='';lobbyMsg('');show('lobby')}
 $('onlineBtn').onclick=()=>{AU.init();sel.online=true;openSelect()};
@@ -3074,6 +3109,16 @@ window.__game={get game(){return game},get P1(){return P1},get P2(){return P2},g
 .sinfo .st i{display:block;height:8px;background:var(--ink);border-radius:5px 3px 6px 2px}
 .sinfo .sp{margin-top:4px;font-weight:700;color:var(--red)}
 #onlineBtn{position:absolute;left:51%;top:80.6%;width:36%;height:5.2%;display:flex;align-items:center;justify-content:center;font-family:inherit;font-weight:900;font-size:.95em;color:var(--paper);background:#2f6db3;border:2.5px solid var(--ink);border-radius:12px 9px 13px 8px/9px 13px 8px 12px;box-shadow:3px 3px 0 var(--ink);cursor:pointer}
+#homeBtn{position:absolute;left:13%;top:93.4%;width:74%;height:5%;display:flex;align-items:center;justify-content:center;font-family:inherit;font-weight:900;font-size:1em;color:var(--ink);background:#f6c56b;border:2.5px solid var(--ink);border-radius:12px 9px 13px 8px/9px 13px 8px 12px;box-shadow:3px 3px 0 var(--ink);cursor:pointer}
+#home{background:rgba(29,28,26,.88);padding:6px}.hwrap{display:flex;flex-direction:column;align-items:center;gap:6px;width:100%;max-height:100%}
+.hhead{display:flex;align-items:center;justify-content:space-between;gap:8px;width:min(96vw,calc((100vh - 140px)*1.777));color:var(--paper)}.hhead b{font-size:17px;text-align:center;flex:1}
+#hscene{position:relative;width:min(96vw,calc((100vh - 140px)*1.777));aspect-ratio:1672/941;background:#2a2622 center/cover no-repeat;border:3px solid var(--ink);border-radius:14px 10px 16px 9px;overflow:hidden;box-shadow:4px 4px 0 #000}
+#hscene img{position:absolute;transform:translateX(-50%);cursor:pointer;transition:filter .2s;-webkit-user-drag:none}
+#hscene img.sel{filter:drop-shadow(0 0 6px #ffe27a) drop-shadow(0 0 2px #fff)}#hscene img.pop{animation:hpop .6s ease-out}#hscene img.fixed{cursor:default}
+@keyframes hpop{0%{transform:translateX(-50%) scale(.6)}60%{transform:translateX(-50%) scale(1.15)}100%{transform:translateX(-50%) scale(1)}}
+#hbubble{position:absolute;left:50%;top:5%;transform:translateX(-50%);max-width:80%;background:var(--paper);color:var(--ink);border:2.5px solid var(--ink);border-radius:14px;padding:5px 12px;font-weight:900;font-size:clamp(12px,2.2vw,17px);text-align:center;opacity:0;transition:opacity .3s;pointer-events:none;z-index:5}#hbubble.on{opacity:1}#hbubble small{display:block;font-size:.75em;color:var(--red)}
+#hpanel{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px 10px;width:min(96vw,calc((100vh - 140px)*1.777));color:var(--paper);font-size:14px;text-align:center}
+#hpanel .btn,.hhead .btn{margin:0;padding:5px 14px;font-size:15px;background:var(--paper);color:var(--ink)}.hhead .coins{color:var(--ink)}#hscene img.flat{z-index:0}#hscene img{z-index:2}#hpanel .btn[disabled]{opacity:.45}#hpanel .nm{font-weight:900;font-size:16px}
 #shopBtn{position:absolute;left:13%;top:80.6%;width:36%;height:5.2%;display:flex;align-items:center;justify-content:center;font-family:inherit;font-weight:900;font-size:.95em;color:var(--paper);background:var(--red);border:2.5px solid var(--ink);border-radius:12px 9px 13px 8px/9px 13px 8px 12px;box-shadow:3px 3px 0 var(--ink);cursor:pointer}
 #exitBtn{position:absolute;right:4%;top:1.4%;font-family:inherit;font-weight:900;font-size:.85em;color:var(--ink);background:rgba(243,239,230,.9);border:2px solid var(--ink);border-radius:10px;padding:2px 10px;cursor:pointer}
 #menuCoins{position:absolute;left:4%;top:1.4%;font-size:.85em;font-weight:900;font-size:.95em;background:rgba(243,239,230,.9);border:2px solid var(--ink);border-radius:10px;padding:2px 9px}
