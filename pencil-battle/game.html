@@ -2090,7 +2090,7 @@ const WXN={rand:'تصادفی',clear:'آفتابی',night:'شب',rain:'بارو�
 function wxLabel(){const b=document.getElementById('wxBtn');if(b)b.textContent='🌦 هوا: '+WXN[wxPick]}
 setTimeout(()=>{wxLabel();const b=document.getElementById('wxBtn');if(b)b.onclick=()=>{wxPick=WXO[(WXO.indexOf(wxPick)+1)%WXO.length];try{localStorage.setItem('pf-wx',wxPick)}catch(e){}wxLabel();if(typeof AU!=='undefined'&&AU.block)AU.block()}},0);
 // ---- night ghosts: drift around, now and then swoop at the nearest fighter (either side); any attack that touches one dispels it
-let GH=[];const GHI=Array.from({length:10},(_,i)=>Object.assign(new Image(),{src:'fx/ghost'+i+'.png'}));
+let GH=[];const GHI=Array.from({length:10},(_,i)=>Object.assign(new Image(),{src:'fx/ghost'+i+'.webp'}));  // 8-frame strips cut from the user's ghost video
 function updGhosts(dt){if(WX.type!=='night'||game.mode==='demo'||game.phase!=='fight'){if(game.phase!=='fight')GH=[];return}
   WX.gT=(WX.gT??4)-dt;const cap=game.mode==='story'?3:2;
   if(WX.gT<=0&&GH.length<cap){WX.gT=6+Math.random()*6;const hw=W/2/cam.z;GH.push({x:cam.x+(Math.random()<.5?-1:1)*hw*.9,y:230+Math.random()*90,t:0,st:'drift',cd:2+Math.random()*2,i:Math.random()*10|0,a:0,face:1});AU.whoosh(true)}
@@ -2103,8 +2103,8 @@ function updGhosts(dt){if(WX.type!=='night'||game.mode==='demo'||game.phase!=='f
     // dispelled by any attack that reaches it
     for(const f of fighters){if(f.state!=='move'||!f.move)continue;const m=f.move;for(const h of m.d.hits){if(m.t<h.t0||m.t>h.t1)continue;for(const q of f.limbPts(h.limb))if(Math.hypot(q[0]-g.x,q[1]-g.y)<46){g.dead=1;smokePuff(g.x,.7);fx.push({k:'word',x:g.x,y:g.y+30,t:0,life:.7,txt:'پوف!',rot:0});if(f===P1&&game.mode==='story'){story.kills++;addCoins(1)}}}}}
   GH=GH.filter(g=>!g.dead)}
-function drawGhostsWX(){for(const g of GH){const im=GHI[g.i],bob=Math.sin(g.t*4)*4;ctx.save();ctx.globalAlpha=g.a*(g.st==='dash'?.95:.78);ctx.translate(g.x,g.y+bob);
-    if(im.complete&&im.naturalWidth){const h=120,w=h*im.naturalWidth/im.naturalHeight;ctx.scale(g.face,-1);ctx.drawImage(im,-w/2,-h/2,w,h)}
+function drawGhostsWX(){for(const g of GH){const im=GHI[g.i],bob=Math.sin(g.t*4)*4;ctx.save();ctx.globalAlpha=g.a*(g.st==='dash'?1:.9);ctx.translate(g.x,g.y+bob);ctx.shadowColor='rgba(200,230,255,.8)';ctx.shadowBlur=14;
+    if(im.complete&&im.naturalWidth){const fw=im.naturalWidth/8,h=150,w=h*fw/im.naturalHeight,k=Math.floor(g.t*8)%8;ctx.scale(g.face,-1);ctx.drawImage(im,k*fw,0,fw,im.naturalHeight,-w/2,-h/2,w,h)}
     else{ctx.scale(g.face,1);ctx.fillStyle='rgba(240,244,255,.9)';ctx.strokeStyle='rgba(60,70,90,.8)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-26,-34);for(let i=0;i<=6;i++){const x=-26+i*52/6;ctx.lineTo(x,-34+(i%2?8:0)+Math.sin(g.t*8+i)*3)}ctx.lineTo(26,10);ctx.arc(0,10,26,0,Math.PI);ctx.closePath();ctx.fill();ctx.stroke();
       ctx.fillStyle='#14161c';for(const ex of[-9,9]){ctx.beginPath();ctx.ellipse(ex+4,14,5,8,0,0,TAU);ctx.fill()}ctx.beginPath();ctx.ellipse(6,-4,6,9+Math.sin(g.t*6)*3,0,0,TAU);ctx.fill()}
     ctx.restore()}}
