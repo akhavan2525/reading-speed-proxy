@@ -3020,7 +3020,7 @@ resize();makeGrain();startDemo();
 (function bootLoad(){const box=$('loader');if(!box)return;const ims=[];
   for(const t in WALLBG)ims.push(wallImg(WALLBG[t][0]));for(const t in WALLIMG)for(const[src]of WALLIMG[t])ims.push(wallImg(src));
   for(const t in PROPIMG)for(const n of new Set(Object.values(PROPIMG[t]))){const src='props/'+t+'-'+n+'.webp';if(!PIMG[src]){PIMG[src]=new Image();PIMG[src].src=src}ims.push(PIMG[src])}
-  for(const c of CHARS)if(c.faceImg)ims.push(c.faceImg);ims.push(...SMOKE,...Object.values(FXI));
+  for(const c of CHARS)if(c.faceImg)ims.push(c.faceImg);ims.push(...SMOKE,...Object.values(FXI),ZIMG,JIMG,...GHI);
   for(const id in PARTS)for(const k in PARTS[id]){partImg(PARTS[id][k][0]);ims.push(PIMGS[PARTS[id][k][0]])}
   let font=0;(document.fonts?document.fonts.ready:Promise.resolve()).then(()=>font=1,()=>font=1);
   const t0=performance.now();let shown=0;
@@ -3031,7 +3031,9 @@ resize();makeGrain();startDemo();
 let last=performance.now();
 let qN=0,qT=0;function qualityWatch(dt){if(game.mode==='demo'||game.paused||document.hidden){qN=qT=0;return}qN++;qT+=dt;
   if(qT>=3){const fps=qN/qT;qN=qT=0;if(fps<40&&QL<2){QL++;try{localStorage.setItem('pf-q',QL)}catch(e){}resize()}}}
-function loop(t){qualityWatch(Math.min(.25,(t-last)/1000));const dt=clamp((t-last)/1000,0,.05);last=t;update(dt);if(net.on&&net.role==='host'&&game.phase!=='over')netHostTick();render();if(sel.prev.length&&!$('select').classList.contains('hidden'))drawPreviews(dt,sel.prev);if(shop.prev.length&&!$('shop').classList.contains('hidden'))drawPreviews(dt,shop.prev);requestAnimationFrame(loop)}
+// 120Hz phones would draw every frame twice for nothing (heat, battery): cap at 60 fps in play and 30 fps behind the menu
+let lastDraw=0;
+function loop(t){const cap=game.mode==='demo'?1000/30:1000/60;if(t-lastDraw<cap-2){requestAnimationFrame(loop);return}lastDraw=Math.max(lastDraw+cap,t-cap);qualityWatch(Math.min(.25,(t-last)/1000));const dt=clamp((t-last)/1000,0,.05);last=t;update(dt);if(net.on&&net.role==='host'&&game.phase!=='over')netHostTick();render();if(sel.prev.length&&!$('select').classList.contains('hidden'))drawPreviews(dt,sel.prev);if(shop.prev.length&&!$('shop').classList.contains('hidden'))drawPreviews(dt,shop.prev);requestAnimationFrame(loop)}
 requestAnimationFrame(loop);
 window.__game={get game(){return game},get P1(){return P1},get P2(){return P2},get fighters(){return fighters},story,startBattle,startStory,startDemo,human,press,cam,MOVES,P,skel,canFinish,startFinisher};
 </script>
