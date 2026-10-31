@@ -1740,7 +1740,7 @@ class Fighter{
   get airborne(){return this.y>0||this.vy>0}
   enemies(){return fighters.filter(o=>o.team!==this.team&&!o.gone)}
   nearest(){let b=null,bd=1e9;for(const o of this.enemies()){if(o.state==='ko')continue;const d=Math.abs(o.x-this.x);if(d<bd){bd=d;b=o}}return b}
-  startMove(name){const d=MOVES[name];if(d.vaultBox)props.push(mkProp('box2',this.x+this.face*95));this.move={d,name,t:0,hits:new Set(),props:new Set(),seg:d.seq[0],si:-1};this.state='move';this.trail=[];
+  startMove(name){const d=MOVES[name];const smk=this.ch&&this.ch.keep&&this.ch.keep.bk==='siabomb'&&/^(fs|sk|bk|sw|rh|ax|cres|shk|fsk|tn)$/.test(name)&&Math.random()<.35;if(d.vaultBox)props.push(mkProp('box2',this.x+this.face*95));this.move={d,name,smk,t:0,hits:new Set(),props:new Set(),seg:d.seq[0],si:-1};this.state='move';this.trail=[];
     if(this.nc){const np=Math.atan2(Math.sin(this.nc.phi),Math.cos(this.nc.phi)),dl=np-this.nc.phi;this.nc.phi=np;this.nc.psi+=dl}
     if(d.air&&d.boost)this.vx=d.boost*this.face;
     if(d.launch&&!this.airborne){this.vy=d.launch[0];this.vx=d.launch[1]*this.face;this.y=.5;dust(this.x,0,.7)}}
@@ -1829,7 +1829,8 @@ class Fighter{
       if(ev.fx==='throw')throwKnife(this,ev.i);
       if(ev.fx==='catch')AU.whoosh(false,true);
       if(ev.fx==='crash'){const tp=this.trailPt('w');setTimeout(()=>{crack(tp[0]+this.face*30,1.1);fx.push({k:'wave',x:tp[0]+this.face*30,y:0,t:0,life:.4,col:this.aura});shake(9);AU.ko()},90)}}}
-    if(this.state==='move'&&this.move&&this.move.d.ghost&&game.rt-(this.gT||0)>.045){this.gT=game.rt;const G=this.ghosts||(this.ghosts=[]);G.push({t:game.rt,sk:this.sk,col:this.move.d.ghost});if(G.length>5)G.shift()}
+    if(this.state==='move'&&this.move&&this.move.smk&&Math.random()<.35){const ft=this.sk.f1;fx.push({k:'smoke',x:ft[0],y:ft[1],vx:(Math.random()-.5)*80,vy:30+Math.random()*50,r:8+Math.random()*8,t:0,life:.5,col:'#a8a49d'})}
+    if(this.state==='move'&&this.move&&(this.move.d.ghost||this.move.smk)&&game.rt-(this.gT||0)>.045){this.gT=game.rt;const G=this.ghosts||(this.ghosts=[]);G.push({t:game.rt,sk:this.sk,col:this.move.d.ghost||'#9a9a9a'});if(G.length>5)G.shift()}
     if(this.state==='move'&&this.move&&this.move.d.dust&&Math.random()<.55)dust(this.x+(Math.random()-.5)*90*this.sc,0,.5+Math.random()*.4);
     if(this.state==='move'&&this.move&&this.move.d.swirl&&Math.random()<.75)fx.push({k:'ring',x:this.x,y:this.y+(18+Math.random()*95)*this.sc,t:0,life:.26,col:Math.random()<.55?this.aura:'#ffc83a',s:this.sc*(1+Math.random()*.4)});
     if(this.state==='move'&&this.move&&this.move.d.spark&&Math.random()<.6){const h=Math.random()<.5?this.sk.h1:this.sk.h2;fx.push({k:'ink',x:h[0],y:h[1],vx:(Math.random()-.5)*380,vy:Math.random()*300,t:0,life:.45,col:Math.random()<.6?'#ffd23a':'#fff2a0',len:4})}
@@ -1940,7 +1941,7 @@ function applyHit(att,def,h,p){
   if(!def.ko&&game.phase==='fight')voHit(att,def,h,heavy);
   if(h.cine||h.kind==='launch'||h.kind==='knock')def.dizzy=1.3;
   if((h.cine||h.kind!=='light')&&Math.random()<.2)teeth(def,dir);
-  spark(p,heavy||def.ko?1:0);inkBurst(p,def.c.ink,heavy?10:5,dir);if(att.state==='move'&&att.move&&att.move.d.fire)fireBurst(p,h.cine||h.kind==='knock'||h.kind==='launch',att.aura);
+  spark(p,heavy||def.ko?1:0);inkBurst(p,def.c.ink,heavy?10:5,dir);if(att.state==='move'&&att.move&&att.move.smk){smokePuff(p[0],.8);fireBurst(p,true,'#c8c4bc')}else if(att.state==='move'&&att.move&&att.move.d.fire)fireBurst(p,h.cine||h.kind==='knock'||h.kind==='launch',att.aura);
   game.hitstop=Math.max(game.hitstop,def.ko?.2:heavy?.11:.06);shake(def.ko?16:heavy?9:4);
   if(heavy||def.ko){speedLines(p,def.ko?.55:.28);pop(p)}
   if(h.cine){game.slow=Math.max(game.slow,.32);game.zp=.22;game.flashT=.08;spark(p,1,false,true);speedLines(p,.45);shake(15);if(!heavy)pop(p)}
