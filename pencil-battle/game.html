@@ -2087,10 +2087,11 @@ function drawIce(f){if(!(f.frozen>0))return;const s=f.sk,sc=f.sc,cx=s.hip[0],top
 const WX={type:'clear',t:0,drops:[],snow:0,flash:0,next:5};
 function rollWeather(){const r=Math.random();WX.type=r<.45?'clear':r<.6?'night':r<.75?'rain':r<.87?'storm':'snow';WX.t=0;WX.snow=0;WX.flash=0;WX.next=3+Math.random()*5;WX.drops=[]}
 function updWeather(dt){if(game.mode==='demo'||WX.type==='clear'||WX.type==='night')return;WX.t+=dt;
-  const rain=WX.type==='rain'||WX.type==='storm',n=rain?(WX.type==='storm'?190:140):170;
-  while(WX.drops.length<n)WX.drops.push({x:Math.random()*W,y:Math.random()*H-H,v:rain?(700+Math.random()*400):(40+Math.random()*50),s:Math.random(),ph:Math.random()*TAU});
+  const rain=WX.type==='rain'||WX.type==='storm',n=rain?(WX.type==='storm'?260:210):170;
+  while(WX.drops.length<n){const s_=Math.random();WX.drops.push({x:Math.random()*W,y:Math.random()*H-H,v:rain?(520+s_*620):(40+Math.random()*50),s:s_,ph:Math.random()*TAU})}
   const gy=groundY();for(const d of WX.drops){d.y+=d.v*dt;if(rain)d.x-=d.v*.12*dt;else d.x+=Math.sin(WX.t*1.3+d.ph)*20*dt;
-    if(d.y>gy+(H-gy)*d.s){if(rain&&Math.random()<.3)fx.push({k:'ink',x:cam.x+(d.x-W/2)/cam.z,y:1,vx:(Math.random()-.5)*60,vy:60+Math.random()*60,t:0,life:.18,col:'rgba(160,190,220,.8)',len:3});d.y=-10-Math.random()*60;d.x=Math.random()*(W+80)}}
+    if(d.y>gy+(H-gy)*d.s){if(rain&&(WX.spl||(WX.spl=[])).length<60)WX.spl.push({x:d.x,y:d.y,t:0,s:d.s});d.y=-10-Math.random()*60;d.x=Math.random()*(W+80)}}
+  if(WX.spl){for(const q of WX.spl)q.t+=dt;WX.spl=WX.spl.filter(q=>q.t<.35)}
   if(WX.type==='snow')WX.snow=Math.min(1,WX.snow+dt/40);
   if(WX.type==='storm'){WX.flash=Math.max(0,WX.flash-dt*3);WX.next-=dt;if(WX.next<=0){WX.next=4+Math.random()*7;WX.flash=1;WX.bolt=Math.random()*W;setTimeout(()=>{AU.thud();shake(6)},250+Math.random()*500)}}}
 function drawWeatherWorld(){if(WX.type!=='snow'||WX.snow<=0)return;const a=WX.snow,hw=W/2/cam.z+80;ctx.save();
@@ -2101,7 +2102,17 @@ function drawWeatherWorld(){if(WX.type!=='snow'||WX.snow<=0)return;const a=WX.sn
 function drawWeatherScreen(){if(game.mode==='demo')return;const T=WX.type;if(T==='clear')return;ctx.save();
   if(T==='night'||T==='storm'||T==='rain'){ctx.fillStyle=T==='night'?'rgba(8,14,52,.58)':T==='storm'?'rgba(14,18,36,.5)':'rgba(28,38,62,.3)';ctx.fillRect(0,0,W,H);
     if(T==='night'){const g=ctx.createRadialGradient(W/2,groundY()-60,30,W/2,groundY()-60,Math.max(W,H)*.6);g.addColorStop(0,'rgba(255,230,160,.12)');g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.fillRect(0,0,W,H)}}
-  if(T==='rain'||T==='storm'){ctx.strokeStyle='rgba(170,195,225,.55)';ctx.lineWidth=1.3;ctx.beginPath();for(const d of WX.drops){ctx.moveTo(d.x,d.y);ctx.lineTo(d.x-d.v*.012,d.y-d.v*.035)}ctx.stroke()}
+  if(T==='rain'||T==='storm'){const gy=groundY();
+    // wet floor: cooler, darker, with soft horizontal shine
+    ctx.fillStyle='rgba(40,62,92,.16)';ctx.fillRect(0,gy,W,H-gy);ctx.strokeStyle='rgba(220,235,255,.18)';ctx.lineWidth=1;ctx.beginPath();for(let i=0;i<9;i++){const y=gy+(H-gy)*((i*.137+WX.t*.02)%1),x=((i*271)%W);ctx.moveTo(x,y);ctx.lineTo(x+60+i*9,y)}ctx.stroke();
+    // far drops: thin, faint; near drops: longer and brighter
+    for(const near of[0,1]){ctx.strokeStyle=near?'rgba(78,108,150,.6)':'rgba(110,138,176,.36)';ctx.lineWidth=near?1.6:.9;ctx.beginPath();
+      for(const d of WX.drops){if((d.s>.55)!==!!near)continue;const l=near?22+d.s*16:10+d.s*8;ctx.moveTo(d.x,d.y);ctx.lineTo(d.x+l*.18,d.y-l)}ctx.stroke()}
+    // splash rings and tiny droplets where drops hit the floor
+    ctx.strokeStyle='rgba(80,110,150,.55)';ctx.lineWidth=1;ctx.beginPath();for(const q of WX.spl||[]){const k=q.t/.35,r=(3+k*10)*(.6+q.s*.8);ctx.moveTo(q.x+r,q.y);ctx.ellipse(q.x,q.y,r,r*.3,0,0,TAU)}ctx.stroke();
+    ctx.fillStyle='rgba(80,110,150,.65)';for(const q of WX.spl||[]){if(q.t>.15)continue;const k=q.t/.15;for(const sx of[-1,1]){ctx.beginPath();ctx.arc(q.x+sx*k*6,q.y-k*(1-k)*18,1.1,0,TAU);ctx.fill()}}
+    // mist near the top
+    const g=ctx.createLinearGradient(0,0,0,gy);g.addColorStop(0,'rgba(200,212,228,.18)');g.addColorStop(1,'rgba(200,212,228,0)');ctx.fillStyle=g;ctx.fillRect(0,0,W,gy)}
   if(T==='snow'){ctx.fillStyle='rgba(255,255,255,.92)';for(const d of WX.drops){ctx.beginPath();ctx.arc(d.x,d.y,2+d.s*3,0,TAU);ctx.fill()}}
   if(T==='storm'&&WX.flash>0){if(WX.flash>.55){ctx.save();ctx.globalCompositeOperation='lighter';const hh=groundY()*.85;if(!fxFrame('bolt',1+Math.floor(WX.t*20)%7,WX.bolt-hh*.3,0,hh*.58,hh)){ctx.strokeStyle='rgba(235,245,255,.95)';ctx.lineWidth=3;ctx.beginPath();let x=WX.bolt,y=0;ctx.moveTo(x,y);while(y<groundY()*.7){x+=(Math.random()-.5)*50;y+=30+Math.random()*30;ctx.lineTo(x,y)}ctx.stroke()}ctx.restore()}
     ctx.fillStyle=`rgba(235,240,255,${WX.flash*.45})`;ctx.fillRect(0,0,W,H)}
