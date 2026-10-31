@@ -2443,7 +2443,7 @@ function drawProjs(){for(const p of projs){ctx.save();ctx.translate(p.x,p.y);ctx
 function drawFighter(f){
   const s=f.sk,c=f.c,sc=f.sc,fl=f.flash>0,fc=fl?c.flash:c.front,rc=fl?c.flash:c.rear,bs=f.boss&&!(f.ch&&f.ch.bossOf!=null),Wd=9.5*sc*(bs&&!(f.ch&&f.ch.look&&f.ch.look.thin)?1.3:1),two=f.weapon==='staff',dff=f.dff;
   ctx.save();ctx.globalAlpha=f.alpha;ctx.lineCap='round';ctx.lineJoin='round';if(f.ch&&f.ch.look&&f.ch.look.jinn)ctx.translate(0,8+Math.sin(game.rt*3+f.uid)*5);
-  const shd=Math.max(.25,1-f.y/260);ctx.fillStyle='rgba(30,25,20,.16)';ctx.beginPath();ctx.ellipse(s.hip[0],0,38*shd*sc,5*shd*sc,0,0,TAU);ctx.fill();if(f.ch&&f.ch.look&&f.ch.look.jinn)drawJinnSmoke(f);if(f.state==='move'&&f.move&&f.move.name==='zrise'){const k=1-clamp(f.move.t/650,0,1);ctx.beginPath();ctx.rect(-1e5,0,2e5,1e5);ctx.clip();ctx.translate(0,-k*150*sc)}
+  const shd=Math.max(.25,1-f.y/260);ctx.fillStyle='rgba(30,25,20,.16)';ctx.beginPath();ctx.ellipse(s.hip[0],0,38*shd*sc,5*shd*sc,0,0,TAU);ctx.fill();if(f.ch&&f.ch.look&&f.ch.look.jinn)drawJinnSmoke(f);if(f.state==='move'&&f.move&&f.move.name==='zrise'&&!(f.ch.id==='zombie'&&ZIMG.naturalWidth)){const k=1-clamp(f.move.t/650,0,1);ctx.beginPath();ctx.rect(-1e5,0,2e5,1e5);ctx.clip();ctx.translate(0,-k*150*sc)}
   const hl=(pts,w)=>{ctx.save();ctx.translate(-1.3,1.3);strokePoly(pts,w*.28,'rgba(255,255,255,.16)');ctx.restore()};
   const gl=f.ch&&f.ch.look&&f.ch.look.gloves,fist=(p,col)=>{if(gl){drawGlove(f,p,col===rc);return}ctx.fillStyle=col;ctx.beginPath();ctx.arc(p[0],p[1],5.6*sc*(bs?1.5:1),0,TAU);ctx.fill()};
   const limb=(pts,w,col)=>{if(!bs){strokePoly(pts,w,col);return}strokePoly(pts.slice(0,2),w*1.55,col);strokePoly(pts.slice(1),w*1.2,col)};
@@ -2457,6 +2457,7 @@ function drawFighter(f){
     for(const pts of[L1,L2,A1,A2,T])strokePoly(pts,Wd+11*sc,ac);ctx.fillStyle=ac;ctx.beginPath();ctx.arc(s.head[0],s.head[1],(SEG.HR+7)*sc,0,TAU);ctx.fill();ctx.restore();
     ctx.strokeStyle=ac;ctx.lineWidth=1.5;ctx.globalAlpha=.85*f.alpha;const js=[s.head,s.chest,s.hip,s.k1,s.k2,s.f1,s.f2,s.h1,s.h2,s.e1];
     for(let i=0;i<7;i++){const q=js[Math.random()*js.length|0],a=Math.random()*TAU,l=(10+Math.random()*16)*sc,r0=12*sc;ctx.beginPath();ctx.moveTo(q[0]+Math.cos(a)*r0,q[1]+Math.sin(a)*r0);ctx.lineTo(q[0]+Math.cos(a+.3)*(r0+l*.5),q[1]+Math.sin(a+.3)*(r0+l*.5));ctx.lineTo(q[0]+Math.cos(a)*(r0+l),q[1]+Math.sin(a)*(r0+l));ctx.stroke()}ctx.globalAlpha=f.alpha}
+  if(f.ch&&f.ch.id==='zombie'&&drawZombieSprite(f)){ctx.restore();return}
   if(f.ch&&PARTS[f.ch.id]&&drawCutout(f)){drawIce(f);if(f.state==='move'&&f.move&&f.move.d.bag)drawBag(f);if(f.ch.id==='mozhgan'&&((f.state==='win'&&!f.dance)||(f.state==='move'&&f.move&&f.move.name==='mzintro')))drawPhone(f);ctx.restore();return}
   if(f.weapon==='sword'&&!f.wskin)drawScabbard(f);
   const sw=f.disp.sw;leg(sw?L1:L2,rc);if(!two){arm(A2,rc);fist(s.h2,rc);if(f.weapon==='dagger')drawKnife(f,1)}
@@ -2501,6 +2502,19 @@ function drawJinnFace(f,lk){const H=faceFrame(f),sc=f.sc;ctx.save();if(QL<1){ctx
   const g=lk.crown?1.5:1;horn(H(9,-8),H(12,-2),H(9+14*g,-12*g));horn(H(10,4),H(12,10),H(10+13*g,14*g));
   if(lk.crown){ctx.fillStyle='#e8b92a';ctx.strokeStyle='#5a3a0a';ctx.lineWidth=1*sc;ctx.beginPath();const pts=[H(11,-7),H(20,-6),H(15,-2),H(22,2),H(15,5),H(20,10),H(11,9)];pts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();ctx.fill();ctx.stroke()}}
 function drawJinnSmoke(f){const s=f.sk,sc=f.sc,t=game.rt;ctx.save();ctx.globalAlpha=f.alpha*.42;for(const q of[s.f1,s.f2,s.k1,s.k2])for(let k=0;k<3;k++){const ph=t*3+k*2.1+f.uid;ctx.fillStyle=k%2?'#4a3566':'#2b2140';ctx.beginPath();ctx.arc(q[0]+Math.sin(ph)*8*sc,q[1]+((t*40+k*13)%26)*sc,(9+k*3)*sc,0,TAU);ctx.fill()}ctx.restore()}
+// zombie drawn from frames cut out of the user's zombie video (fx/zombie.webp: 10 columns of 245x330 cells, facing right, feet at y=303, body at x=86)
+const ZIMG=Object.assign(new Image(),{src:'fx/zombie.webp'}),ZA={rise:[0,10],walk:[10,9],claw:[19,5],idle:[24,4],bite:[28,6],hit:[34,5],die:[39,10]};
+function drawZombieSprite(f){if(!ZIMG.complete||!ZIMG.naturalWidth)return false;const S=f.state,m=f.move,at=(a,u)=>ZA[a][0]+Math.min(ZA[a][1]-1,Math.max(0,Math.floor(u*ZA[a][1])));let i;
+  if(S!=='ko'&&!f.ko)f.zdT=null;if(S!=='hit')f.zhT=null;
+  if(S==='move'&&m){const tot=m.d._tot||(m.d._tot=m.d.seq.reduce((a,q)=>a+q[1],0)),u=m.t/tot;i=at(m.name==='zrise'?'rise':m.name==='zclaw'?'claw':m.name==='zbite'||m.name==='zlunge'?'bite':'claw',u)}
+  else if(S==='ko'||f.ko){if(f.zdT==null)f.zdT=game.rt;i=at('die',(game.rt-f.zdT)/1.3)}
+  else if(S==='hit'){if(f.zhT==null)f.zhT=game.rt;i=at('hit',(game.rt-f.zhT)/.45)}
+  else if(S==='down'||S==='getup')i=ZA.die[0]+2;
+  else if(S==='air'||S==='juggle'||S==='stun'||f.frozen>0)i=ZA.hit[0]+2;
+  else if(Math.abs(f.vx)>1)i=ZA.walk[0]+(Math.floor(game.rt*8+f.uid)%ZA.walk[1]);
+  else i=ZA.idle[0]+(Math.floor(game.rt*3+f.uid)%ZA.idle[1]);
+  const k=.52*f.sc,sx=(i%10)*245,sy=Math.floor(i/10)*330;ctx.save();ctx.translate(f.x,f.y);ctx.scale((f.face||1)*k,-k);ctx.drawImage(ZIMG,sx,sy,245,330,-86,-303,245,330);
+  if(f.flash>0){ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.4*f.alpha;ctx.drawImage(ZIMG,sx,sy,245,330,-86,-303,245,330)}ctx.restore();drawIce(f);return true}
 // cutout characters: drawn body-part pictures pinned on the skeleton. Each part = [file, ax, ay, bx, by]:
 // the two image points (px) that sit on the bone's two joints; the picture is scaled/rotated to fit them
 const PARTS={mozhgan:{head:['parts/mz-head.png',322,100,322,198],torso:['parts/mz-torso.png',132,10,160,215,.64],uarm:['parts/mz-uarm.png',37,37,37,237,1.2],
