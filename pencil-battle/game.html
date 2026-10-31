@@ -2240,7 +2240,11 @@ function drawFighter(f){
 // cutout characters: drawn body-part pictures pinned on the skeleton. Each part = [file, ax, ay, bx, by]:
 // the two image points (px) that sit on the bone's two joints; the picture is scaled/rotated to fit them
 const PARTS={mozhgan:{head:['parts/mz-head.png',322,100,322,198],torso:['parts/mz-torso.png',132,10,160,215,.64],uarm:['parts/mz-uarm.png',37,37,37,237,1.2],
-  farm:['parts/mz-farm.png',45,277,55,50,1.15],thigh:['parts/mz-thigh.png',53,53,53,405,1.45],shin:['parts/mz-shin.png',60,47,55,420,1.3]}},PIMGS={};
+  farm:['parts/mz-farm.png',45,277,55,50,1.15],thigh:['parts/mz-thigh.png',53,53,53,405,1.45],shin:['parts/mz-shin.png',60,47,55,420,1.3]},
+  boxer:{head:['parts/bx-head.png',160,150,160,300],torso:['parts/bx-torso.png',100,15,118,385,.8],uarm:['parts/bx-uarm.png',51,52,51,292],
+  farm:['parts/bx-farm.png',69,45,95,330],thigh:['parts/bx-thigh.png',75,70,75,296],shin:['parts/bx-shin.png',62,50,62,350]},
+  gladiator:{head:['parts/gl-head.png',215,250,215,370],torso:['parts/gl-torso.png',160,15,185,290],uarm:['parts/gl-uarm.png',60,50,56,300],
+  farm:['parts/gl-farm.png',75,45,80,340],thigh:['parts/gl-thigh.png',58,60,58,300],shin:['parts/gl-shin.png',63,50,60,330]}},PIMGS={};
 function partImg(src,rear){const k=src+(rear?'#r':'');let c=PIMGS[k];if(c!==undefined)return c&&c.ok?c:null;
   if(rear){const base=partImg(src,false);if(!base)return null;c=document.createElement('canvas');c.width=base.naturalWidth;c.height=base.naturalHeight;const g=c.getContext('2d');g.drawImage(base,0,0);
     g.globalCompositeOperation='source-atop';g.fillStyle='rgba(20,10,30,.22)';g.fillRect(0,0,c.width,c.height);c.ok=1;c.naturalWidth=c.width;c.naturalHeight=c.height;return PIMGS[k]=c}
