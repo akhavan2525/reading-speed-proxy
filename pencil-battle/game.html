@@ -560,7 +560,7 @@ const LAMP={shop:lampCone,cafe:lampDome,dojo:lantern,temple:lantern,alley:lampCo
 const WPN={shop:'none',cafe:'nun',dojo:'staff',temple:'sword',alley:'dagger'};
 // playable roster. stats = [power, speed, defense] out of 5; spd/dmg/hp/kb scale the fighter; look = costume drawn on the stick figure
 const CHARS=[
-  {id:'sia',name:'سیاه',style:'مشت و لگد',weapon:'none',stats:[3,3,3],spd:1,dmg:1,hp:100,special:'special',sname:'طوفان!',look:{band:'tails'},img:'chars/c1.png'},
+  {id:'sia',name:'سیاه',style:'مشت، لگد و دود',weapon:'none',stats:[3,3,3],spd:1,dmg:1,hp:100,special:'special',sname:'طوفان!',intro:'siaintro',moves:{p:'jab',fp:'lunge',bp:'siasmoke',cp:'upc',k:'fs',fk:'sk',bk:'siabomb',ck:'sw'},look:{band:'tails'},img:'chars/c1.png'},
   {id:'dragon',name:'اژدها',style:'کونگ‌فو و نانچیکو',weapon:'nun',stats:[3,5,2],spd:1.18,dmg:.92,hp:90,special:'blrush',sname:'مشت‌های خشمگین!',stance:'blSt',win:'blWin',moves:{p:'bl12',fp:'blinch',bp:'n8',cp:'blham',k:'blfk',fk:'blfly',bk:'blsom',ck:'bltail'},look:{suit:'#f2c21b'},img:'chars/c2.png'},
   {id:'dancer',name:'رقصنده',style:'کاپوئرا',weapon:'none',stats:[3,4,2],spd:1.1,dmg:1,hp:95,special:'wind',sname:'آسیاب بادی!',ginga:1,aura:'#e8462e',intro:'cpintro',introSoul:1,winAnim:[['stG',320],['cpGb',320]],winFx:'#ffffff',moves:{p:'cmeia',fp:'cprast',bp:'cpmacaco',cp:'cneg',k:'cpmeia',fk:'cparmada',bk:'cpau',ck:'cpheli'},block:['esq','cesq'],look:{band:'bandana',pants:'#f6f4ee',belt:'#f6f4ee'},img:'chars/c3.png'},
   {id:'samurai',name:'سامورایی',style:'کاتانا و لگدهای پیاپی',weapon:'sword',stats:[4,3,3],spd:.95,dmg:1.12,hp:100,special:'hw7',sname:'هفت لگد پیاپی!',win:'hwDab',moves:{p:'ksw',fp:'kspin',bp:'kflr',cp:'kjump',k:'hwk',fk:'hwfly',bk:'hwhook',ck:'sw'},look:{bun:1,belt:'#8d8d8d'}},
@@ -1169,6 +1169,10 @@ const MOVES={
   cpmacaco:{armor:1,air:1,swirl:1,fire:1,ghost:'#ffffff',rotk:[[0,0],[48,0],[272,-360]],landFx:1,trail:'f1',seq:[['crouch',48,0,55,0],['cpHand',88,0,60,0,{vy:640,vx:-160}],['bf3',82,0,50,0],['cr3',9e9,0,60,0,{vx:260}]],hits:[{t0:48,t1:136,limb:"f1",dmg:6,kb:300,kind:"launch",r:26},{t0:218,t1:6e9,limb:"f1",dmg:8,kb:420,kind:"knock",r:26,cine:1}]},
   cprast:{fire:1,dust:1,trail:'f1',seq:[['cpLow',48,59,55,0],['cpRast',129,559,75,0,{fx:"slide"}],['crouch',61,0,50,0],['stG',82,0,30,0]],hits:[{t0:48,t1:177,limb:"f1",dmg:8,kb:240,kind:"knock",r:22,low:1}]},
   cpintro:{seq:[['stG',300,0,20,0],['cpGb',300,0,20,0],['stG',300,0,20,0],['cpGb',300,0,20,0],['stG',300,0,20,0],['cpGb',300,0,20,0]],hits:[]},
+  // sia: smoke step (vanish and reappear behind the foe), smoke bomb (knocks the foe down), smoke entrance
+  siasmoke:{seq:[['crouch',70,0,44,0,{fx:'smokeOut'}],['crouch',150,0,40],['stance',30,0,40,0,{fx:'smokeBehind'}],['jab',90,60,60],['stance',110,0,24]],hits:[{t0:250,t1:340,limb:'h1',dmg:7,kb:300,kind:'heavy',r:16}]},
+  siabomb:{seq:[['cross0',110,0,40],['cross',90,0,60,0,{fx:'bomb'}],['stance',180,0,24]],hits:[]},
+  siaintro:{seq:[['stance',250,0,24,0,{fx:'smokeOut'}],['stance',550,0,24],['stance',300,0,24,0,{fx:'smokeIn'}],['stance',200,0,24]],hits:[]},
   mzbag:{aura:1,bag:1,seq:[['mzBag1',110,0,40],['mzBag2',100,90,62],['mzBag3',90,40,55],['mzBag1',90,0,45],['mzBag2',100,90,62],['spinA',70,0,40],['mzBag2',120,140,64,0,{fx:'dash'}],['stance',150,0,22]],
     hits:[{t0:110,t1:210,limb:'h1',dmg:8,kb:200,kind:'heavy',r:24},{t0:390,t1:490,limb:'h1',dmg:8,kb:200,kind:'heavy',r:24},{t0:560,t1:680,limb:'h1',dmg:14,kb:620,kind:'knock',r:26,cine:1}],trail:'h1'},
   kspin:{air:1,aura:1,launch:[700,130],rotc:[0,430,0,-360],seq:[['kj1',100,0,40],['kj2',330,0,34],['kj3',80,0,45],['kj4',100,0,55],['kj5',9e9,0,55]],
@@ -1813,6 +1817,10 @@ class Fighter{
       if(ev.fx==='gas'){const h=this.sk.head;for(let k=0;k<16;k++)fx.push({k:'ink',x:h[0]+this.face*10,y:h[1]-6,vx:this.face*(90+Math.random()*220),vy:(Math.random()-.5)*120,t:0,life:.7+Math.random()*.4,col:Math.random()<.6?'#8fbf6a':'#b6d48f',len:7+Math.random()*7});dust(h[0]+this.face*40,h[1]-40,.5)}
       if(ev.fx==='med'){if(this.hp>0){const a=Math.min(3,this.maxHp-this.hp);this.hp+=a;this.ghost=Math.max(this.ghost,this.hp)}fx.push({k:'ring',x:this.x,y:this.y+20,t:0,life:.4,col:'#7fe0ff',s:this.sc*.9});if(this===P1)buzz(8)}
       if(ev.fx==='vanish'){this.alpha=.12;dust(this.x,0,1);for(let k=0;k<10;k++)fx.push({k:'ink',x:this.x,y:30+Math.random()*90,vx:(Math.random()-.5)*260,vy:Math.random()*200,t:0,life:.4,col:'#6fd3ff',len:5})}
+      if(ev.fx==='smokeOut'){smokePuff(this.x,this.sc);this.alpha=0;this.inv=Math.max(this.inv,.5);AU.whoosh(true)}
+      if(ev.fx==='smokeBehind'){const op=this.nearest();if(op){const[lo,hi]=bounds(this);this.x=clamp(op.x-op.face*78,lo,hi);this.face=op.x>this.x?1:-1;this.dff=this.df=this.face}smokePuff(this.x,this.sc);this.alpha=1;AU.whoosh(false)}
+      if(ev.fx==='smokeIn'){smokePuff(this.x,this.sc);this.alpha=1}
+      if(ev.fx==='bomb'){const h=this.sk.h1;fx.push({k:'bomb',o:this,x:h[0],y:h[1],vx:this.face*620,vy:260,t:0,life:1.4,rot:0});AU.whoosh(false)}
       if(ev.fx==='tele'){const op=this.nearest();if(op){const[lo,hi]=bounds(this);this.x=clamp(op.x-op.face*72,lo,hi);this.face=op.x>this.x?1:-1;this.dff=this.face;this.df=this.face}this.alpha=1;dust(this.x,0,1);AU.whoosh(true)}
       if(ev.fx==='slip'){const h=this.sk.h1;this.kOut[0]=true;projs.push({o:this,i:0,x:h[0],y:h[1],dir:this.face,state:'out',trav:0,t:0,rot:0,hitO:false,hitB:false,slip:1});AU.whoosh(true)}
       if(ev.fx==='erase'){const h=this.sk.h1;for(let k=0;k<22;k++)fx.push({k:'ink',x:h[0]+(Math.random()-.5)*50,y:4+Math.random()*16,vx:(Math.random()-.5)*360,vy:150+Math.random()*320,t:0,life:.5+Math.random()*.4,col:Math.random()<.7?'#f2a6b4':'#c97a8a',len:4+Math.random()*6});dust(h[0],0,.8);shake(5)}
@@ -2024,6 +2032,7 @@ function updPickups(dt){for(const k of pickups){k.t+=dt;if(k.y>0||k.vy>0){k.vy-=
 let fx=[],speed=null;
 const BAR=100/3;
 // golden-pink flare: sparks, embers and a ring, bigger on finishing hits
+function smokePuff(x,sc=1){for(let k=0;k<16;k++){const a=Math.random()*TAU;fx.push({k:'smoke',x:x+Math.cos(a)*20*sc,y:(20+Math.random()*110)*sc,vx:Math.cos(a)*(60+Math.random()*120),vy:20+Math.random()*60,r:(12+Math.random()*16)*sc,t:0,life:.7+Math.random()*.4,col:Math.random()<.5?'#bdbab4':'#8f8b85'})}}
 function fireBurst(p,big,ac='#ff4fa0'){const n=big?34:12;for(let k=0;k<n;k++){const a=Math.random()*TAU,v=(big?260:150)+Math.random()*(big?520:260);fx.push({k:'ink',x:p[0],y:p[1],vx:Math.cos(a)*v,vy:Math.sin(a)*v+120,t:0,life:.35+Math.random()*.4,col:['#fff4b0','#ffd23a','#ff9a1e',ac][k%4],len:big?9:6})}
   fx.push({k:'ring',x:p[0],y:p[1]-10,t:0,life:.3,col:'#ffd23a',s:big?1.6:1});if(big){spark(p,1,false,true);game.flashT=Math.max(game.flashT,.07)}}
 function spark(p,big,small,red){fx.push({k:'spark',x:p[0],y:p[1],t:0,life:red?.38:small?.14:big?.3:.18,R:red?78:small?16:big?50:28,seed:Math.random()*1e6|0,small,red})}
@@ -2042,6 +2051,10 @@ function cineStart(f,mv){game.superT=.32;game.hitstop=.13;AU.sup();fx.push({k:'w
 function updFx(dt){for(const e of fx){e.t+=dt;
     if(e.k==='ink'){e.vy-=900*dt;e.x+=e.vx*dt;e.y+=e.vy*dt;if(e.y<0){e.y=0;e.vx*=.5;e.vy=0}}
     if(e.k==='dust'){e.x+=e.vx*dt;e.y+=e.vy*dt;e.vx*=.95}
+    if(e.k==='bomb'&&!e.done){e.vy-=1200*dt;e.x+=e.vx*dt;e.y+=e.vy*dt;e.rot+=dt*14;
+      const tgt=fighters.find(f=>f!==e.o&&f.team!==e.o.team&&!f.gone&&f.state!=='ko'&&Math.abs(f.x-e.x)<34*f.sc&&e.y<150*f.sc);
+      if(tgt||e.y<=4){e.done=1;e.t=e.life;smokePuff(e.x,1.3);if(tgt&&tgt.inv<=0)applyHit(e.o,tgt,{dmg:7,kb:80,kind:'knock',r:30,stun:.6},[tgt.x,60*tgt.sc]);AU.thud()}}
+    if(e.k==='smoke'){e.x+=e.vx*dt;e.y+=e.vy*dt;e.vx*=.94;e.r+=dt*40}
     if(e.k==='ball'||e.k==='tooth'){e.vy-=1500*dt;e.x+=e.vx*dt;e.y+=e.vy*dt;e.rot+=e.vr*dt;if(e.y<e.r){e.y=e.r;e.vy=Math.abs(e.vy)>120?-e.vy*.45:0;e.vx*=.75;e.vr*=.7}}
     if(e.k==='plank'){e.vy-=1400*dt;e.x+=e.vx*dt;e.y+=e.vy*dt;e.rot+=e.vr*dt;if(e.y<2){e.y=2;e.vy*=-.3;e.vx*=.6;e.vr*=.5}}}
   fx=fx.filter(e=>e.t<e.life);if(speed){speed.t+=dt;if(speed.t>speed.life)speed=null}}
@@ -2570,6 +2583,8 @@ function drawFx(){
     else if(e.k==='ink'){ctx.globalAlpha=1-u;ctx.strokeStyle=e.col;ctx.lineWidth=2.6;ctx.lineCap='round';const sp=Math.hypot(e.vx,e.vy)||1;ctx.beginPath();ctx.moveTo(e.x,e.y);ctx.lineTo(e.x-e.vx/sp*e.len,e.y-e.vy/sp*e.len);ctx.stroke();ctx.globalAlpha=1}
     else if(e.k==='dust'){ctx.globalAlpha=(1-u)*.55;ctx.strokeStyle='#555';ctx.lineWidth=.9;const r=e.r*(.6+u*.8);ctx.beginPath();for(let i=0;i<=14;i++){const a=i/14*TAU*1.15,rr=r*(1+Math.sin(i*2.3+e.r)*.15);i?ctx.lineTo(e.x+Math.cos(a)*rr,e.y+r*.7+Math.sin(a)*rr*.7):ctx.moveTo(e.x+rr,e.y+r*.7)}ctx.stroke();ctx.globalAlpha=1}
     else if(e.k==='ball')drawBall(e,u);else if(e.k==='tooth')drawTooth(e,u);
+    else if(e.k==='bomb'){ctx.save();ctx.translate(e.x,e.y);ctx.rotate(e.rot);ctx.fillStyle='#2b2b2b';ctx.beginPath();ctx.arc(0,0,8,0,TAU);ctx.fill();ctx.strokeStyle='#c9a23a';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,8);ctx.lineTo(3,14);ctx.stroke();ctx.restore()}
+    else if(e.k==='smoke'){ctx.save();ctx.globalAlpha=(1-u)*.7;ctx.fillStyle=e.col;ctx.beginPath();ctx.arc(e.x,e.y,e.r,0,TAU);ctx.fill();ctx.strokeStyle='rgba(40,40,40,.35)';ctx.lineWidth=1.2;ctx.stroke();ctx.restore()}
     else if(e.k==='plank'){ctx.save();ctx.globalAlpha=u>.7?1-(u-.7)/.3:1;ctx.translate(e.x,e.y);ctx.rotate(e.rot);ctx.fillStyle=PAPER;ctx.fillRect(-e.len/2,-3,e.len,6);ctx.strokeStyle='#3a2a1a';ctx.lineWidth=1.3;ctx.strokeRect(-e.len/2,-3,e.len,6);ctx.restore()}
     else if(e.k==='streak'){ctx.globalAlpha=(1-u)*.8;ctx.strokeStyle=e.col;ctx.lineCap='round';const x2=e.x-e.dir*e.len*(1+u);ctx.lineWidth=2.6;ctx.beginPath();ctx.moveTo(e.x-e.dir*u*30,e.y);ctx.lineTo(x2,e.y);ctx.stroke();ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(e.x-e.dir*20,e.y+5);ctx.lineTo(x2-e.dir*20,e.y+5);ctx.stroke();ctx.globalAlpha=1}
     else if(e.k==='ring'){ctx.globalAlpha=(1-u)*.85;ctx.strokeStyle=e.col;const s=e.s||1,rx=(40+u*60)*s,ry=(9+u*6)*s;for(let k=0;k<2;k++){ctx.lineWidth=k?1:2.6;ctx.beginPath();ctx.ellipse(e.x,e.y+k*6,rx+k*10,ry+k*2,0,Math.PI*(.05+u),Math.PI*(1.6+u));ctx.stroke()}ctx.globalAlpha=1}
