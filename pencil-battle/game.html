@@ -570,7 +570,7 @@ const CHARS=[
   {id:'gladiator',name:'گلادیاتور',style:'مشت‌های میخ‌دار',weapon:'none',stats:[5,2,4],spd:.85,dmg:1.2,hp:120,kb:.8,sc:1.1,special:'gslam',sname:'زمین‌لرزه!',look:{gloves:'#6e4f3c',spikes:1,helm:'#6e4f3c',skirt:'#6e4f3c',pads:'#6e4f3c'},img:'chars/c8.png'},
   {id:'ninja',name:'آذرخش',style:'نینجای شمشیر نور',weapon:'sword',stats:[3,5,2],spd:1.2,dmg:.95,hp:90,special:'ydash',sname:'یورش آذرخش!',stance:'yStance',moves:{p:'ksw',fp:'ymanji',bp:'ygas',cp:'ymed',k:'fs',fk:'ypoison',bk:'ytele',ck:'sw'},look:{band:'visor',bandCol:'#2f7fd6',cuffs:'#2f7fd6',glow:'#6fd3ff'},img:'chars/c9.png'},
   {id:'pahlevan',name:'پهلوون',style:'زورخانه‌ای، دو میل',weapon:'none',stance:'pStance',stats:[5,1,5],spd:.8,dmg:1.25,hp:125,kb:.75,sc:1.15,special:'kabadeh',sname:'فرفره‌ی کباده!',moves:{p:'mswing',fp:'lunge',bp:'mspin',cp:'upc',k:'fs',fk:'sk',bk:'bk',ck:'sw'},look:{mustache:1,shorts:'#c0392b',shortsTrim:'#e8b53a',belt:'#c0392b',meel:1}},
-  {id:'mozhgan',name:'مژگان',style:'تکواندو و کیف دستی',weapon:'none',stats:[3,5,2],spd:1.15,dmg:.95,hp:92,special:'mzbag',sname:'کیف‌کوبی!',stance:'mzSt',win:'mzWin',moves:{p:'mzpalm',fp:'mzknee',bp:'mzflash',cp:'mzserpent',k:'mzrh',fk:'mzcomet',bk:'mzvault',ck:'mzcyclone'},look:{top:'#ee5d9f',top2:'#5b2a86',pants:'#5b2a86',stripe:'#ee5d9f',shoes:'#ee5d9f',belt:'#f3efe6',bangles:'#f2b51e',pony:'#1d1c1a'},img:'chars/c10.png'},
+  {id:'mozhgan',name:'مژگان',style:'تکواندو و کیف دستی',weapon:'none',stats:[3,5,2],spd:1.15,dmg:.95,hp:92,special:'mzbag',sname:'کیف‌کوبی!',stance:'mzSt',win:'mzWin',moves:{p:'mzpalm',fp:'mzbfly',bp:'mzstorm',cp:'mzserpent',k:'mzrh',fk:'mzcomet',bk:'mzvault',ck:'mzcyclone'},airK:'mzrain',intro:'mzintro',winAnim:[['mzSelf1',700],['mzSelf2',350],['mzHair2',250]],winFx:'#ffd23a',look:{top:'#ee5d9f',top2:'#5b2a86',pants:'#5b2a86',stripe:'#ee5d9f',shoes:'#ee5d9f',belt:'#f3efe6',bangles:'#f2b51e',pony:'#1d1c1a'},img:'chars/c10.png'},
   {id:'turtle',name:'لاکی',style:'لاک‌پشت نینجا، چوب',weapon:'staff',stats:[3,4,4],spd:1.05,dmg:1,hp:110,kb:.9,special:'sspin',sname:'گردباد چوب!',bk:'shellsp',look:{shell:'#4f9a4c',band:'tails',bandCol:'#7e57c2',bo:1}}];
 const PLAYABLE=CHARS.filter(c=>!c.lock);
 // ===== shop: coins buy hats, face items and silly weapons (saved on this device) =====
@@ -745,6 +745,16 @@ const P={
   mzBag2:B({hy:54,hx:8,t:22,h:-10,f1:[36,0],f2:[-30,0],h1:[48,4],h2:[8,18]}),
   mzBag3:B({hy:52,hx:6,t:16,h:-6,f1:[34,0],f2:[-30,0],h1:[36,-24],h2:[6,20]}),
   mzWin:B({hy:60,t:-2,h:6,f1:[18,0],f2:[-20,0],h1:[14,46],h2:[22,28]}),
+  // Mozhgan signature poses: selfie entrance/victory, hair flip, air kick rain, butterfly scissor, bangle storm
+  mzSelf1:B({hy:58,t:-2,h:8,f1:[16,0],f2:[-18,0],h1:[22,50],h2:[-6,8]}),
+  mzSelf2:B({hy:58,t:2,h:-4,f1:[16,0],f2:[-18,0],h1:[22,50],h2:[14,52]}),
+  mzHair1:B({hy:56,t:-8,h:-24,f1:[20,0],f2:[-20,0],h1:[4,40],h2:[-14,36]}),
+  mzHair2:B({hy:58,t:6,h:18,f1:[20,0],f2:[-20,0],h1:[10,44],h2:[-6,6]}),
+  mzAir1:B({hy:60,t:-14,h:8,L1:[100,98],fo1:-60,f2:[-10,26],h1:[24,18],h2:[6,26]}),
+  mzAir2:B({hy:60,t:-14,h:8,f1:[8,26],L2:[100,98],fo2:-60,sw:1,h1:[24,18],h2:[6,26]}),
+  mzBf1:B({hy:60,L1:[70,70],L2:[-40,-60],A1:[100,100],A2:[-100,-100]}),
+  mzBf2:B({hy:60,L1:[-40,-60],L2:[70,70],A1:[100,100],A2:[-100,-100]}),
+  mzStorm:B({hy:58,t:0,h:0,f1:[14,0],f2:[-14,0],A1:[92,92],A2:[-92,-92]}),
   // Mozhgan legendary poses: handstand V and T (cyclone), vault tuck, superman glide, head-first dive
   mzHand1:B({hy:60,L1:[38,38],L2:[-38,-38],A1:[178,178],A2:[-178,-178]}),
   mzHand2:B({hy:60,L1:[88,88],L2:[-88,-88],A1:[178,178],A2:[-178,-178]}),
@@ -1116,11 +1126,17 @@ const MOVES={
   mzpush:{seq:[['fs2',70,20,40],['blFk',120,120,64],['fs2',70,0,40],['stance',120,0,22]],hits:[{t0:70,t1:190,limb:'f1',dmg:9,kb:620,kind:'heavy',r:15}],trail:'f1'},
   mzflash:{seq:[['blHam0',110,90,40,0,{fx:'ringH'}],['mzSt',150,0,30],['stance',120,0,22]],hits:[{t0:60,t1:200,limb:'h1',dmg:4,kb:60,kind:'light',r:62,stun:.9}]},
   // Mozhgan's legendary moves, part of her normal set: down+punch serpent, fwd+kick comet, back+kick vault, down+kick cyclone, 4th kick of the string skybreaker
-  mzsky:{air:1,launch:[780,300],rotc:[40,380,0,-360],seq:[['dk1',70,0,40,0,{fx:'dash'}],['bf3',170,0,32],['bf4',140,0,32],['hwfk',190,0,58,0,{fx:'dash'}],['as4',9e9,0,60,0,{vy:-1300}]],hits:[{t0:380,t1:570,limb:'f1',dmg:10,kb:420,kind:'knock',r:18,cine:1},{t0:570,t1:9e9,limb:'f1',dmg:6,kb:260,kind:'knock',r:18}],slam:1},
-  mzcyclone:{rotk:[[0,0],[230,180],[860,180],[1060,360]],seq:[['crouch',70,300,40],['au0',80,320,34],['mzHand1',110,0,40],['mzHand2',75,160,50,0],['mzHand2',75,160,50,0],['mzHand2',75,160,50,0],['mzHand2',75,160,50,0],['mzHand2',75,160,50,0],['mzHand2',75,160,50,0],['mzHand2',75,160,50,0],['mzHand2',75,160,50,0],['mzHand1',90,0,40],['crouch',100,0,34,0,{fx:'land'}],['stance',140,0,22]],hits:[{t0:260,t1:335,limb:'f1',dmg:3,kb:150,kind:'heavy',r:26},{t0:335,t1:410,limb:'f2',dmg:3,kb:150,kind:'heavy',r:26},{t0:410,t1:485,limb:'f1',dmg:3,kb:150,kind:'heavy',r:26},{t0:485,t1:560,limb:'f2',dmg:3,kb:150,kind:'heavy',r:26},{t0:560,t1:635,limb:'f1',dmg:3,kb:150,kind:'heavy',r:26},{t0:635,t1:710,limb:'f2',dmg:3,kb:150,kind:'heavy',r:26},{t0:710,t1:785,limb:'f1',dmg:3,kb:150,kind:'heavy',r:26},{t0:785,t1:860,limb:'f2',dmg:6,kb:520,kind:'launch',r:26,cine:1}]},
-  mzvault:{air:1,vaultBox:1,launch:[820,330],seq:[['fsk2',140,0,40],['mzVault',160,0,40],['hw1',100,0,40],['mzDive',9e9,0,40,0,{vy:-1500}]],hits:[{t0:400,t1:9e9,limb:'h1',dmg:11,kb:300,kind:'knock',r:22,cine:1}],slam:1},
-  mzcomet:{air:1,launch:[1000,260],seq:[['fsk2',180,0,40],['mzSup',260,0,45,0,{fx:'dash'}],['mzDive',9e9,0,40,0,{vy:-1700}]],hits:[{t0:180,t1:440,limb:'h1',dmg:6,kb:200,kind:'heavy',r:20},{t0:440,t1:9e9,limb:'h1',dmg:11,kb:300,kind:'knock',r:24,cine:1}],slam:1},
-  mzserpent:{air:1,launch:[600,480],rotc:[60,560,0,-720],seq:[['crouch',60,0,40],['kj2',220,0,34],['hwfk',9e9,0,58,0,{fx:'dash'}]],hits:[{t0:200,t1:420,limb:'f1',dmg:5,kb:150,kind:'heavy',r:20},{t0:420,t1:9e9,limb:'f1',dmg:9,kb:520,kind:'knock',r:20,cine:1}],landFx:1},
+  mzsky:{ghost:'#ff5fa8',air:1,launch:[780,300],rotc:[40,380,0,-360],seq:[['dk1',70,0,40,0,{fx:'dash'}],['bf3',170,0,32],['bf4',140,0,32],['hwfk',190,0,58,0,{fx:'dash'}],['as4',9e9,0,60,0,{vy:-1300}]],hits:[{t0:380,t1:570,limb:'f1',dmg:10,kb:420,kind:'knock',r:18,cine:1},{t0:570,t1:9e9,limb:'f1',dmg:6,kb:260,kind:'knock',r:18}],slam:1},
+  mzcyclone:{ghost:'#ff5fa8',rotk:[[0,0],[230,180],[860,180],[1060,360]],seq:[['crouch',70,300,40],['au0',80,320,34],['mzHand1',110,0,40],['mzHand2',75,160,50,0],['mzHand2',75,160,50,0],['mzHand2',75,160,50,0],['mzHand2',75,160,50,0],['mzHand2',75,160,50,0],['mzHand2',75,160,50,0],['mzHand2',75,160,50,0],['mzHand2',75,160,50,0],['mzHand1',90,0,40],['crouch',100,0,34,0,{fx:'land'}],['stance',140,0,22]],hits:[{t0:260,t1:335,limb:'f1',dmg:3,kb:150,kind:'heavy',r:26},{t0:335,t1:410,limb:'f2',dmg:3,kb:150,kind:'heavy',r:26},{t0:410,t1:485,limb:'f1',dmg:3,kb:150,kind:'heavy',r:26},{t0:485,t1:560,limb:'f2',dmg:3,kb:150,kind:'heavy',r:26},{t0:560,t1:635,limb:'f1',dmg:3,kb:150,kind:'heavy',r:26},{t0:635,t1:710,limb:'f2',dmg:3,kb:150,kind:'heavy',r:26},{t0:710,t1:785,limb:'f1',dmg:3,kb:150,kind:'heavy',r:26},{t0:785,t1:860,limb:'f2',dmg:6,kb:520,kind:'launch',r:26,cine:1}]},
+  mzvault:{ghost:'#ff5fa8',air:1,vaultBox:1,launch:[820,330],seq:[['fsk2',140,0,40],['mzVault',160,0,40],['hw1',100,0,40],['mzDive',9e9,0,40,0,{vy:-1500}]],hits:[{t0:400,t1:9e9,limb:'h1',dmg:11,kb:300,kind:'knock',r:22,cine:1}],slam:1},
+  mzcomet:{ghost:'#ff5fa8',air:1,launch:[1000,260],seq:[['fsk2',180,0,40],['mzSup',260,0,45,0,{fx:'dash'}],['mzDive',9e9,0,40,0,{vy:-1700}]],hits:[{t0:180,t1:440,limb:'h1',dmg:6,kb:200,kind:'heavy',r:20},{t0:440,t1:9e9,limb:'h1',dmg:11,kb:300,kind:'knock',r:24,cine:1}],slam:1},
+  mzserpent:{ghost:'#ff5fa8',air:1,launch:[600,480],rotc:[60,560,0,-720],seq:[['crouch',60,0,40],['kj2',220,0,34],['hwfk',9e9,0,58,0,{fx:'dash'}]],hits:[{t0:200,t1:420,limb:'f1',dmg:5,kb:150,kind:'heavy',r:20},{t0:420,t1:9e9,limb:'f1',dmg:9,kb:520,kind:'knock',r:20,cine:1}],landFx:1},
+  // Mozhgan signatures: air kick rain (kick in the air), pink butterfly (fwd+punch), bangle storm (back+punch), selfie entrance
+  mzrain:{air:1,ghost:'#ff5fa8',seq:[['hw1',90,0,40,0,{vy:260}],['mzAir1',70,0,62,0,{vy:170}],['mzAir2',70,0,62,0,{vy:170}],['mzAir1',70,0,62,0,{vy:170}],['mzAir2',70,0,62,0,{vy:170}],['mzAir1',70,0,62,0,{vy:170}],['mzAir2',70,0,62,0,{vy:170}],['hwfk',9e9,0,58,0,{vy:-1150,fx:'dash'}]],hits:[{t0:90,t1:160,limb:'f1',dmg:3,kb:110,kind:'light',r:18},{t0:160,t1:230,limb:'f2',dmg:3,kb:110,kind:'light',r:18},{t0:230,t1:300,limb:'f1',dmg:3,kb:110,kind:'light',r:18},{t0:300,t1:370,limb:'f2',dmg:3,kb:110,kind:'light',r:18},{t0:370,t1:440,limb:'f1',dmg:3,kb:110,kind:'light',r:18},{t0:440,t1:510,limb:'f2',dmg:3,kb:110,kind:'light',r:18},{t0:510,t1:9e9,limb:'f1',dmg:9,kb:420,kind:'knock',r:18,cine:1}],trail:'f1',landFx:1},
+  mzbfly:{air:1,ghost:'#ff5fa8',launch:[520,260],rotk:[[0,0],[120,-80],[560,-80],[720,0]],seq:[['crouch',60,0,40],['mzBf1',90,0,62],['mzBf2',90,0,62],['mzBf1',90,0,62],['mzBf2',90,0,62],['fs2',9e9,0,40]],
+    hits:[{t0:60,t1:150,limb:'f1',dmg:4,kb:140,kind:'light',r:18},{t0:150,t1:240,limb:'f2',dmg:4,kb:140,kind:'light',r:18},{t0:240,t1:330,limb:'f1',dmg:4,kb:140,kind:'light',r:18},{t0:330,t1:440,limb:'f2',dmg:7,kb:380,kind:'knock',r:18}],trail:'f1',landFx:1},
+  mzstorm:{spark:1,ghost:'#ffd23a',seq:[['blHam0',60,0,40],['mzStorm',80,60,52,0],['mzStorm',80,60,52,1],['mzStorm',80,60,52,0],['mzStorm',80,60,52,1],['mzStorm',80,60,52,0],['mzStorm',80,60,52,1],['mzStorm',80,60,52,0],['mzStorm',80,60,52,1],['mzSt',140,0,30],['stance',120,0,22]],hits:[{t0:60,t1:140,limb:'h1',dmg:3,kb:90,kind:'light',r:44,stun:.6},{t0:220,t1:300,limb:'h1',dmg:3,kb:90,kind:'light',r:44,stun:.6},{t0:380,t1:460,limb:'h1',dmg:3,kb:90,kind:'light',r:44,stun:.6},{t0:540,t1:620,limb:'h1',dmg:3,kb:90,kind:'light',r:44,stun:.6}]},
+  mzintro:{spark:1,seq:[['mzSelf1',650,0,24],['mzHair1',180,0,40],['mzHair2',180,0,40],['mzSelf2',420,0,26],['stance',200,0,22]],hits:[]},
   mzbag:{aura:1,bag:1,seq:[['mzBag1',110,0,40],['mzBag2',100,90,62],['mzBag3',90,40,55],['mzBag1',90,0,45],['mzBag2',100,90,62],['spinA',70,0,40],['mzBag2',120,140,64,0,{fx:'dash'}],['stance',150,0,22]],
     hits:[{t0:110,t1:210,limb:'h1',dmg:8,kb:200,kind:'heavy',r:24},{t0:390,t1:490,limb:'h1',dmg:8,kb:200,kind:'heavy',r:24},{t0:560,t1:680,limb:'h1',dmg:14,kb:620,kind:'knock',r:26,cine:1}],trail:'h1'},
   kspin:{air:1,aura:1,launch:[700,130],rotc:[0,430,0,-360],seq:[['kj1',100,0,40],['kj2',330,0,34],['kj3',80,0,45],['kj4',100,0,55],['kj5',9e9,0,55]],
@@ -1724,7 +1740,7 @@ class Fighter{
         else if(!this.crouch&&!this.blocking)this.vx=(fwd?185:back?-140:0)*this.face*this.spd}
     }else if(S==='air'){
       if(fight&&!this.airAtk){if(this.meter>=BAR-.01&&take(I,'special')){this.airAtk=true;this.meter-=BAR;const mv=I.down?'aslam':'adr';this.startMove(mv);cineStart(this,mv)}
-        else if(take(I,'kick')){this.airAtk=true;this.startMove(fwd?'fsk':'tn')}else if(take(I,'punch')){this.airAtk=true;this.startMove('ap')}}
+        else if(take(I,'kick')){this.airAtk=true;this.startMove(this.ch&&this.ch.airK?this.ch.airK:fwd?'fsk':'tn')}else if(take(I,'punch')){this.airAtk=true;this.startMove('ap')}}
     }else if(S==='move')this.updMove(dt);
     else if(S==='hit'||S==='bstun'){this.stun-=dt;this.vx*=Math.exp(-dt*7);if(this.stun<=0){this.state='stand';
       // a beaten henchman sometimes runs for it, cartoon style
@@ -1773,6 +1789,8 @@ class Fighter{
       if(ev.fx==='throw')throwKnife(this,ev.i);
       if(ev.fx==='catch')AU.whoosh(false,true);
       if(ev.fx==='crash'){const tp=this.trailPt('w');setTimeout(()=>{crack(tp[0]+this.face*30,1.1);fx.push({k:'wave',x:tp[0]+this.face*30,y:0,t:0,life:.4,col:this.aura});shake(9);AU.ko()},90)}}}
+    if(this.state==='move'&&this.move&&this.move.d.ghost&&game.rt-(this.gT||0)>.045){this.gT=game.rt;(this.ghosts||(this.ghosts=[])).push({t:game.rt,sk:this.sk,col:this.move.d.ghost})}
+    if(this.state==='move'&&this.move&&this.move.d.spark&&Math.random()<.6){const h=Math.random()<.5?this.sk.h1:this.sk.h2;fx.push({k:'ink',x:h[0],y:h[1],vx:(Math.random()-.5)*380,vy:Math.random()*300,t:0,life:.45,col:Math.random()<.6?'#ffd23a':'#fff2a0',len:4})}
     if(ev&&(ev.fx==='dash'||ev.fx==='slide'))for(let k=0;k<2;k++)fx.push({k:'streak',x:this.x-this.face*(10+Math.random()*40),y:ev.fx==='slide'?8+Math.random()*40:20+Math.random()*110*this.sc,len:50+Math.random()*90,dir:this.face,t:0,life:.22,col:Math.random()<.5?this.aura:INK});
     if(ev&&ev.fx==='ring'&&Math.random()<.5)fx.push({k:'ring',x:this.x,y:this.y+(30+Math.random()*60)*this.sc,t:0,life:.3,col:this.aura,s:this.sc});
     if(ev&&ev.fx==='ringH'&&Math.random()<.45)fx.push({k:'ring',x:this.sk.h1[0],y:this.sk.h1[1]+8,t:0,life:.3,col:this.aura,s:this.sc*.9});
@@ -1808,6 +1826,9 @@ class Fighter{
     if(S==='getup')return[P.getup,10];
     if(S==='gag'){const u=this.gagT;return this.gag==='head'?[u<.95?this.base():u<1.55?P.reach:u<2.2?P.puth:this.base(),u<.95?12:10]:[this.base(),12]}
     if(S==='flee'){const p=walkPose(this.ph,0,P.stance),w=Math.sin(this.ph*2);p.t+=16;p.a1u=150+w*28;p.a1f=175;p.a2u=-150-w*28;p.a2f=-170;return[p,18]}
+    if(S==='win'&&!this.dance&&this.ch&&this.ch.winAnim){const A=this.ch.winAnim,T=A.reduce((s,x)=>s+x[1],0);let t=(this.bt*1000)%T,i=0;while(t>A[i][1]){t-=A[i][1];i++}
+      if(this.ch.winFx&&Math.random()<.08){const h=this.sk.h1;fx.push({k:'ink',x:h[0]+(Math.random()-.5)*60,y:h[1]+Math.random()*40,vx:(Math.random()-.5)*120,vy:60+Math.random()*120,t:0,life:.7,col:this.ch.winFx,len:4})}
+      return[P[A[i][0]],14]}
     if(S==='win'&&this.dance)return[[P.d1,P.d3,P.d2,P.d3][Math.floor(this.bt*3.6)%4],15];
     if(S==='win'){const p={...(this.ch&&this.ch.win?P[this.ch.win]:P.win)};p.hy+=Math.sin(this.bt*5)*1.5;return[p,7]}
     return[base,12]}
@@ -2058,6 +2079,7 @@ function startRound(){primeVoices();VO.pre(game.round===3?'a-final':'a-r'+game.r
   if(game.mode==='demo'){game.phase='fight';game.msgs=[];return}
   game.phase='intro';game.introT=0;game.introLim=0;say(game.round===3?'راند آخر':game.round===2?'راند دوم':'راند اول',1.1);VO.say(game.round===3?'a-final':'a-r'+game.round,{pri:2});
   if(game.round>1&&game.mode==='battle'&&!net.on&&Math.random()<.4){startGag(game.lastLoser||P1,'head',.3);game.introLim=3.05}
+  if(game.round===1&&game.mode==='battle')for(const f of[P1,P2])if(f.ch&&f.ch.intro&&MOVES[f.ch.intro])f.startMove(f.ch.intro);
   if(game.round===1&&game.mode==='battle'){const tp=charPool(P2,'tz')||'taunt',k=pick(tp);if(k){game.introLim=1.5+VLINES[k][2];VO.say(k,{pri:3,delay:1.45,intro:1,who:'e'})}}}
 function startStory(i,keepMeter){const st=STORY[i];primeVoices();VO.pre('st'+(i+1));game.cine=null;game.endLim=0;game.soul=null;game.dark=0;story.idleT=0;game.sub=null;game.mode='story';story.stage=i;story.len=st.len;story.waveIdx=0;story.lock=null;story.spawnQ=[];story.boss=null;story.result=null;story.arrowT=0;
   setTheme(st.theme,'story',st.len,st.boss.x);const m=P1&&keepMeter?P1.meter:0;
@@ -2204,7 +2226,7 @@ function drawFighter(f){
     for(const pts of[L1,L2,A1,A2,T])strokePoly(pts,Wd+11*sc,ac);ctx.fillStyle=ac;ctx.beginPath();ctx.arc(s.head[0],s.head[1],(SEG.HR+7)*sc,0,TAU);ctx.fill();ctx.restore();
     ctx.strokeStyle=ac;ctx.lineWidth=1.5;ctx.globalAlpha=.85*f.alpha;const js=[s.head,s.chest,s.hip,s.k1,s.k2,s.f1,s.f2,s.h1,s.h2,s.e1];
     for(let i=0;i<7;i++){const q=js[Math.random()*js.length|0],a=Math.random()*TAU,l=(10+Math.random()*16)*sc,r0=12*sc;ctx.beginPath();ctx.moveTo(q[0]+Math.cos(a)*r0,q[1]+Math.sin(a)*r0);ctx.lineTo(q[0]+Math.cos(a+.3)*(r0+l*.5),q[1]+Math.sin(a+.3)*(r0+l*.5));ctx.lineTo(q[0]+Math.cos(a)*(r0+l),q[1]+Math.sin(a)*(r0+l));ctx.stroke()}ctx.globalAlpha=f.alpha}
-  if(f.ch&&PARTS[f.ch.id]&&drawCutout(f)){if(f.state==='move'&&f.move&&f.move.d.bag)drawBag(f);if(f.state==='win'&&f.ch.win==='mzWin'&&!f.dance)drawPhone(f);ctx.restore();return}
+  if(f.ch&&PARTS[f.ch.id]&&drawCutout(f)){if(f.state==='move'&&f.move&&f.move.d.bag)drawBag(f);if(f.ch.id==='mozhgan'&&((f.state==='win'&&!f.dance)||(f.state==='move'&&f.move&&f.move.name==='mzintro')))drawPhone(f);ctx.restore();return}
   if(f.weapon==='sword'&&!f.wskin)drawScabbard(f);
   const sw=f.disp.sw;leg(sw?L1:L2,rc);if(!two){arm(A2,rc);fist(s.h2,rc);if(f.weapon==='dagger')drawKnife(f,1)}
   if(lk.shell)drawShell(f,lk);if(lk.suit){cloth(T,Wd*1.3,lk.suit);strokePoly(T,Wd*.2,INK)}else if(lk.top){cloth(T,Wd*1.5,lk.top);strokePoly([lerp2(s.hip,s.chest,.1),lerp2(s.hip,s.chest,.95)],Wd*.32,lk.top2||'#7a3fa0')}else strokePoly(T,Wd*(bs?1.9:1.08),fc);hl(T,Wd);if(lk.belt)drawBelt(f,lk.belt);if(lk.tee)strokePoly([lerp2(s.hip,s.chest,.12),lerp2(s.hip,s.chest,.95)],Wd*.55,lk.tee);if(lk.trim)strokePoly([lerp2(s.hip,s.chest,.2),lerp2(s.hip,s.chest,.9)],Wd*.16,lk.trim);if(lk.eraser)drawEraserBody(f,lk);if(lk.belly){const q=torsoFrame(f),c=q(lerp2(s.hip,s.chest,.42),f.dff*7,0);ctx.fillStyle=fc;ctx.beginPath();ctx.ellipse(c[0],c[1],22*sc,26*sc,0,0,TAU);ctx.fill()}
@@ -2258,7 +2280,7 @@ function drawCutout(f){const P_=PARTS[f.ch.id];for(const k in P_)if(!partImg(P_[
   const s=f.sk,sg=f.dff<0?-1:1,sw=f.disp.sw,LR=sw?[s.hip,s.k1,s.f1]:[s.hip,s.k2,s.f2],LF=sw?[s.hip,s.k2,s.f2]:[s.hip,s.k1,s.f1];
   if(f.flash>0)ctx.filter='brightness(1.9)';
   const leg=(L,r)=>{drawPart(P_.thigh,L[0],L[1],sg,r);drawPart(P_.shin,L[1],L[2],sg,r)},arm=(sh,e,h,r)=>{drawPart(P_.uarm,sh,e,sg,r);drawPart(P_.farm,e,h,sg,r)};
-  leg(LR,1);arm(s.sh,s.e2,s.h2,1);drawPart(P_.torso,s.neck,s.hip,sg,0);leg(LF,0);drawPart(P_.head,s.head,s.neck,sg,0);arm(s.sh,s.e1,s.h1,0);
+  leg(LR,1);arm(s.sh,s.e2,s.h2,1);drawPart(P_.torso,s.neck,s.hip,sg,0);leg(LF,0);{const dx=s.neck[0]-s.head[0],dy=s.neck[1]-s.head[1],l=Math.hypot(dx,dy)||1,r=SEG.HR*f.sc;drawPart(P_.head,s.head,[s.head[0]+dx/l*r,s.head[1]+dy/l*r],sg,0)}arm(s.sh,s.e1,s.h1,0);
   ctx.filter='none';return true}
 // (optional 6th value: width factor across the bone)
 // Mozhgan's handbag (swung on her special) and the phone for her victory selfie
@@ -2450,7 +2472,10 @@ function drawCos(f){const c=f.cos,sc=f.sc,H=headFrame(f),R=SEG.HR,s=f.sk;
   if(c.hat==='viking'){ctx.save();ctx.beginPath();ctx.arc(s.head[0],s.head[1],(R+1.5)*sc,0,TAU);ctx.clip();fillPts([H(2,-R-3),H(2,R+3),H(R+3,R+3),H(R+3,-R-3)],'#9aa3ab');ctx.restore();strokePoly([H(2,-R),H(2,R)],2.4*sc,'#c9a23a');
     for(const sd of[-1,1]){fillPts([H(T,sd*9),H(T+6,sd*(R+8)),H(T+18,sd*(R+6)),H(T+8,sd*(R+3)),H(T+3,sd*11)],'#f3efe6',1.2*sc)}}
   if(c.hat==='crown'){fillPts([H(T,-10),H(T,10),H(T+14,11),H(T+7,5),H(T+14,0),H(T+7,-5),H(T+14,-11)],'#e8b53a',1.3*sc);ctx.fillStyle='#d8433a';const g=H(T+5,0);ctx.beginPath();ctx.arc(g[0],g[1],2.2*sc,0,TAU);ctx.fill()}}
-function drawFighterFx(f){const sp=f.split;if(!sp){const hd=headOff(f),s=f.sk,h0=s.head;if(hd){s.head=hd[0];f.hdir=hd[1]}drawFighter(f);if(hd){drawStump(f);s.head=h0;f.hdir=null}drawGagFx(f);return}
+function drawGhosts(f){const g=f.ghosts;if(!g||!g.length)return;const keep=[];
+  for(const q of g){const a=1-(game.rt-q.t)/.32;if(a<=0)continue;keep.push(q);const sk=f.sk,al=f.alpha,fl=f.flash;f.sk=q.sk;f.alpha=a*.38;f.flash=0;ctx.save();ctx.filter=q.col?`drop-shadow(0 0 6px ${q.col})`:'none';drawFighter(f);ctx.restore();f.sk=sk;f.alpha=al;f.flash=fl}
+  f.ghosts=keep}
+function drawFighterFx(f){drawGhosts(f);const sp=f.split;if(!sp){const hd=headOff(f),s=f.sk,h0=s.head;if(hd){s.head=hd[0];f.hdir=hd[1]}drawFighter(f);if(hd){drawStump(f);s.head=h0;f.hdir=null}drawGagFx(f);return}
   const u=(game.rt-sp.t0)/sp.life;if(u>=1){f.split=null;drawFighter(f);return}
   const open=u<.14?u/.14:u<.58?1:1-(u-.58)/.42,sm=open*open*(3-2*open),d=sp.dir,n=[-d[1],d[0]],c=lerp2(f.sk.hip,f.sk.chest,.5),off=15*f.sc*sm,L=700;
   for(const sg of[1,-1]){ctx.save();ctx.translate(n[0]*sg*off,n[1]*sg*off);ctx.beginPath();ctx.moveTo(c[0]-d[0]*L,c[1]-d[1]*L);ctx.lineTo(c[0]+d[0]*L,c[1]+d[1]*L);ctx.lineTo(c[0]+d[0]*L+n[0]*sg*L,c[1]+d[1]*L+n[1]*sg*L);ctx.lineTo(c[0]-d[0]*L+n[0]*sg*L,c[1]-d[1]*L+n[1]*sg*L);ctx.closePath();ctx.clip();
