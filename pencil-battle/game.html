@@ -542,7 +542,7 @@ const THEME_LIST={shop:['shelf','plant','window','counter','fridge','door'],cafe
 const THEME_TITLE={shop:'سوپرمارکت مداد',cafe:'کافه مداد',dojo:'باشگاه رزمی',temple:'معبد مداد',alley:'کوچه‌ی مداد',desk:'میز تحریر',bazaar:'بازار سنتی',zurkhaneh:'زورخانه',beach:'ساحل',roof:'پشت‌بام شبانه'};
 // stage colours: wall, floor, ceiling and title banner, plus each module's colours (used in turn by its shapes)
 const PAL={shop:{wall:'#f3e9d4',wa:1.3,floor:'#e9dcc0',ban:'#e85d3a'},cafe:{wall:'#d28f65',wa:1.4,trim:'#6f5440',floor:'#a8723e',ban:'#7a4a2a'},dojo:{wall:'#e8cf98',wa:1.3,floor:'#d6b98a',ban:'#c0392b'},
-  temple:{wall:'#f0d0b7',wa:1.3,floor:'#e3d8c4',ban:'#c0392b'},alley:{wall:'#bfae9b',floor:'#8f969c',ban:'#4f6f8f'},desk:{wall:'#dbe9f5',floor:'#c58a4e',ban:'#f2c21b'},
+  temple:{wall:'#f0d0b7',wa:1.3,floor:'#e3d8c4',ban:'#c0392b'},alley:{wall:'#c7a885',wa:1.3,floor:'#9a958c',ban:'#4f6f8f'},desk:{wall:'#dbe9f5',floor:'#c58a4e',ban:'#f2c21b'},
   bazaar:{wall:'#efc685',floor:'#cfa46a',ban:'#2f6fa0'},zurkhaneh:{wall:'#e7d6b0',floor:'#c49a62',ban:'#2f8f6f'},beach:{wall:'#9fd3f3',floor:'#f0d79a',ban:'#e8463a',sky:1},
   roof:{wall:'#1c2440',floor:'#7b838e',ban:'#f2c21b',sky:1,night:1}};
 const MCOL={shop:{shelf:['#d9a35b','#e85d3a','#5aa04a','#f2c21b','#5b8fd1'],plant:['#b5651d','#5aa04a'],window:['#9fd0f0','#bfe3f5'],counter:['#e07b39','#d9a35b','#f2c21b'],fridge:['#bfe3f5','#e8f4fa','#e85d3a'],door:['#c98a4b','#9fd0f0']},
@@ -620,7 +620,7 @@ function stageColor(s,theme,x0,x1){const P_=PAL[theme],X0=x0-1400,X1=x1+1400,L=m
   if(['shop','cafe','dojo','temple'].includes(theme)&&!WALLIMG[theme]){band(FL,FL+58,P_.ban,.16);s.line(X0,FL+58,X1,FL+58,.8,.45,1)}
   if(theme==='bazaar'||theme==='zurkhaneh'){const c=theme==='bazaar'?['#2f6fa0','#e6b84c']:['#2f8f6f','#e6c88a'];band(FL+26,FL+64,c[1],.35);
     for(let x=X0,i=0;x<X1;x+=38,i++){const d=[[x,FL+45],[x+19,FL+62],[x+38,FL+45],[x+19,FL+28]];s.tint(d,c[i%2],.6);if(Math.abs(x-(x0+x1)/2)<x1-x0+600)s.poly(d,true,.6,.4,1)}}
-  if(theme==='alley')for(let x=x0+300;x<x1;x+=700+L()*600){const y=FL+90+L()*120,pts=[];for(let i=0;i<14;i++){const a=i/14*TAU,r=(1+.3*Math.sin(a*3+x))*(50+L()*20);pts.push([x+Math.cos(a)*r*1.6,y+Math.sin(a)*r*.6])}
+  if(theme==='alley'&&!WALLBG[theme])for(let x=x0+300;x<x1;x+=700+L()*600){const y=FL+90+L()*120,pts=[];for(let i=0;i<14;i++){const a=i/14*TAU,r=(1+.3*Math.sin(a*3+x))*(50+L()*20);pts.push([x+Math.cos(a)*r*1.6,y+Math.sin(a)*r*.6])}
     s.tint(pts,L()<.5?'#d4452f':'#5b8fd1',.42);s.poly(pts,true,.7,.4,1)}
   if(theme==='beach'){band(FL,FL+150,'#2f86d0',.62);band(FL+122,FL+150,'#1f5f9a',.5);band(FL,FL+7,'#ffffff',.7);
     for(let k=0;k<5;k++){const y=FL+20+k*25;for(let x=X0;x<X1;x+=70+L()*90)s.arc(x,y,12+L()*10,4,Math.PI*1.1,Math.PI*1.9,.7,.45)}
@@ -632,9 +632,9 @@ function stageColor(s,theme,x0,x1){const P_=PAL[theme],X0=x0-1400,X1=x1+1400,L=m
       s.tint(Array.from({length:24},(_,i)=>[x+Math.cos(i/24*TAU)*90,y+Math.sin(i/24*TAU)*90]),'#fff0a8',.12)}}
   if(theme==='desk')for(let i=0;i<(X1-X0)/90;i++){const x=X0+L()*(X1-X0),y=-20-L()*480;s.line(x,y,x+60+L()*120,y+(L()-.5)*6,.6,.3,1)}}
 // hand-drawn wall panels per stage; each covers the wall from the floor line to the ceiling
-const WALLIMG={shop:[['walls/shop1.webp',1.552],['walls/shop2.webp',1.556],['walls/shop3.webp',1.586]],cafe:[['walls/cafe1.webp',1.5],['walls/cafe2.webp',1.5],['walls/cafe3.webp',1.5]],dojo:[['walls/dojo1.webp',1.691],['walls/dojo2.webp',1.801],['walls/dojo3.webp',1.625]],temple:[['walls/temple1.webp',1.71],['walls/temple2.webp',1.71],['walls/temple3.webp',1.71]]},WIMG={};  // [file, width/height]
+const WALLIMG={shop:[['walls/shop1.webp',1.552],['walls/shop2.webp',1.556],['walls/shop3.webp',1.586]],cafe:[['walls/cafe1.webp',1.5],['walls/cafe2.webp',1.5],['walls/cafe3.webp',1.5]],alley:[['walls/alley1.webp',1.735],['walls/alley2.webp',1.735],['walls/alley3.webp',1.735]],dojo:[['walls/dojo1.webp',1.691],['walls/dojo2.webp',1.801],['walls/dojo3.webp',1.625]],temple:[['walls/temple1.webp',1.71],['walls/temple2.webp',1.71],['walls/temple3.webp',1.71]]},WIMG={};  // [file, width/height]
 // plain wall drawing tiled behind everything (mirrored every other tile, so the joins are seamless)
-const WALLBG={cafe:['walls/cafe-plain.webp',1.5],temple:['walls/temple-plain.webp',1.71],dojo:['walls/dojo-plain.webp',1.625]};
+const WALLBG={cafe:['walls/cafe-plain.webp',1.5],temple:['walls/temple-plain.webp',1.71],dojo:['walls/dojo-plain.webp',1.625],alley:['walls/alley-plain.webp',1.75]};
 function drawPlainWall(){const b=WALLBG[game.theme];if(!b)return;const im=wallImg(b[0]);if(!im.complete||!im.naturalWidth)return;const h=CEIL-FL,w=h*b[1],hw=W/2/cam.z+60;
   for(let i=Math.floor((cam.x-hw)/w);i*w<cam.x+hw;i++){ctx.save();ctx.translate(i*w+(i&1?w:0),CEIL);ctx.scale(i&1?-1:1,-1);ctx.drawImage(im,0,0,w+1,h);ctx.restore()}}
 function wallImg(src){let im=WIMG[src];if(!im){im=WIMG[src]=new Image();im.src=src}return im}
@@ -1930,7 +1930,7 @@ function finishFallback(a){const f=game.fin;if(f&&f.att===a&&f.vic.locked){const
 // ================= props, crates, pickups =================
 let props=[],pickups=[],projs=[];
 const PROPDEF={box:{w:62,h:52,m:1.3},box2:{w:52,h:44,m:1},box3:{w:46,h:40,m:.9},sign:{w:44,h:70,m:.7},bin:{w:42,h:60,m:1.1},can:{w:14,h:20,m:.3},
-  chair:{w:46,h:100,m:.6},table:{w:84,h:92,m:1.1},cup:{w:12,h:12,m:.2},barrel:{w:46,h:58,m:1.4},bucket:{w:30,h:30,m:.5},stool:{w:34,h:40,m:.6},crate:{w:54,h:54,m:1.5},plant:{w:40,h:82,m:.8},sacks:{w:58,h:54,m:1.6},lantern:{w:40,h:84,m:1.5},mat:{w:30,h:76,m:.7},bag:{w:30,h:80,m:1.3},bamboo:{w:62,h:34,m:.8},pot:{w:46,h:54,m:1.2}};
+  chair:{w:46,h:100,m:.6},table:{w:84,h:92,m:1.1},cup:{w:12,h:12,m:.2},barrel:{w:46,h:58,m:1.4},bucket:{w:30,h:30,m:.5},stool:{w:34,h:40,m:.6},crate:{w:54,h:54,m:1.5},plant:{w:40,h:82,m:.8},sacks:{w:58,h:54,m:1.6},lantern:{w:40,h:84,m:1.5},mat:{w:30,h:76,m:.7},tires:{w:56,h:50,m:1.4},cone:{w:34,h:46,m:.4},bag:{w:30,h:80,m:1.3},bamboo:{w:62,h:34,m:.8},pot:{w:46,h:54,m:1.2}};
 function mkProp(type,x,y=0,extra={}){const d=PROPDEF[type];return{type:type.replace(/\d$/,''),kind:type,x,y,w:d.w,h:d.h,m:d.m,vx:0,vy:0,rot:0,vr:0,cd:0,...extra}}
 const cafeSet=x=>[mkProp('chair',x-74,0,{flip:1}),mkProp('table',x),mkProp('cup',x-8,96),mkProp('chair',x+74)];  // chairs face the table
 function battleProps(theme){if(theme==='shop')return[mkProp('box',-725),mkProp('box2',-722,52),mkProp('box3',-655),mkProp('sign',-360),mkProp('bin',610),mkProp('can',262),mkProp('can',280),mkProp('can',271,20)];
@@ -1939,9 +1939,9 @@ function battleProps(theme){if(theme==='shop')return[mkProp('box',-725),mkProp('
   if(theme==='cafe')return[mkProp('plant',-780),mkProp('sacks',720),...cafeSet(-450),...cafeSet(450),mkProp('cup',-80)];
   if(['bazaar','zurkhaneh','beach','roof'].includes(theme))return[mkProp('box',-640),mkProp('barrel',-560),mkProp('can',300),mkProp('box3',620)];
   if(theme==='desk')return[mkProp('box',-640),mkProp('box3',-585),mkProp('can',300),mkProp('can',318),mkProp('barrel',620)];
-  if(theme==='alley')return[mkProp('bin',-660),mkProp('box',-560),mkProp('box3',-505),mkProp('barrel',640),mkProp('can',250),mkProp('can',268),mkProp('sign',-250)];
+  if(theme==='alley')return[mkProp('bin',-770),mkProp('box',-680),mkProp('tires',-600),mkProp('barrel',600),mkProp('cone',680),mkProp('bin',770)];
   return[mkProp('barrel',-660),mkProp('bucket',-600),mkProp('stool',-300),mkProp('barrel',680),mkProp('bucket',520),mkProp('stool',300)]}
-function storyProps(st){const L=mulberry32(st.len),out=[],pool={desk:['box','box3','can','barrel'],bazaar:['box','box3','barrel','can'],zurkhaneh:['barrel','bucket','stool'],beach:['box','can','bucket'],roof:['box','box3','barrel','bin'],shop:['box','box3','sign','bin','can'],cafe:['table','table','cup','plant','sacks'],dojo:['barrel','bucket','stool','mat','bag'],temple:['pot','bucket','stool','lantern','bamboo'],alley:['bin','box','box3','can','barrel','sign']}[st.theme];
+function storyProps(st){const L=mulberry32(st.len),out=[],pool={desk:['box','box3','can','barrel'],bazaar:['box','box3','barrel','can'],zurkhaneh:['barrel','bucket','stool'],beach:['box','can','bucket'],roof:['box','box3','barrel','bin'],shop:['box','box3','sign','bin','can'],cafe:['table','table','cup','plant','sacks'],dojo:['barrel','bucket','stool','mat','bag'],temple:['pot','bucket','stool','lantern','bamboo'],alley:['bin','box','barrel','tires','cone']}[st.theme];
   for(let x=300;x<st.len-200;x+=260+L()*260){const t=pool[L()*pool.length|0];if(t==='table')out.push(...cafeSet(x));else out.push(mkProp(t,x))}
   // crates without a heart hold the stage's weapons, in random order
   const loot=(st.loot||[]).slice().sort(()=>Math.random()-.5);let li=0;
@@ -2517,6 +2517,7 @@ function drawTrail(f){const tr=f.trail;if(tr.length<3)return;const aura=f.state=
 // hand-drawn prop pictures per stage (same colored-pencil set as the walls); others stay pencil sketches
 const PROPIMG={shop:{box:'carton',box2:'crate',box3:'basket',sign:'sign',bin:'mop',barrel:'barrel',crate:'crate'},
   dojo:{crate:'crate',barrel:'barrel',bucket:'bucket',stool:'stool',mat:'mat',bag:'bag'},
+  alley:{crate:'crate',bin:'can',box:'box',box2:'box',box3:'box',barrel:'barrel',tires:'tires',cone:'cone',sign:'cone',can:'cone'},
   temple:{crate:'crate',lantern:'lantern',bucket:'bucket',stool:'stool',pot:'pot',bamboo:'bamboo',barrel:'pot'},
   cafe:{table:'table',chair:'chair',cup:'glass',crate:'crate',plant:'plant',sacks:'sacks'}},PIMG={};
 function propImg(p){const t=PROPIMG[game.theme],n=t&&t[p.kind];if(!n)return null;const src='props/'+game.theme+'-'+n+'.webp';let im=PIMG[src];if(!im){im=PIMG[src]=new Image();im.src=src}return im.complete&&im.naturalWidth?im:null}
