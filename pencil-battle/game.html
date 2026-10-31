@@ -2443,7 +2443,7 @@ function drawProjs(){for(const p of projs){ctx.save();ctx.translate(p.x,p.y);ctx
 function drawFighter(f){
   const s=f.sk,c=f.c,sc=f.sc,fl=f.flash>0,fc=fl?c.flash:c.front,rc=fl?c.flash:c.rear,bs=f.boss&&!(f.ch&&f.ch.bossOf!=null),Wd=9.5*sc*(bs&&!(f.ch&&f.ch.look&&f.ch.look.thin)?1.3:1),two=f.weapon==='staff',dff=f.dff;
   ctx.save();ctx.globalAlpha=f.alpha;ctx.lineCap='round';ctx.lineJoin='round';if(f.ch&&f.ch.look&&f.ch.look.jinn)ctx.translate(0,8+Math.sin(game.rt*3+f.uid)*5);
-  const shd=Math.max(.25,1-f.y/260);ctx.fillStyle='rgba(30,25,20,.16)';ctx.beginPath();ctx.ellipse(s.hip[0],0,38*shd*sc,5*shd*sc,0,0,TAU);ctx.fill();if(f.ch&&f.ch.look&&f.ch.look.jinn&&!(f.ch.id==='jinn'&&JIMG.naturalWidth))drawJinnSmoke(f);if(f.state==='move'&&f.move&&f.move.name==='zrise'&&!(f.ch.id==='zombie'&&ZIMG.naturalWidth)){const k=1-clamp(f.move.t/650,0,1);ctx.beginPath();ctx.rect(-1e5,0,2e5,1e5);ctx.clip();ctx.translate(0,-k*150*sc)}
+  const shd=Math.max(.25,1-f.y/260);ctx.fillStyle='rgba(30,25,20,.16)';ctx.beginPath();ctx.ellipse(s.hip[0],0,38*shd*sc,5*shd*sc,0,0,TAU);ctx.fill();if(f.ch&&f.ch.look&&f.ch.look.jinn&&f.ch.id!=='jinn')drawJinnSmoke(f);if(f.state==='move'&&f.move&&f.move.name==='zrise'&&!(f.ch.id==='zombie'&&ZIMG.naturalWidth)){const k=1-clamp(f.move.t/650,0,1);ctx.beginPath();ctx.rect(-1e5,0,2e5,1e5);ctx.clip();ctx.translate(0,-k*150*sc)}
   const hl=(pts,w)=>{ctx.save();ctx.translate(-1.3,1.3);strokePoly(pts,w*.28,'rgba(255,255,255,.16)');ctx.restore()};
   const gl=f.ch&&f.ch.look&&f.ch.look.gloves,fist=(p,col)=>{if(gl){drawGlove(f,p,col===rc);return}ctx.fillStyle=col;ctx.beginPath();ctx.arc(p[0],p[1],5.6*sc*(bs?1.5:1),0,TAU);ctx.fill()};
   const limb=(pts,w,col)=>{if(!bs){strokePoly(pts,w,col);return}strokePoly(pts.slice(0,2),w*1.55,col);strokePoly(pts.slice(1),w*1.2,col)};
@@ -2505,7 +2505,7 @@ function drawJinnFace(f,lk){const H=faceFrame(f),sc=f.sc;ctx.save();if(QL<1){ctx
 function drawJinnSmoke(f){const s=f.sk,sc=f.sc,t=game.rt;ctx.save();ctx.globalAlpha=f.alpha*.42;for(const q of[s.f1,s.f2,s.k1,s.k2])for(let k=0;k<3;k++){const ph=t*3+k*2.1+f.uid;ctx.fillStyle=k%2?'#4a3566':'#2b2140';ctx.beginPath();ctx.arc(q[0]+Math.sin(ph)*8*sc,q[1]+((t*40+k*13)%26)*sc,(9+k*3)*sc,0,TAU);ctx.fill()}ctx.restore()}
 // zombie drawn from frames cut out of the user's zombie video (fx/zombie.webp: 10 columns of 245x330 cells, facing right, feet at y=303, body at x=86)
 const ZIMG=Object.assign(new Image(),{src:'fx/zombie.webp'}),ZA={rise:[0,10],walk:[10,9],claw:[19,5],idle:[24,4],bite:[28,6],hit:[34,5],die:[39,10]};
-function drawZombieSprite(f){if(!ZIMG.complete||!ZIMG.naturalWidth)return false;const S=f.state,m=f.move,at=(a,u)=>ZA[a][0]+Math.min(ZA[a][1]-1,Math.max(0,Math.floor(u*ZA[a][1])));let i;
+function drawZombieSprite(f){if(!ZIMG.complete||!ZIMG.naturalWidth)return true;const S=f.state,m=f.move,at=(a,u)=>ZA[a][0]+Math.min(ZA[a][1]-1,Math.max(0,Math.floor(u*ZA[a][1])));let i;
   if(S!=='ko'&&!f.ko)f.zdT=null;if(S!=='hit')f.zhT=null;
   if(S==='move'&&m){const tot=m.d._tot||(m.d._tot=m.d.seq.reduce((a,q)=>a+q[1],0)),u=m.t/tot;i=at(m.name==='zrise'?'rise':m.name==='zclaw'?'claw':m.name==='zbite'||m.name==='zlunge'?'bite':'claw',u)}
   else if(S==='ko'||f.ko){if(f.zdT==null)f.zdT=game.rt;i=at('die',(game.rt-f.zdT)/1.3)}
@@ -2518,7 +2518,7 @@ function drawZombieSprite(f){if(!ZIMG.complete||!ZIMG.naturalWidth)return false;
   if(f.flash>0){ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.4*f.alpha;ctx.drawImage(ZIMG,sx,sy,245,330,-86,-303,245,330)}ctx.restore();drawIce(f);return true}
 // jinn drawn from the user's 2x2 jinn video (fx/jinn.webp: 10 columns of 310x254 cells, facing right, body at x=122, bottom of the smoke at y=248)
 const JIMG=Object.assign(new Image(),{src:'fx/jinn.webp'}),JA={idle:[0,12],claw:[12,11],fire:[23,6],hit:[29,12]};
-function drawJinnSprite(f){if(!JIMG.complete||!JIMG.naturalWidth)return false;const S=f.state,m=f.move,at=(a,u)=>JA[a][0]+Math.min(JA[a][1]-1,Math.max(0,Math.floor(u*JA[a][1])));let i,al=1;
+function drawJinnSprite(f){if(!JIMG.complete||!JIMG.naturalWidth)return true;const S=f.state,m=f.move,at=(a,u)=>JA[a][0]+Math.min(JA[a][1]-1,Math.max(0,Math.floor(u*JA[a][1])));let i,al=1;
   if(S!=='ko'&&!f.ko)f.zdT=null;if(!/^(hit|air|juggle|stun|down|getup)$/.test(S))f.zhT=null;
   if(S==='move'&&m){const tot=m.d._tot||(m.d._tot=m.d.seq.reduce((a,q)=>a+q[1],0));i=at(m.name==='throwP'?'fire':'claw',m.t/tot)}
   else if(S==='ko'||f.ko){if(f.zdT==null)f.zdT=game.rt;const t=game.rt-f.zdT;i=at('hit',t/.7);al=clamp(1-(t-.6)/.6,0,1)}
