@@ -570,6 +570,7 @@ const CHARS=[
   {id:'gladiator',name:'گلادیاتور',style:'مشت‌های میخ‌دار',weapon:'none',stats:[5,2,4],spd:.85,dmg:1.2,hp:120,kb:.8,sc:1.1,special:'gslam',sname:'زمین‌لرزه!',look:{gloves:'#6e4f3c',spikes:1,helm:'#6e4f3c',skirt:'#6e4f3c',pads:'#6e4f3c'},img:'chars/c8.png'},
   {id:'ninja',name:'آذرخش',style:'نینجای شمشیر نور',weapon:'sword',stats:[3,5,2],spd:1.2,dmg:.95,hp:90,special:'ydash',sname:'یورش آذرخش!',stance:'yStance',moves:{p:'ksw',fp:'ymanji',bp:'ygas',cp:'ymed',k:'fs',fk:'ypoison',bk:'ytele',ck:'sw'},look:{band:'visor',bandCol:'#2f7fd6',cuffs:'#2f7fd6',glow:'#6fd3ff'},img:'chars/c9.png'},
   {id:'pahlevan',name:'پهلوون',style:'زورخانه‌ای، دو میل',weapon:'none',stance:'pStance',stats:[5,1,5],spd:.8,dmg:1.25,hp:125,kb:.75,sc:1.15,special:'kabadeh',sname:'فرفره‌ی کباده!',moves:{p:'mswing',fp:'lunge',bp:'mspin',cp:'upc',k:'fs',fk:'sk',bk:'bk',ck:'sw'},look:{mustache:1,shorts:'#c0392b',shortsTrim:'#e8b53a',belt:'#c0392b',meel:1}},
+  {id:'mozhgan',name:'مژگان',style:'تکواندو و کیف دستی',weapon:'none',stats:[3,5,2],spd:1.15,dmg:.95,hp:92,special:'mzbag',sname:'کیف‌کوبی!',stance:'mzSt',win:'mzWin',moves:{p:'jab',fp:'mzpalm',bp:'mzknee',cp:'upc',k:'hwk',fk:'hwfly',bk:'bk',ck:'sw'},look:{top:'#e85aa0',top2:'#7a3fa0',pants:'#6b3a9a',belt:'#f3efe6',bangles:'#e8b92a',pony:'#1d1c1a',scarf:'#f3efe6'},img:'chars/c10.png'},
   {id:'turtle',name:'لاکی',style:'لاک‌پشت نینجا، چوب',weapon:'staff',stats:[3,4,4],spd:1.05,dmg:1,hp:110,kb:.9,special:'sspin',sname:'گردباد چوب!',bk:'shellsp',look:{shell:'#4f9a4c',band:'tails',bandCol:'#7e57c2',bo:1}}];
 const PLAYABLE=CHARS.filter(c=>!c.lock);
 // ===== shop: coins buy hats, face items and silly weapons (saved on this device) =====
@@ -736,6 +737,14 @@ const P={
   down:B({hy:8,hx:-34,t:-90,h:0,L1:[100,80],L2:[92,88],A1:[95,85],A2:[-100,-112]}),
   getup:B({hy:30,t:30,f1:[20,0],f2:[-24,0],h1:[20,-10],h2:[10,-16]}),
   win:B({hy:60,t:0,h:8,f1:[22,0],f2:[-22,0],h1:[16,8],h2:[4,50]}),
+  // Mozhgan: bouncy taekwondo guard, palm strike, knee, handbag swings, selfie victory
+  mzSt:B({hy:58,t:2,h:0,f1:[24,0],f2:[-24,0],h1:[22,12],h2:[12,18]}),
+  mzPalm:B({hy:54,hx:8,t:20,h:-10,f1:[34,0],f2:[-30,0],h1:[50,20],h2:[8,18]}),
+  mzKnee:B({hy:62,hx:4,t:-6,h:4,f2:[-6,0],L1:[150,40],h1:[30,30],h2:[24,26]}),
+  mzBag1:B({hy:56,t:-10,h:6,f1:[26,0],f2:[-28,0],h1:[-14,40],h2:[10,16]}),
+  mzBag2:B({hy:54,hx:8,t:22,h:-10,f1:[36,0],f2:[-30,0],h1:[48,4],h2:[8,18]}),
+  mzBag3:B({hy:52,hx:6,t:16,h:-6,f1:[34,0],f2:[-30,0],h1:[36,-24],h2:[6,20]}),
+  mzWin:B({hy:60,t:-2,h:6,f1:[18,0],f2:[-20,0],h1:[14,46],h2:[22,28]}),
   // Bruce Lee (dragon): ready stance, dragon knuckle, one-inch punch, dragon hammer, front kick, dragon's tail, victory pose
   blSt:B({hy:55,t:8,h:-4,f1:[28,0],f2:[-26,0],h1:[30,8],h2:[14,22]}),
   blKn0:B({hy:58,hx:2,t:-6,h:4,f1:[26,0],f2:[-26,0],h1:[20,46],h2:[10,16]}),
@@ -1091,6 +1100,11 @@ const MOVES={
   blsom2:{air:1,rotc:[0,560,0,360],seq:[['bf2',140,0,40],['bf3',130,0,32],['bf4',130,0,32],['bf5',9e9,0,30]],hits:[{t0:0,t1:200,limb:'f1',dmg:10,kb:300,kind:'knock',r:16}],landFx:1},
   bltail:{seq:[['crouch',60,0,40],['blTail',150,70,60],['crouch',90,0,34],['stance',140,0,22]],hits:[{t0:60,t1:210,limb:'f1',dmg:10,kb:220,kind:'knock',low:1,r:14}],trail:'f1'},
   blrush:{aura:1,seq:[['jab0',30,40],['jab',55,70],['cross0',30,40],['cross',55,70],['jab0',30,40],['jab',55,70],['cross0',30,40],['cross',55,70],['jab0',30,40],['jab',55,70],['cross0',30,40],['cross',55,70],['jab0',30,40],['jab',55,70],['cross0',30,40],['cross',55,70],['blIn0',90,0,30],['blIn',120,60,70],['stance',160,0,22]],hits:[{t0:30,t1:85,limb:'h1',dmg:3,kb:70,kind:'light'},{t0:115,t1:170,limb:'h2',dmg:3,kb:70,kind:'light'},{t0:200,t1:255,limb:'h1',dmg:3,kb:70,kind:'light'},{t0:285,t1:340,limb:'h2',dmg:3,kb:70,kind:'light'},{t0:370,t1:425,limb:'h1',dmg:3,kb:70,kind:'light'},{t0:455,t1:510,limb:'h2',dmg:3,kb:70,kind:'light'},{t0:540,t1:595,limb:'h1',dmg:3,kb:70,kind:'light'},{t0:625,t1:680,limb:'h2',dmg:3,kb:70,kind:'light'},{t0:770,t1:890,limb:'h1',dmg:14,kb:720,kind:'knock',r:15,cine:1}]},
+  // Mozhgan moves
+  mzpalm:{seq:[['jab0',60,30],['mzPalm',110,110],['stance',140,0]],hits:[{t0:60,t1:170,limb:'h1',dmg:10,kb:380,kind:'heavy',r:13}],trail:'h1'},
+  mzknee:{seq:[['mzKnee',140,90,55],['stance',150,0,22]],hits:[{t0:40,t1:150,limb:'k1',dmg:10,kb:260,kind:'launch',r:16}]},
+  mzbag:{aura:1,bag:1,seq:[['mzBag1',110,0,40],['mzBag2',100,90,62],['mzBag3',90,40,55],['mzBag1',90,0,45],['mzBag2',100,90,62],['spinA',70,0,40],['mzBag2',120,140,64,0,{fx:'dash'}],['stance',150,0,22]],
+    hits:[{t0:110,t1:210,limb:'h1',dmg:8,kb:200,kind:'heavy',r:24},{t0:390,t1:490,limb:'h1',dmg:8,kb:200,kind:'heavy',r:24},{t0:560,t1:680,limb:'h1',dmg:14,kb:620,kind:'knock',r:26,cine:1}],trail:'h1'},
   kspin:{air:1,aura:1,launch:[700,130],rotc:[0,430,0,-360],seq:[['kj1',100,0,40],['kj2',330,0,34],['kj3',80,0,45],['kj4',100,0,55],['kj5',9e9,0,55]],
     hits:[{t0:110,t1:440,limb:'w',dmg:7,kb:120,kind:'light',r:17},{t0:520,t1:620,limb:'w',dmg:8,kb:140,kind:'light',r:16},{t0:620,t1:9e9,limb:'w',dmg:12,kb:360,kind:'knock',r:16,cine:1}],landFx:1},
   kflr:{parry:[0,420],seq:[['kf1',110,0,30],['kf2',90,0,40,0,{fx:'eight'}],['kf3',90,0,40,0,{fx:'eight'}],['kf2',90,0,40,0,{fx:'eight'}],['kf3',90,0,40,0,{fx:'eight'}],['kf5',170,220,36,0,{fx:'dash'}],['stance',160,0,18]],
@@ -2163,14 +2177,14 @@ function drawFighter(f){
   const lk=(f.ch&&f.ch.look)||{},shade=(col,rear)=>rear?shadeHex(col,.8):col,cloth=(pts,w,col)=>{strokePoly(pts,w+3*sc,INK);strokePoly(pts,w,col)};
   const leg=(pts,col)=>{const rear=col===rc;if(lk.suit){cloth(pts.slice(0,3),Wd*1.05,shade(lk.suit,rear));strokePoly(pts.slice(0,3),Wd*.2,INK);strokePoly(pts.slice(2),Wd,col);return}
     if(lk.pants){cloth(pts.slice(0,3),Wd*1.75,shade(lk.pants,rear));strokePoly(pts.slice(2),Wd,col);return}limb(pts,Wd,col)};
-  const arm=(pts,col)=>{const rear=col===rc;if(lk.suit){cloth(pts,Wd*.95,shade(lk.suit,rear));strokePoly(pts,Wd*.18,INK);return}limb(pts,Wd*.9,col)};
+  const arm=(pts,col)=>{const rear=col===rc;if(lk.top){const m=lerp2(pts[1],pts[2],.55);cloth([pts[0],pts[1],m],Wd*1.05,shade(lk.top,rear));strokePoly([m,pts[2]],Wd*.9,col);return}if(lk.suit){cloth(pts,Wd*.95,shade(lk.suit,rear));strokePoly(pts,Wd*.18,INK);return}limb(pts,Wd*.9,col)};
   if(f.state==='move'&&f.move.d.aura){const ac=f.aura,pulse=.75+Math.sin(game.rt*40)*.25;ctx.save();ctx.shadowColor=ac;ctx.shadowBlur=22*pulse;ctx.globalAlpha=.32*pulse*f.alpha;
     for(const pts of[L1,L2,A1,A2,T])strokePoly(pts,Wd+11*sc,ac);ctx.fillStyle=ac;ctx.beginPath();ctx.arc(s.head[0],s.head[1],(SEG.HR+7)*sc,0,TAU);ctx.fill();ctx.restore();
     ctx.strokeStyle=ac;ctx.lineWidth=1.5;ctx.globalAlpha=.85*f.alpha;const js=[s.head,s.chest,s.hip,s.k1,s.k2,s.f1,s.f2,s.h1,s.h2,s.e1];
     for(let i=0;i<7;i++){const q=js[Math.random()*js.length|0],a=Math.random()*TAU,l=(10+Math.random()*16)*sc,r0=12*sc;ctx.beginPath();ctx.moveTo(q[0]+Math.cos(a)*r0,q[1]+Math.sin(a)*r0);ctx.lineTo(q[0]+Math.cos(a+.3)*(r0+l*.5),q[1]+Math.sin(a+.3)*(r0+l*.5));ctx.lineTo(q[0]+Math.cos(a)*(r0+l),q[1]+Math.sin(a)*(r0+l));ctx.stroke()}ctx.globalAlpha=f.alpha}
   if(f.weapon==='sword'&&!f.wskin)drawScabbard(f);
   const sw=f.disp.sw;leg(sw?L1:L2,rc);if(!two){arm(A2,rc);fist(s.h2,rc);if(f.weapon==='dagger')drawKnife(f,1)}
-  if(lk.shell)drawShell(f,lk);if(lk.suit){cloth(T,Wd*1.3,lk.suit);strokePoly(T,Wd*.2,INK)}else strokePoly(T,Wd*(bs?1.9:1.08),fc);hl(T,Wd);if(lk.belt)drawBelt(f,lk.belt);if(lk.tee)strokePoly([lerp2(s.hip,s.chest,.12),lerp2(s.hip,s.chest,.95)],Wd*.55,lk.tee);if(lk.trim)strokePoly([lerp2(s.hip,s.chest,.2),lerp2(s.hip,s.chest,.9)],Wd*.16,lk.trim);if(lk.eraser)drawEraserBody(f,lk);if(lk.belly){const q=torsoFrame(f),c=q(lerp2(s.hip,s.chest,.42),f.dff*7,0);ctx.fillStyle=fc;ctx.beginPath();ctx.ellipse(c[0],c[1],22*sc,26*sc,0,0,TAU);ctx.fill()}
+  if(lk.shell)drawShell(f,lk);if(lk.suit){cloth(T,Wd*1.3,lk.suit);strokePoly(T,Wd*.2,INK)}else if(lk.top){cloth(T,Wd*1.5,lk.top);strokePoly([lerp2(s.hip,s.chest,.1),lerp2(s.hip,s.chest,.95)],Wd*.32,lk.top2||'#7a3fa0')}else strokePoly(T,Wd*(bs?1.9:1.08),fc);hl(T,Wd);if(lk.belt)drawBelt(f,lk.belt);if(lk.tee)strokePoly([lerp2(s.hip,s.chest,.12),lerp2(s.hip,s.chest,.95)],Wd*.55,lk.tee);if(lk.trim)strokePoly([lerp2(s.hip,s.chest,.2),lerp2(s.hip,s.chest,.9)],Wd*.16,lk.trim);if(lk.eraser)drawEraserBody(f,lk);if(lk.belly){const q=torsoFrame(f),c=q(lerp2(s.hip,s.chest,.42),f.dff*7,0);ctx.fillStyle=fc;ctx.beginPath();ctx.ellipse(c[0],c[1],22*sc,26*sc,0,0,TAU);ctx.fill()}
   if(bs&&!lk.eyes){const ux=s.chest[0]-s.hip[0],uy=s.chest[1]-s.hip[1],ul=Math.hypot(ux,uy)||1,u=[ux/ul,uy/ul],pp=[u[1],-u[0]],q=(o,a,b)=>[o[0]+pp[0]*a*sc+u[0]*b*sc,o[1]+pp[1]*a*sc+u[1]*b*sc];
     const poly=[q(s.hip,-9,0),q(s.hip,9,0),q(s.chest,20,3),q(s.chest,-20,3)];ctx.fillStyle=fc;ctx.beginPath();poly.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();ctx.fill();
     ctx.strokeStyle='rgba(30,4,3,.55)';ctx.lineWidth=1.7*sc;ctx.beginPath();const m1=q(s.chest,0,-4),m2=q(s.hip,0,10);ctx.moveTo(m1[0],m1[1]);ctx.lineTo(m2[0],m2[1]);
@@ -2189,7 +2203,7 @@ function drawFighter(f){
   if(lk.skirt)drawSkirt(f,lk.skirt);if(lk.chador)drawChadorBody(f,lk);if(lk.shortsTrim)for(const L of[L2,L1]){const m=lerp2(L[0],L[1],.6),dx=L[1][0]-L[0][0],dy=L[1][1]-L[0][1],l=Math.hypot(dx,dy)||1,n=[-dy/l*Wd*.75,dx/l*Wd*.75];ctx.save();ctx.lineCap='butt';strokePoly([[m[0]-n[0],m[1]-n[1]],[m[0]+n[0],m[1]+n[1]]],3.2*sc,lk.shortsTrim);ctx.restore()}if(lk.tassets)drawTassets(f,lk);if(lk.sash)drawBelt(f,lk.sash);if(lk.apron)drawApron(f,lk);if(lk.robe)drawRobe(f,lk.robe);if(lk.cuffs)for(const L of[L1,L2])strokePoly([lerp2(L[1],L[2],.72),lerp2(L[1],L[2],.93)],Wd*1.35,lk.cuffs);
   if(f.weapon==='staff'){f.wskin?drawSkin(f):lk.bo?drawBo(f):drawStaff(f);arm(A2,rc);fist(s.h2,rc)}
   if(f.weapon==='sword'){f.wskin?drawSkin(f):drawSword(f)}
-  arm(A1,fc);hl(A1,Wd*.9);if(lk.cuffs)for(const A of[A1,A2])strokePoly([lerp2(A[1],A[2],.68),lerp2(A[1],A[2],.9)],Wd*1.3,lk.cuffs);fist(s.h1,fc);
+  arm(A1,fc);hl(A1,Wd*.9);if(lk.cuffs)for(const A of[A1,A2])strokePoly([lerp2(A[1],A[2],.68),lerp2(A[1],A[2],.9)],Wd*1.3,lk.cuffs);if(lk.bangles)for(const A of[A1,A2])for(const k of[.74,.84])strokePoly([lerp2(A[1],A[2],k-.025),lerp2(A[1],A[2],k+.025)],Wd*1.2,lk.bangles);fist(s.h1,fc);
   if(lk.pads)fillPts(padPts(f),lk.pads,1.4*sc);if(lk.trim)fillPts(padPts(f),lk.suit,1.4*sc);if(lk.studs)drawStuds(f);
   if(lk.twin)drawTwin(f);if(lk.bat)drawBat(f);if(lk.meel&&!(f.state==='move'&&f.move.name==='kabadeh')){drawClub(f,s.h1,s.e1);drawClub(f,s.h2,s.e2)}if(lk.cane)drawCane(f);if(f.state==='move'&&f.move.name==='kabadeh')drawKabadeh(f);if(lk.gourd)drawGourd(f);if(lk.slipper&&!f.kOut[0])drawSlipper(s.h1,Math.atan2(s.h1[1]-s.e1[1],s.h1[0]-s.e1[0]),f.sc);if(lk.chain)drawChain(f);
   if(lk.glow&&f.weapon==='sword'){ctx.save();ctx.shadowColor=lk.glow;ctx.shadowBlur=14;strokePoly([lerp2(s.wbt,s.wt,.3),lerp2(s.wbt,s.wt,1.04)],3.4*sc,lk.glow);strokePoly([lerp2(s.wbt,s.wt,.3),lerp2(s.wbt,s.wt,1.02)],1.4*sc,'#eaffff');ctx.restore()}
@@ -2198,7 +2212,13 @@ function drawFighter(f){
   if(lk.pot)drawPot(f);if(lk.cart&&(f.state==='stand'||(f.state==='move'&&f.move.name==='cartrush')))drawCart(f);
   if(f.weapon==='dagger')drawKnife(f,0);
   if(f.weapon==='nun')drawNun(f);
+  if(f.state==='move'&&f.move&&f.move.d.bag)drawBag(f);if(f.state==='win'&&f.ch&&f.ch.win==='mzWin'&&!f.dance)drawPhone(f);
   ctx.restore()}
+// Mozhgan's handbag (swung on her special) and the phone for her victory selfie
+function drawBag(f){const s=f.sk,sc=f.sc,dx=s.h1[0]-s.e1[0],dy=s.h1[1]-s.e1[1],l=Math.hypot(dx,dy)||1,u=[dx/l,dy/l],c=[s.h1[0]+u[0]*16*sc,s.h1[1]+u[1]*16*sc];
+  strokePoly([s.h1,c],1.6*sc,INK);ctx.save();ctx.translate(c[0],c[1]);ctx.rotate(Math.atan2(u[1],u[0])-Math.PI/2);ctx.fillStyle='#c2185b';ctx.strokeStyle=INK;ctx.lineWidth=1.4*sc;
+  ctx.beginPath();ctx.roundRect(-10*sc,-14*sc,20*sc,14*sc,3*sc);ctx.fill();ctx.stroke();ctx.fillStyle='#e8b92a';ctx.fillRect(-2*sc,-8*sc,4*sc,3*sc);ctx.restore()}
+function drawPhone(f){const s=f.sk,sc=f.sc;ctx.save();ctx.translate(s.h1[0],s.h1[1]+5*sc);ctx.fillStyle='#2a2a2a';ctx.strokeStyle='#e8b92a';ctx.lineWidth=1.2*sc;ctx.beginPath();ctx.roundRect(-3.5*sc,-6*sc,7*sc,12*sc,1.5*sc);ctx.fill();ctx.stroke();ctx.restore()}
 // ================= gags (rare, only in pauses) =================
 const lerpN=(a,b,k)=>a+(b-a)*k,wordAt=(x,y,txt,col)=>fx.push({k:'word',x,y,t:0,life:.7,txt,rot:(Math.random()-.5)*.3,col});
 function startGag(f,kind,delay){if(!f||f.ko||f.hp<=0)return;Object.assign(f,{state:'gag',gag:kind,gagT:-delay,gagD:2.45,popped:0,move:null,vx:0,blocking:false,crouch:false})}
@@ -2262,6 +2282,8 @@ function dots(p,r){ctx.fillStyle='#d8433a';for(let i=0;i<3;i++){ctx.beginPath();
 function drawHeadGear(f,fc){const lk=f.ch.look||{},sc=f.sc,H=headFrame(f),R=SEG.HR,s=f.sk,t=game.rt,mv=Math.min(1,Math.abs(f.vx)/300);
   const tail=(a0,b0,len,ph,w,col)=>{const p0=H(a0,b0),wv=Math.sin(t*13+ph)*(3+mv*2),p1=H(a0-3+wv*.5-(1-mv)*4,b0-len*.5),p2=H(a0-6+wv-(1-mv)*9,b0-len);
     ctx.strokeStyle=col;ctx.lineWidth=w*sc;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(p0[0],p0[1]);ctx.quadraticCurveTo(p1[0],p1[1],p2[0],p2[1]);ctx.stroke()};
+  if(lk.pony){tail(R*.55,-R*.85,34,0,7,lk.pony);tail(R*.4,-R*.9,28,1.3,4.5,lk.pony);ctx.fillStyle=lk.top2||'#7a3fa0';const q=H(R*.55,-R*.85);ctx.beginPath();ctx.arc(q[0],q[1],2.6*sc,0,TAU);ctx.fill()}
+  if(lk.scarf){const a=H(R*.62,-R-1),b=H(R*.62,R+1);ctx.save();ctx.beginPath();ctx.arc(s.head[0],s.head[1],R*sc,0,TAU);ctx.clip();strokePoly([a,b],8*sc,lk.scarf);ctx.restore();tail(-R*.7,-R*.5,26,2.1,6,lk.scarf)}
   if(lk.band==='tails'){const bc=lk.bandCol||'#cf241d',a=H(4,-R-1),b=H(4,R+1);ctx.save();ctx.beginPath();ctx.arc(s.head[0],s.head[1],R*sc,0,TAU);ctx.clip();strokePoly([a,b],lk.bandCol?7*sc:5*sc,bc);ctx.restore();
     if(lk.bandCol){ctx.fillStyle='#f3efe6';for(const bb of[R-7,R-1]){const e=H(4,bb);ctx.beginPath();ctx.arc(e[0],e[1],1.6*sc,0,TAU);ctx.fill()}}
     tail(4,-R+1,lk.bandCol?30:24,0,3.6,bc);tail(3,-R+1,lk.bandCol?26:20,1.7,3.2,lk.bandCol?shadeHex(bc,.8):'#b81d17')}
