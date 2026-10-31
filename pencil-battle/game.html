@@ -560,7 +560,7 @@ const LAMP={shop:lampCone,cafe:lampDome,dojo:lantern,temple:lantern,alley:lampCo
 const WPN={shop:'none',cafe:'nun',dojo:'staff',temple:'sword',alley:'dagger'};
 // playable roster. stats = [power, speed, defense] out of 5; spd/dmg/hp/kb scale the fighter; look = costume drawn on the stick figure
 const CHARS=[
-  {id:'sia',name:'سیاه',style:'مشت، لگد و دود',weapon:'none',stats:[3,3,3],spd:1,dmg:1,hp:100,special:'special',sname:'طوفان!',intro:'siaintro',moves:{p:'jab',fp:'lunge',bp:'siasmoke',cp:'upc',k:'fs',fk:'sk',bk:'siabomb',ck:'sw'},look:{band:'tails'},img:'chars/c1.png'},
+  {id:'sia',name:'سیاه',style:'مشت، لگد و دود',weapon:'none',stats:[3,3,3],spd:1,dmg:1,hp:100,special:'special',sname:'طوفان!',intro:'siaintro',keep:{bp:'siasmoke',bk:'siabomb'},aura:'#7a7a7a',moves:{p:'jab',fp:'lunge',bp:'siasmoke',cp:'upc',k:'fs',fk:'sk',bk:'siabomb',ck:'sw'},look:{band:'tails'},img:'chars/c1.png'},
   {id:'dragon',name:'اژدها',style:'کونگ‌فو و نانچیکو',weapon:'nun',stats:[3,5,2],spd:1.18,dmg:.92,hp:90,special:'blrush',sname:'مشت‌های خشمگین!',stance:'blSt',win:'blWin',moves:{p:'bl12',fp:'blinch',bp:'n8',cp:'blham',k:'blfk',fk:'blfly',bk:'blsom',ck:'bltail'},look:{suit:'#f2c21b'},img:'chars/c2.png'},
   {id:'dancer',name:'رقصنده',style:'کاپوئرا',weapon:'none',stats:[3,4,2],spd:1.1,dmg:1,hp:95,special:'wind',sname:'آسیاب بادی!',ginga:1,aura:'#e8462e',intro:'cpintro',introSoul:1,winAnim:[['stG',320],['cpGb',320]],winFx:'#ffffff',moves:{p:'cmeia',fp:'cprast',bp:'cpmacaco',cp:'cneg',k:'cpmeia',fk:'cparmada',bk:'cpau',ck:'cpheli'},block:['esq','cesq'],look:{band:'bandana',pants:'#f6f4ee',belt:'#f6f4ee'},img:'chars/c3.png'},
   {id:'samurai',name:'سامورایی',style:'کاتانا و لگدهای پیاپی',weapon:'sword',stats:[4,3,3],spd:.95,dmg:1.12,hp:100,special:'hw7',sname:'هفت لگد پیاپی!',win:'hwDab',moves:{p:'ksw',fp:'kspin',bp:'kflr',cp:'kjump',k:'hwk',fk:'hwfly',bk:'hwhook',ck:'sw'},look:{bun:1,belt:'#8d8d8d'}},
@@ -1170,8 +1170,8 @@ const MOVES={
   cprast:{fire:1,dust:1,trail:'f1',seq:[['cpLow',48,59,55,0],['cpRast',129,559,75,0,{fx:"slide"}],['crouch',61,0,50,0],['stG',82,0,30,0]],hits:[{t0:48,t1:177,limb:"f1",dmg:8,kb:240,kind:"knock",r:22,low:1}]},
   cpintro:{seq:[['stG',300,0,20,0],['cpGb',300,0,20,0],['stG',300,0,20,0],['cpGb',300,0,20,0],['stG',300,0,20,0],['cpGb',300,0,20,0]],hits:[]},
   // sia: smoke step (vanish and reappear behind the foe), smoke bomb (knocks the foe down), smoke entrance
-  siasmoke:{seq:[['crouch',70,0,44,0,{fx:'smokeOut'}],['crouch',150,0,40],['stance',30,0,40,0,{fx:'smokeBehind'}],['jab',90,60,60],['stance',110,0,24]],hits:[{t0:250,t1:340,limb:'h1',dmg:7,kb:300,kind:'heavy',r:16}]},
-  siabomb:{seq:[['cross0',110,0,40],['cross',90,0,60,0,{fx:'bomb'}],['stance',180,0,24]],hits:[]},
+  siasmoke:{aura:1,fire:1,ghost:'#9a9a9a',seq:[['crouch',70,0,44,0,{fx:'smokeOut'}],['crouch',150,0,40],['stance',30,0,40,0,{fx:'smokeBehind'}],['jab',90,60,60],['stance',110,0,24]],hits:[{t0:250,t1:340,limb:'h1',dmg:7,kb:300,kind:'heavy',r:16}]},
+  siabomb:{fire:1,seq:[['cross0',110,0,40],['cross',90,0,60,0,{fx:'bomb'}],['stance',180,0,24]],hits:[]},
   siaintro:{seq:[['stance',250,0,24,0,{fx:'smokeOut'}],['stance',550,0,24],['stance',300,0,24,0,{fx:'smokeIn'}],['stance',200,0,24]],hits:[]},
   mzbag:{aura:1,bag:1,seq:[['mzBag1',110,0,40],['mzBag2',100,90,62],['mzBag3',90,40,55],['mzBag1',90,0,45],['mzBag2',100,90,62],['spinA',70,0,40],['mzBag2',120,140,64,0,{fx:'dash'}],['stance',150,0,22]],
     hits:[{t0:110,t1:210,limb:'h1',dmg:8,kb:200,kind:'heavy',r:24},{t0:390,t1:490,limb:'h1',dmg:8,kb:200,kind:'heavy',r:24},{t0:560,t1:680,limb:'h1',dmg:14,kb:620,kind:'knock',r:26,cine:1}],trail:'h1'},
@@ -1770,8 +1770,8 @@ class Fighter{
           const SU=this.ch&&this.ch.supers;
           if(this.meter>=100&&(SU||(!fwd&&!back&&!I.down&&!I.up))){mv=SU?SU[I.up?'up':I.down?'down':fwd?'fwd':back?'back':'n']:(this.ch&&this.ch.special)||'special';cost=100}else mv=I.up?'adr':I.down?'slide':fwd?'dashk':back?'bflip':(this.ch&&this.ch.barSp)||'multi';
           if(this.meter>=cost-.01){this.meter=Math.max(0,this.meter-cost);this.startMove(mv);if(cost===100)superFlash(this);else cineStart(this,mv)}}
-        else if(take(I,'punch')){const M=this.ch&&this.ch.moves;this.startMove(M?(this.crouch?M.cp:fwd?M.fp:back?M.bp:M.p):this.punchMove(fwd,back))}
-        else if(take(I,'kick')){const M=this.ch&&this.ch.moves;if(back&&!this.crouch&&this.ch&&this.ch.bk&&this.weapon===this.ch.weapon){this.startMove(this.ch.bk)}else this.startMove(M?(this.crouch?M.ck:fwd?M.fk:back?M.bk:M.k):this.crouch?'sw':(fwd?'sk':back?'bk':'fs'))}
+        else if(take(I,'punch')){const M=this.ch&&this.ch.moves,K=this.ch&&this.ch.keep;if(K&&K.bp&&back&&!this.crouch)this.startMove(K.bp);else this.startMove(M?(this.crouch?M.cp:fwd?M.fp:back?M.bp:M.p):this.punchMove(fwd,back))}
+        else if(take(I,'kick')){const M=this.ch&&this.ch.moves,K=this.ch&&this.ch.keep;if(K&&K.bk&&back&&!this.crouch)this.startMove(K.bk);else if(back&&!this.crouch&&this.ch&&this.ch.bk&&this.weapon===this.ch.weapon){this.startMove(this.ch.bk)}else this.startMove(M?(this.crouch?M.ck:fwd?M.fk:back?M.bk:M.k):this.crouch?'sw':(fwd?'sk':back?'bk':'fs'))}
         else if(!this.blocking&&!this.crouch&&take(I,'up')){this.state='air';this.vy=610;this.vx=(fwd?240:back?-210:0)*this.face;this.airAtk=false;AU.whoosh(false)}
         else if(!this.crouch&&!this.blocking)this.vx=(fwd?185:back?-140:0)*this.face*this.spd}
     }else if(S==='air'){
@@ -2032,7 +2032,7 @@ function updPickups(dt){for(const k of pickups){k.t+=dt;if(k.y>0||k.vy>0){k.vy-=
 let fx=[],speed=null;
 const BAR=100/3;
 // golden-pink flare: sparks, embers and a ring, bigger on finishing hits
-function smokePuff(x,sc=1){for(let k=0;k<16;k++){const a=Math.random()*TAU;fx.push({k:'smoke',x:x+Math.cos(a)*20*sc,y:(20+Math.random()*110)*sc,vx:Math.cos(a)*(60+Math.random()*120),vy:20+Math.random()*60,r:(12+Math.random()*16)*sc,t:0,life:.7+Math.random()*.4,col:Math.random()<.5?'#bdbab4':'#8f8b85'})}}
+function smokePuff(x,sc=1){shake(5);for(let k=0;k<28;k++){const a=Math.random()*TAU;fx.push({k:'smoke',x:x+Math.cos(a)*20*sc,y:(20+Math.random()*110)*sc,vx:Math.cos(a)*(60+Math.random()*120),vy:20+Math.random()*60,r:(12+Math.random()*16)*sc,t:0,life:.7+Math.random()*.4,col:Math.random()<.5?'#bdbab4':'#8f8b85'})}}
 function fireBurst(p,big,ac='#ff4fa0'){const n=big?34:12;for(let k=0;k<n;k++){const a=Math.random()*TAU,v=(big?260:150)+Math.random()*(big?520:260);fx.push({k:'ink',x:p[0],y:p[1],vx:Math.cos(a)*v,vy:Math.sin(a)*v+120,t:0,life:.35+Math.random()*.4,col:['#fff4b0','#ffd23a','#ff9a1e',ac][k%4],len:big?9:6})}
   fx.push({k:'ring',x:p[0],y:p[1]-10,t:0,life:.3,col:'#ffd23a',s:big?1.6:1});if(big){spark(p,1,false,true);game.flashT=Math.max(game.flashT,.07)}}
 function spark(p,big,small,red){fx.push({k:'spark',x:p[0],y:p[1],t:0,life:red?.38:small?.14:big?.3:.18,R:red?78:small?16:big?50:28,seed:Math.random()*1e6|0,small,red})}
@@ -2137,9 +2137,9 @@ function startRound(){primeVoices();VO.pre(game.round===3?'a-final':'a-r'+game.r
 function startStory(i,keepMeter){const st=STORY[i];primeVoices();VO.pre('st'+(i+1));game.cine=null;game.endLim=0;game.soul=null;game.dark=0;story.idleT=0;game.sub=null;game.mode='story';story.stage=i;story.len=st.len;story.waveIdx=0;story.lock=null;story.spawnQ=[];story.boss=null;story.result=null;story.arrowT=0;
   setTheme(st.theme,'story',st.len,st.boss.x);const m=P1&&keepMeter?P1.meter:0;
   const ew=SAVE.equip.weapon&&SHOP.find(i=>i.id===SAVE.equip.weapon),U=SAVE.up;
-  P1=new Fighter({team:0,c:COLORS.black,ch:{id:'hero',name:'قهرمان',weapon:'none',special:'special',sname:'طوفان!',look:{}},weapon:ew?ew.base:st.weapon,x:150,face:1,hp:100+15*U.hp,dmg:1+.1*U.pow});P1.spd*=1+.06*U.spd;
+  P1=new Fighter({team:0,c:COLORS.black,ch:{id:'hero',name:'قهرمان',weapon:'none',special:'special',sname:'طوفان!',look:{},intro:i===0?'siaintro':null,keep:{bp:'siasmoke',bk:'siabomb'}},weapon:ew?ew.base:st.weapon,x:150,face:1,hp:100+15*U.hp,dmg:1+.1*U.pow});P1.spd*=1+.06*U.spd;
   if(ew){P1.wskin=ew.real?null:ew;P1.reset(P1.x,1)}P1.cos={hat:SAVE.equip.hat,face:SAVE.equip.face};P1.inp=human;P1.meter=m;P2=null;fighters=[P1];ctrl=[];props=storyProps(st);pickups=[];projs=[];fx=[];speed=null;game.fin=null;game.slow=0;
-  cam.x=150;game.phase='intro';game.introT=0;say('مرحله‌ی '+fa(i+1)+' · '+st.name,1.6,1);
+  cam.x=150;game.phase='intro';game.introT=0;say('مرحله‌ی '+fa(i+1)+' · '+st.name,1.6,1);if(P1.ch.intro)P1.startMove(P1.ch.intro);
   if(!ew&&st.weapon==='nun')queueMsg('نانچیکو گرفتی!',1.3,.8,'#cf241d');if(st.weapon==='staff')queueMsg('چوب رزمی گرفتی!',1.3,.8,'#cf241d');if(st.weapon==='sword')queueMsg('کاتانا گرفتی!',1.3,.8,'#cf241d');if(st.weapon==='dagger')queueMsg('دو خنجر گرفتی!',1.3,.8,'#cf241d');queueMsg('برو جلو →',1,.7);VO.say('st'+(i+1),{pri:1,delay:i===0&&!keepMeter?3.1:1})}
 function spawnEnemy(st,side,boss){const L=story.lock,x=boss?Math.min(L[1]-80,P1.x+430):side>0?L[1]+70:L[0]-70;
   const bc=CHARS.find(c=>c.id===BOSSCH[story.stage])||CHARS[0],e=boss?new Fighter({team:1,c:COLORS.boss,ch:{...bc,bossOf:story.stage},weapon:bc.weapon,hp:st.boss.hp,sc:1.22,boss:true,dmg:1.25*LV[game.diff].dmg,kbRes:.6,name:st.boss.name,x,face:-side,aura:'#ff6a1e'})
