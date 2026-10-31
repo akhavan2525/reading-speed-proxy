@@ -134,6 +134,7 @@ kbd{font-family:inherit;border:1.5px solid var(--ink);border-radius:5px;padding:
     <div class="lbl" style="left:66.1%;top:61.5%;width:26.4%;height:6.7%">هوا</div>
     <button class="hb" id="wxBtn" style="left:9.8%;top:60.3%;width:52.7%;height:8.5%">🌦 هوا: تصادفی</button>
     <button class="hb" id="helpBtn" style="left:9.8%;top:71.5%;width:52.7%;height:8.7%">🎮 کنترل‌ها</button>
+    <button class="hb" id="updBtn" style="left:66.1%;top:72.7%;width:26.4%;height:6.6%">🔄 به‌روزرسانی</button>
     <a class="hb" id="apkBtn" href="paper-fighters.apk" download style="display:none;left:66.1%;top:72.7%;width:26.4%;height:6.6%">📱 اپ</a>
     <button class="hb" id="exitBtn" style="display:none;left:66.1%;top:72.7%;width:26.4%;height:6.6%">✕ خروج</button>
     <button class="hb big" id="setBack" style="left:30.3%;top:84.3%;width:39.3%;height:7.2%;font-size:1.1em">برگشت</button>
@@ -2999,9 +3000,10 @@ function drawFam(){const sc=$('hscene'),cv=$('hfam');if(!cv||$('home').classList
   ['mom','gma','sis'].forEach((m,k)=>{const c=FAMC[famMood(m)],A=c[0],i=c[1]+Math.floor(t*8+k*3)%c[2],ph=FCH[A],dh=ch*ph/240,x=F[k]/100*w,y=h*(1-F[3]/100);
     g.drawImage(FAMI[A],(i%10)*180,Math.floor(i/10)*ph,180,ph,x-cw/2,y-dh,cw,dh)})}
 function famSay(w,clip){if(!w)return;const u=performance.now()+3200;famReact[w]={c:clip,until:u};if(/_cel$|laugh/.test(clip))for(const o of['mom','gma','sis'])if(o!==w)famReact[o]={c:o+'_cel',until:u}}
-function homeSay(who,txt,clip){const w=WHO[who];famSay(w,clip||(w==='gma'&&Math.random()<.5?'gma_laugh':w+'_cel'));const b=$('hbubble');b.innerHTML='<small>'+who+'</small>'+txt;b.classList.add('on');clearTimeout(hbT);hbT=setTimeout(()=>b.classList.remove('on'),3800)}
+let homeAud=null;
+function homeSay(who,txt,clip,key){const w=WHO[who];if(homeAud){homeAud.pause();homeAud=null}if(key&&!AU.mute){homeAud=new Audio('sfx/h-'+key+'.mp3');homeAud.play().catch(()=>{})}famSay(w,clip||(w==='gma'&&Math.random()<.5?'gma_laugh':w+'_cel'));const b=$('hbubble');b.innerHTML='<small>'+who+'</small>'+txt;b.classList.add('on');clearTimeout(hbT);hbT=setTimeout(()=>b.classList.remove('on'),3800)}
 function openHome(){const H=SAVE.home;homeSel=null;renderHome();show('home');
-  if(!H.seen)homeSay('مامان','سیاه جان... صاحبخونه بیرونمون کرد. ببین چی‌کار می‌تونی بکنی.','mom_cry');else if(H.seen!==today())homeSay('عزیز','کجا بودی مادر؟ دلمون آب شد!','gma_surp');if(!famIv)famIv=setInterval(drawFam,100);H.seen=today();saveGame()}
+  if(!H.seen)homeSay('مامان','سیاه جان... صاحبخونه بیرونمون کرد. ببین چی‌کار می‌تونی بکنی.','mom_cry','intro');else if(H.seen!==today())homeSay('عزیز','کجا بودی مادر؟ دلمون آب شد!','gma_surp','back');if(!famIv)famIv=setInterval(drawFam,100);H.seen=today();saveGame()}
 function renderHome(pop){const H=SAVE.home,L=HOME[Math.min(H.st,HOME.length-1)],sc=$('hscene');$('homeTitle').textContent='خونه‌ی سیاه · '+L.name;sc.style.backgroundImage=`url(${L.bg})`;
   sc.querySelectorAll('img').forEach(e=>e.remove());
   const add=(src,x,y,w,cls,on)=>{const im=document.createElement('img');im.src=src;im.style.left=x+'%';im.style.bottom=y+'%';im.style.width=w+'%';if(cls)im.className=cls;if(on)im.onclick=on;sc.appendChild(im);return im};
@@ -3012,10 +3014,10 @@ function renderHome(pop){const H=SAVE.home,L=HOME[Math.min(H.st,HOME.length-1)],
   if(it){const v=H.it[it.id]|0,d=document.createElement('div');d.innerHTML=`<span class="nm">${it.st[v]}</span>`;P.appendChild(d);
     if(v<2){const c=L.cost[v];btn((v?'نو کن':'تعمیر کن')+' · '+fa(c)+' 🪙',()=>homeBuy(it,c),SAVE.coins<c)}else{const d2=document.createElement('div');d2.textContent='✓ نو شد';P.appendChild(d2)}}
   else{const d=document.createElement('div');d.textContent='روی یه وسیله بزن · هر تعمیر: +۲ جونِ قهرمان توی داستان';P.appendChild(d)}
-  const fed=H.food===today();btn(fed?'🍲 فردا دوباره بیا':'🍲 غذای مامان',()=>{H.food=today();H.fed=1;addCoins(15);homeSay('مامان',FOOD[Math.random()*FOOD.length|0]+' (+۱۵ سکه، نوار ویژه‌ی مرحله‌ی بعد پر)');AU.heal&&AU.heal();saveGame();renderHome()},fed);
-  if(L.items.every(i=>(H.it[i.id]|0)>=2)){if(H.st<HOME.length-1)btn('🚚 اسباب‌کشی به '+HOME[H.st+1].name,()=>{H.st++;homeSel=null;saveGame();renderHome();homeSay('نازی','خونه‌ی جدید! من پیشِ پنجره می‌خوابم!')});else{const d=document.createElement('div');d.textContent='به‌زودی: آپارتمان!';P.appendChild(d)}}
+  const fed=H.food===today();btn(fed?'🍲 فردا دوباره بیا':'🍲 غذای مامان',()=>{H.food=today();H.fed=1;addCoins(15);const fi=Math.random()*FOOD.length|0;homeSay('مامان',FOOD[fi]+' (+۱۵ سکه، نوار ویژه‌ی مرحله‌ی بعد پر)',null,'food'+(fi+1));AU.heal&&AU.heal();saveGame();renderHome()},fed);
+  if(L.items.every(i=>(H.it[i.id]|0)>=2)){if(H.st<HOME.length-1)btn('🚚 اسباب‌کشی به '+HOME[H.st+1].name,()=>{H.st++;homeSel=null;saveGame();renderHome();homeSay('نازی','خونه‌ی جدید! من پیشِ پنجره می‌خوابم!',null,'move')});else{const d=document.createElement('div');d.textContent='به‌زودی: آپارتمان!';P.appendChild(d)}}
   updCoins()}
-function homeBuy(it,c){const H=SAVE.home;if(SAVE.coins<c)return;SAVE.coins-=c;const v=(H.it[it.id]|0)+1;H.it[it.id]=v;saveGame();AU.sup&&AU.sup();renderHome(it.id);const l=it.ln[v-1];homeSay(l[0],l[1])}
+function homeBuy(it,c){const H=SAVE.home;if(SAVE.coins<c)return;SAVE.coins-=c;const v=(H.it[it.id]|0)+1;H.it[it.id]=v;saveGame();AU.sup&&AU.sup();renderHome(it.id);const l=it.ln[v-1];homeSay(l[0],l[1],null,it.id+v)}
 function openShop(){shop.sel=null;renderShop();show('shop')}
 function renderShop(){const g=$('shopGrid');g.innerHTML='';shop.prev=[];updCoins();for(const b of $('shopTabs').children)b.classList.toggle('on',b.dataset.v===shop.tab);
   const items=SHOP.filter(i=>i.slot===shop.tab);if(!shop.sel||!items.includes(shop.sel))shop.sel=items[0];
@@ -3037,7 +3039,7 @@ $('shopAct').onclick=()=>{const it=shop.sel;if(!it)return;
   else SAVE.equip[it.slot]=SAVE.equip[it.slot]===it.id?null:it.id;saveGame();renderShop()};
 $('shopTabs').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;shop.tab=b.dataset.v;shop.sel=null;renderShop()});
 $('shopBack').onclick=()=>show('menu');
-if(window.PFApp&&PFApp.exit){$('exitBtn').style.display='flex';$('exitBtn').onclick=()=>{try{PFApp.exit()}catch(e){}}}$('shopBtn').onclick=()=>{AU.init();openShop()};$('homeBtn').onclick=()=>{AU.init();openHome()};$('homeBack').onclick=()=>{AU.block();show('menu')};updCoins();
+if(window.PFApp&&PFApp.exit){$('exitBtn').style.display='flex';$('updBtn').style.display='none';$('exitBtn').onclick=()=>{try{PFApp.exit()}catch(e){}}}$('shopBtn').onclick=()=>{AU.init();openShop()};$('homeBtn').onclick=()=>{AU.init();openHome()};$('homeBack').onclick=()=>{AU.block();show('menu')};updCoins();
 function lobbyMsg(t){const e=$('lbMsg');e.textContent=t;e.style.display=t?'block':'none'}
 function openLobby(){netClose();$('lbMain').classList.remove('hidden');$('lbWait').classList.add('hidden');$('lbCode').value='';lobbyMsg('');show('lobby')}
 $('onlineBtn').onclick=()=>{AU.init();sel.online=true;openSelect()};
@@ -3069,7 +3071,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden)appPause();
 MUS.play();  // the Android app allows this; browsers wait for the first tap
 function setMute(m){AU.mute=m;$('mbtn').style.opacity=m?.4:1;$('sndBtn').textContent=m?'صدا: خاموش':'صدا: روشن';if(m)MUS.stop();else MUS.play()}
 $('mbtn').onclick=()=>setMute(!AU.mute);$('sndBtn').onclick=()=>{AU.init();setMute(!AU.mute)};
-let helpFrom='menu';$('helpBtn').onclick=()=>{helpFrom='settings';show('help')};$('setBtn').onclick=()=>{AU.init();AU.block();show('settings')};$('setBack').onclick=()=>{AU.block();show('menu')};
+$('updBtn').onclick=()=>{$('updBtn').textContent='⏳ ...';(window.caches?caches.keys().then(k=>Promise.all(k.map(n=>caches.delete(n)))):Promise.resolve()).catch(()=>{}).finally(()=>location.reload())};let helpFrom='menu';$('helpBtn').onclick=()=>{helpFrom='settings';show('help')};$('setBtn').onclick=()=>{AU.init();AU.block();show('settings')};$('setBack').onclick=()=>{AU.block();show('menu')};
 const updVibe=()=>{for(const b of['vibeBtn','vibeBtn2'])$(b).textContent=vibeOn?'لرزش: روشن':'لرزش: خاموش'};updVibe();
 $('vibeBtn').onclick=$('vibeBtn2').onclick=()=>{vibeOn=!vibeOn;try{localStorage.setItem('pf-vibe',vibeOn?'1':'0')}catch(e){}updVibe();buzz(40)};$('helpClose').onclick=()=>show(helpFrom);
 for(const b of document.querySelectorAll('#touch button')){const k=b.dataset.k;
@@ -3141,7 +3143,7 @@ window.__game={get game(){return game},get P1(){return P1},get P2(){return P2},g
 #menu .hb.ic{background:transparent;border:0;box-shadow:none;border-radius:0;color:var(--ink);justify-content:flex-end;padding-bottom:.5em;font-weight:900;font-size:.72em;opacity:1}
 #menu #menuCoins.mcoin{display:flex;align-items:center;justify-content:center;background:transparent;border:0;padding:0;font-size:.85em}
 #settings .lbl{position:absolute;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.85em}#settings .grp{display:contents}
-#settings .hb{opacity:1;font-size:.82em;text-decoration:none}#settings #wxBtn,#settings #apkBtn,#settings #exitBtn{position:absolute;right:auto;background:transparent;border:0;box-shadow:none;color:var(--ink);border-radius:1.1em;padding:0;font-size:.78em;font-weight:900;white-space:nowrap}
+#settings .hb{opacity:1;font-size:.82em;text-decoration:none}#settings #updBtn{font-size:.7em;font-weight:900;white-space:nowrap}#settings #wxBtn,#settings #apkBtn,#settings #exitBtn{position:absolute;right:auto;background:transparent;border:0;box-shadow:none;color:var(--ink);border-radius:1.1em;padding:0;font-size:.78em;font-weight:900;white-space:nowrap}
 #settings .ttl{position:absolute;display:flex;align-items:center;justify-content:center;transform:rotate(-1.5deg)}#settings .ttl h1{margin:0;font-size:1.8em;font-weight:900}
 #homeBtn{position:absolute;left:13%;top:93.4%;width:74%;height:5%;display:flex;align-items:center;justify-content:center;font-family:inherit;font-weight:900;font-size:1em;color:var(--ink);background:#f6c56b;border:2.5px solid var(--ink);border-radius:12px 9px 13px 8px/9px 13px 8px 12px;box-shadow:3px 3px 0 var(--ink);cursor:pointer}
 #home{background:rgba(29,28,26,.88);padding:6px}.hwrap{display:flex;flex-direction:column;align-items:center;gap:6px;width:100%;max-height:100%}
@@ -3169,7 +3171,7 @@ window.__game={get game(){return game},get P1(){return P1},get P2(){return P2},g
 </style>
 <script>
 // installable app + update prompt (only where sw.js is served, i.e. the Liara server)
-(function(){const ua=navigator.userAgent;if(/Android/i.test(ua)&&!/PaperFightersApp/.test(ua))fetch('paper-fighters.apk',{method:'HEAD'}).then(r=>{if(r.ok)document.getElementById('apkBtn').style.display='flex'}).catch(()=>{});
+(function(){const ua=navigator.userAgent;if(/Android/i.test(ua)&&!/PaperFightersApp/.test(ua))fetch('paper-fighters.apk',{method:'HEAD'}).then(r=>{if(r.ok){document.getElementById('apkBtn').style.display='flex';document.getElementById('updBtn').style.display='none'}}).catch(()=>{});
   const V='__VERSION__';if(!V.startsWith('__')){const e=document.createElement('div');e.id='ver';e.textContent='v'+V;document.getElementById('menu').appendChild(e)}
   if(!('serviceWorker' in navigator))return;let reloading=false,asked=false;
   const ask=w=>{const b=document.getElementById('upd');b.classList.remove('hidden');document.getElementById('updBtn').onclick=()=>{asked=true;b.querySelector('span').textContent='در حال بروزرسانی...';w.postMessage('update')}};
