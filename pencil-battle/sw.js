@@ -3,7 +3,7 @@
 // the game shows an "update" banner instead of switching mid-fight.
 const VERSION = '__VERSION__';
 const CACHE = 'pf-' + VERSION;
-const SHELL = ['./', 'manifest.webmanifest', 'icon-192.png', 'music.mp3'];
+const SHELL = ['./', 'manifest.webmanifest', 'icon-192.png'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL.map((u) => new Request(u, { cache: 'reload' })))));
@@ -23,6 +23,16 @@ self.addEventListener('fetch', (e) => {
   const url = new URL(req.url);
   if (req.method !== 'GET' || url.origin !== location.origin || url.pathname === '/health') return;
   const key = req.mode === 'navigate' ? './' : url.pathname;
+  // the page, code and pictures: always try the network first so a new deploy shows up right away;
+  // the cached copy is only used offline. Big audio files stay cache-first.
+  if (!/\.mp3$/.test(url.pathname)) {
+    e.respondWith(
+      fetch(req.mode === 'navigate' ? req : new Request(url.href, { cache: 'no-cache' }))
+        .then((res) => { if (res.ok && res.status === 200) { const c = res.clone(); caches.open(CACHE).then((cache) => cache.put(key, c)); } return res; })
+        .catch(() => caches.open(CACHE).then((cache) => cache.match(key)))
+    );
+    return;
+  }
   e.respondWith(
     caches.open(CACHE).then(async (cache) => {
       const hit = await cache.match(key);
