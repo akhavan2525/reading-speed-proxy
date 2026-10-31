@@ -2796,6 +2796,8 @@ window.__game={get game(){return game},get P1(){return P1},get P2(){return P2},g
   const ask=w=>{const b=document.getElementById('upd');b.classList.remove('hidden');document.getElementById('updBtn').onclick=()=>{asked=true;b.querySelector('span').textContent='در حال بروزرسانی...';w.postMessage('update')}};
   navigator.serviceWorker.addEventListener('controllerchange',()=>{if(asked&&!reloading){reloading=true;location.reload()}});
   navigator.serviceWorker.register('sw.js').then(reg=>{
+    // also look for a new version every few minutes and whenever the app comes back to the front
+    setInterval(()=>reg.update().catch(()=>{}),4*60*1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)reg.update().catch(()=>{})});
     if(reg.waiting&&navigator.serviceWorker.controller)ask(reg.waiting);
     reg.addEventListener('updatefound',()=>{const w=reg.installing;w&&w.addEventListener('statechange',()=>{if(w.state==='installed'&&navigator.serviceWorker.controller)ask(w)})});
     const check=()=>reg.update().catch(()=>{});setInterval(check,15*60*1000);
