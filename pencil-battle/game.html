@@ -1760,7 +1760,11 @@ class Fighter{
     if(S==='stand'){
       const free=this===P1&&game.mode==='story',mvIn=I.right-I.left;
       if(free&&(!op||Math.abs(op.x-this.x)>340)){if(mvIn&&fight)this.face=mvIn>0?1:-1}
-      else if(op){const d=op.x-this.x;if(Math.abs(d)>(op.airborne?20:3))this.face=d>0?1:-1}
+      else if(op){
+        // player surrounded: pressing toward an enemy on the other side turns to face that one for a moment
+        if(this.inp===human&&mvIn&&fight&&mvIn!==this.face&&this.enemies().some(o=>o.state!=='ko'&&!o.ko&&Math.sign(o.x-this.x)===mvIn&&Math.abs(o.x-this.x)<520))this.faceLock={dir:mvIn,t:game.rt+.7};
+        const fl=this.faceLock&&game.rt<this.faceLock.t&&this.enemies().some(o=>o.state!=='ko'&&Math.sign(o.x-this.x)===this.faceLock.dir);
+        if(fl)this.face=this.faceLock.dir;else{const d=op.x-this.x;if(Math.abs(d)>(op.airborne?20:3))this.face=d>0?1:-1}}
       fwd=this.face>0?I.right:I.left;back=this.face>0?I.left:I.right;
       this.crouch=false;this.blocking=false;this.vx=0;
       if(fight){this.crouch=!!I.down;this.blocking=!!I.block;
@@ -1775,6 +1779,8 @@ class Fighter{
         else if(!this.blocking&&!this.crouch&&take(I,'up')){this.state='air';this.vy=610;this.vx=(fwd?240:back?-210:0)*this.face;this.airAtk=false;AU.whoosh(false)}
         else if(!this.crouch&&!this.blocking)this.vx=(fwd?185:back?-140:0)*this.face*this.spd}
     }else if(S==='air'){
+      // steer in the air: a direction pressed just after jumping still turns it into a forward/back jump
+      {const mv=I.right-I.left;if(mv&&!this.airAtk){const tv=mv*(mv===this.face?240:210)*this.spd;this.vx+=(tv-this.vx)*Math.min(1,dt*7)}}
       if(fight&&!this.airAtk){if(this.meter>=BAR-.01&&take(I,'special')){this.airAtk=true;this.meter-=BAR;const mv=I.down?'aslam':'adr';this.startMove(mv);cineStart(this,mv)}
         else if(take(I,'kick')){this.airAtk=true;this.startMove(this.ch&&this.ch.airK?this.ch.airK:fwd?'fsk':'tn')}else if(take(I,'punch')){this.airAtk=true;this.startMove('ap')}}
     }else if(S==='move')this.updMove(dt);
