@@ -1975,8 +1975,8 @@ function updProps(dt){
   for(const f of fighters){for(const p of props.slice()){
     if(Math.abs(f.x-p.x)>=p.w/2+14*f.sc||f.y>=p.y+p.h||f.y+120*f.sc<=p.y)continue;
     if((f.state==='juggle'||f.state==='hit')&&Math.abs(f.vx)>180){if(p.type==='crate'){breakCrate(p);continue}if(p.cd>0)continue;p.vx=f.vx*1.05/p.m;p.vy=260+Math.random()*260;p.vr=(Math.random()-.5)*14;p.y+=1;p.cd=.3;dust(p.x,p.y+p.h/2,.5);AU.thud()}
-    else if(f.state!=='down'&&f.state!=='ko'&&!f.airborne){const d=Math.sign(p.x-f.x)||1,pen=p.w/2+14*f.sc-Math.abs(f.x-p.x);
-      if(p.type==='crate')continue;if(p.y<5){p.x+=d*pen*.6;f.x-=d*pen*.4}else{p.x+=d*pen;p.vx=d*60}}}}}
+    // walking no longer shoves props along (they used to pile up in front of the player); fighters pass in front of them
+    }}}
 function throwKnife(f,i){const s=f.sk,hp=i?s.h2:s.h1;f.kOut[i]=true;projs.push({o:f,i,x:hp[0],y:hp[1],dir:f.face,state:'out',trav:0,t:0,rot:0,hitO:false,hitB:false});AU.whoosh(false,true)}
 function updProjs(dt){for(const p of projs){const o=p.o;p.t+=dt;p.rot+=dt*30*p.dir;
     if(p.state==='out'){const dx=p.dir*(p.slip?850:1000)*dt;p.x+=dx;p.trav+=Math.abs(dx);if(p.slip)p.y+=Math.sin(p.t*6)*40*dt;if(p.trav>(p.slip?520:380))p.state='back'}
