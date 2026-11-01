@@ -80,9 +80,9 @@ kbd{font-family:inherit;border:1.5px solid var(--ink);border-radius:5px;padding:
 @keyframes pulse{to{transform:scale(1.08)}}
 :root{--sw:min(100vw,calc(100vh*941/1672))}
 @supports (height:100dvh){:root{--sw:min(100vw,calc(100dvh*941/1672))}}
-#menu{padding:0;background:#eae6dc}
+#menu{padding:0;background:#f1e6d2 url(menu/paper.webp) center top/var(--sw) auto repeat-y}
 #menu .sheet{position:relative;flex:none;width:var(--sw);height:calc(var(--sw)*1672/941);background:url(menu/main.webp) 0 0/100% 100% no-repeat;font-size:calc(var(--sw)*.052)}
-#settings{padding:0;background:#eae6dc}#settings .sheet{position:relative;flex:none;width:var(--sw);height:calc(var(--sw)*1672/941);background:url(menu/settings.webp) 0 0/100% 100% no-repeat;font-size:calc(var(--sw)*.052)}
+#settings{padding:0;background:#f1e6d2 url(menu/paper.webp) center top/var(--sw) auto repeat-y}#settings .sheet{position:relative;flex:none;width:var(--sw);height:calc(var(--sw)*1672/941);background:url(menu/settings.webp) 0 0/100% 100% no-repeat;font-size:calc(var(--sw)*.052)}
 #menu .grp{display:contents}
 .hb{position:absolute;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:inherit;font-size:1em;font-weight:700;line-height:1.35;color:var(--ink);background:transparent;background-clip:content-box;border:0;border-radius:1.1em;padding:.32em;cursor:pointer;opacity:.75}
 .hb:hover{opacity:1}
@@ -3101,7 +3101,7 @@ resize();makeGrain();startDemo();
 (function bootLoad(){const box=$('loader');if(!box)return;const ims=[];
   for(const t in WALLBG)ims.push(wallImg(WALLBG[t][0]));for(const t in WALLIMG)for(const[src]of WALLIMG[t])ims.push(wallImg(src));
   for(const t in PROPIMG)for(const n of new Set(Object.values(PROPIMG[t]))){const src='props/'+t+'-'+n+'.webp';if(!PIMG[src]){PIMG[src]=new Image();PIMG[src].src=src}ims.push(PIMG[src])}
-  for(const c of CHARS)if(c.faceImg)ims.push(c.faceImg);ims.push(...SMOKE,...Object.values(FXI),ZIMG,JIMG,KIMG,...GHI);for(const src of['menu/main.webp','menu/settings.webp','home/park.webp','home/room.webp']){const im=new Image();im.src=src;ims.push(im)}ims.push(...FAMI);
+  for(const c of CHARS)if(c.faceImg)ims.push(c.faceImg);ims.push(...SMOKE,...Object.values(FXI),ZIMG,JIMG,KIMG,...GHI);for(const src of['menu/paper.webp','menu/main.webp','menu/settings.webp','home/park.webp','home/room.webp']){const im=new Image();im.src=src;ims.push(im)}ims.push(...FAMI);
   for(const id in PARTS)for(const k in PARTS[id]){partImg(PARTS[id][k][0]);ims.push(PIMGS[PARTS[id][k][0]])}
   let font=0;(document.fonts?document.fonts.ready:Promise.resolve()).then(()=>font=1,()=>font=1);
   const t0=performance.now();let shown=0;
